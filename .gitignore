@@ -1,3 +1,7 @@
+# server parsed images
+img/icons
+img/items
+
 # Logs
 logs
 *.log
