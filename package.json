@@ -4,10 +4,10 @@
   "description": "VirCities corporation manager",
   "main": "app.js",
   "scripts": {
-    "start": "run.bat ",
+    "dev_start": "run.bat ",
+    "start": "node app.js",
     "tsc": "tsc",
     "tsc:w": "tsc -w",
-    "lite": "lite-server",
     "typings": "typings",
     "express": "node app.js"
   },
