@@ -9,7 +9,6 @@
     "tsc:w": "tsc -w",
     "lite": "lite-server",
     "typings": "typings",
-    "postinstall": "typings install",
     "express": "node app.js"
   },
   "author": "Aleksei \"AlexiuS\" Podgaev",
