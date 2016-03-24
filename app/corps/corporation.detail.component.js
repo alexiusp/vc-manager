@@ -53,11 +53,12 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                 };
                 CorporationDetailComponent.prototype.loadCompanyDetail = function (id) {
                     var _this = this;
-                    this._corporationService
-                        .getCompanyDetail(id)
-                        .subscribe(function (res) {
-                        _this.companies[id] = res;
-                    });
+                    if (this.corpInfo.is_manager)
+                        this._corporationService
+                            .getCompanyDetail(id)
+                            .subscribe(function (res) {
+                            _this.companies[id] = res;
+                        });
                 };
                 CorporationDetailComponent.prototype.loadCorpInfo = function () {
                     var _this = this;
@@ -74,45 +75,64 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                             //console.log("storage:",res)
                             _this.corpStorage = res;
                         });
-                        res.companies.forEach(function (c) {
-                            _this.companyStorageMap[c.id] = [];
-                            _this._corporationService
-                                .getCompanyStorage(c.id)
-                                .subscribe(function (res) {
-                                _this.companyStorageMap[c.id] = res;
+                        if (res.is_manager)
+                            res.companies.forEach(function (c) {
+                                _this.companyStorageMap[c.id] = [];
+                                _this._corporationService
+                                    .getCompanyStorage(c.id)
+                                    .subscribe(function (res) {
+                                    _this.companyStorageMap[c.id] = res;
+                                });
+                                _this.loadCompanyDetail(c.id);
                             });
-                            _this.loadCompanyDetail(c.id);
-                        });
                     });
                 };
+                CorporationDetailComponent.prototype.cleanMessage = function () {
+                    var _this = this;
+                    clearTimeout(this.messageCleanTimeout);
+                    if (this.messages.length > 0) {
+                        this.messages.splice(0, 1);
+                        this.messageCleanTimeout = setTimeout(function () { _this.cleanMessage(); }, 2000);
+                    }
+                };
                 CorporationDetailComponent.prototype.addMessage = function (message) {
+                    var _this = this;
                     this.messages.push(message);
+                    this.messageCleanTimeout = setTimeout(function () { _this.cleanMessage(); }, 2000);
                 };
                 CorporationDetailComponent.prototype.removeMessage = function (index) {
                     this.messages.splice(index, 1);
                 };
                 CorporationDetailComponent.prototype.selectCompany = function (id) {
-                    this.selectedCompanies[id] = !this.selectedCompanies[id];
+                    if (this.corpInfo.is_manager)
+                        this.selectedCompanies[id] = !this.selectedCompanies[id];
                 };
                 CorporationDetailComponent.prototype.selectAll = function () {
                     var _this = this;
-                    this.allSelected = !this.allSelected;
-                    if (!!this.corpInfo && !!this.corpInfo.companies)
-                        this.corpInfo.companies.forEach(function (item, index) {
-                            _this.selectedCompanies[item.id] = _this.allSelected;
-                        });
+                    if (this.corpInfo.is_manager) {
+                        this.allSelected = !this.allSelected;
+                        if (!!this.corpInfo && !!this.corpInfo.companies)
+                            this.corpInfo.companies.forEach(function (item, index) {
+                                _this.selectedCompanies[item.id] = _this.allSelected;
+                            });
+                    }
                 };
                 CorporationDetailComponent.prototype.setProdEdit = function (id) {
-                    this.isProdEdit[id] = !this.isProdEdit[id];
+                    if (this.corpInfo.is_manager)
+                        this.isProdEdit[id] = !this.isProdEdit[id];
                 };
                 CorporationDetailComponent.prototype.setEmplEdit = function (id) {
-                    this.isEmplEdit[id] = !this.isEmplEdit[id];
+                    if (this.corpInfo.is_manager) {
+                        this.isEmplEdit[id] = !this.isEmplEdit[id];
+                    }
                 };
                 CorporationDetailComponent.prototype.openCompany = function (id) {
-                    this.isCompOpen[id] = !this.isCompOpen[id];
-                    if (!this.isCompOpen[id]) {
-                        this.isEmplEdit[id] = false;
-                        this.isProdEdit[id] = false;
+                    if (this.corpInfo.is_manager) {
+                        this.isCompOpen[id] = !this.isCompOpen[id];
+                        if (!this.isCompOpen[id]) {
+                            this.isEmplEdit[id] = false;
+                            this.isProdEdit[id] = false;
+                        }
                     }
                 };
                 CorporationDetailComponent.prototype.initProgress = function (maxNum) {
@@ -134,74 +154,91 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                 };
                 CorporationDetailComponent.prototype.putProductionItemsToStorage = function (company, callback) {
                     var _this = this;
-                    console.log("company:", company);
-                    var compId = company.id;
-                    var amount = company.current_production.quantity;
-                    if (amount > 0) {
-                        var itemId_1 = -1;
-                        this.companyStorageMap[compId].forEach(function (item) {
-                            if ((company.current_production.name == item.ItemType.name) || (company.current_production.img == item.ItemType.image))
-                                itemId_1 = item.ItemType.id;
-                        });
-                        if (itemId_1 < 0) {
-                            this.addMessage({
-                                msg: "Production item '" + company.current_production.name + "' not found!",
-                                class: "flash_error"
+                    if (this.corpInfo.is_manager) {
+                        console.log("company:", company);
+                        var compId = company.id;
+                        var amount = company.current_production.quantity;
+                        if (amount > 0) {
+                            var itemId_1 = -1;
+                            this.companyStorageMap[compId].forEach(function (item) {
+                                if ((company.current_production.name == item.ItemType.name) || (company.current_production.img == item.ItemType.image))
+                                    itemId_1 = item.ItemType.id;
                             });
-                            console.error("item not found", company.current_production, this.companyStorageMap[compId]);
+                            if (itemId_1 < 0) {
+                                this.addMessage({
+                                    msg: "Production item '" + company.current_production.name + "' not found!",
+                                    class: "flash_error"
+                                });
+                                console.error("item not found", company.current_production, this.companyStorageMap[compId]);
+                            }
+                            else {
+                                this._corporationService.moveItemToCorporation(compId, itemId_1, amount)
+                                    .subscribe(function (res) {
+                                    console.log("result:", res);
+                                    res.forEach(function (m) { return _this.addMessage(m); });
+                                    if (!!callback)
+                                        callback();
+                                });
+                            }
                         }
                         else {
-                            this._corporationService.moveItemToCorporation(compId, itemId_1, amount)
+                            this.addMessage({
+                                msg: "Current production is empty",
+                                class: "flash_error"
+                            });
+                            console.log("Current production is empty");
+                            if (!!callback)
+                                callback();
+                        }
+                    }
+                };
+                CorporationDetailComponent.prototype.putAllProductionItemsToStorage = function () {
+                    var _this = this;
+                    if (this.corpInfo.is_manager) {
+                        var cNum = this.corpInfo.companies.length;
+                        this.initProgress(cNum);
+                        this.corpInfo.companies.forEach(function (c, index) {
+                            console.log("processing company ", c.name);
+                            if (_this.selectedCompanies[c.id])
+                                _this.putProductionItemsToStorage(c, function () { _this.incrementProgress(); });
+                            else
+                                _this.incrementProgress();
+                        });
+                    }
+                };
+                CorporationDetailComponent.prototype.addFundsToCompany = function (company, amount, callback) {
+                    var _this = this;
+                    if (this.corpInfo.is_manager) {
+                        console.log("addFundCompanyAmount", company, amount);
+                        var compId_1 = company.id;
+                        if (amount > 0) {
+                            this._corporationService.addFundsToCompany(compId_1, amount)
                                 .subscribe(function (res) {
                                 console.log("result:", res);
                                 res.forEach(function (m) { return _this.addMessage(m); });
+                                _this.loadCompanyDetail(compId_1);
                                 if (!!callback)
                                     callback();
                             });
                         }
                     }
-                    else {
-                        this.addMessage({
-                            msg: "Current production is empty",
-                            class: "flash_error"
-                        });
-                        console.log("Current production is empty");
-                        if (!!callback)
-                            callback();
-                    }
-                };
-                CorporationDetailComponent.prototype.putAllProductionItemsToStorage = function () {
-                    var _this = this;
-                    var cNum = this.corpInfo.companies.length;
-                    this.initProgress(cNum);
-                    this.corpInfo.companies.forEach(function (c, index) {
-                        console.log("processing company ", c.name);
-                        _this.putProductionItemsToStorage(c, function () { _this.incrementProgress(); });
-                    });
-                };
-                CorporationDetailComponent.prototype.addFundsToCompany = function (company, amount, callback) {
-                    var _this = this;
-                    console.log("addFundCompanyAmount", company, amount);
-                    var compId = company.id;
-                    if (amount > 0) {
-                        this._corporationService.addFundsToCompany(compId, amount)
-                            .subscribe(function (res) {
-                            console.log("result:", res);
-                            res.forEach(function (m) { return _this.addMessage(m); });
-                            _this.loadCompanyDetail(compId);
-                            if (!!callback)
-                                callback();
-                        });
-                    }
                 };
                 CorporationDetailComponent.prototype.addFundsToAll = function (amount) {
                     var _this = this;
-                    var cNum = this.corpInfo.companies.length;
-                    this.initProgress(cNum);
-                    this.corpInfo.companies.forEach(function (c, index) {
-                        console.log("processing company ", c.name);
-                        _this.addFundsToCompany(c, amount, function () { _this.incrementProgress(); });
-                    });
+                    if (this.corpInfo.is_manager) {
+                        var cNum = this.corpInfo.companies.length;
+                        this.initProgress(cNum);
+                        this.corpInfo.companies.forEach(function (c, index) {
+                            console.log("processing company ", c.name);
+                            if (_this.selectedCompanies[c.id])
+                                _this.addFundsToCompany(c, amount, function () { _this.incrementProgress(); });
+                            else
+                                _this.incrementProgress();
+                        });
+                    }
+                };
+                CorporationDetailComponent.prototype.investToCorp = function (amount) {
+                    console.log("investToCorp", amount);
                 };
                 CorporationDetailComponent = __decorate([
                     core_1.Component({

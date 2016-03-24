@@ -9,10 +9,10 @@ import {Credentials} from './credentials';
 @Component({
   selector: 'ap-account',
   templateUrl : 'app/account/account.component.html',
-  //styleUrls: ['app/dashboard.component.css']
 })
 export class AccountComponent implements OnInit {
   user : Credentials;
+  errorMessage : string;
   constructor(
     private _router : Router,
     private _accountService: AccountService,
@@ -20,14 +20,17 @@ export class AccountComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.errorMessage = "";
     let user : Credentials = this._storageService.loadData('user');
     this.user = (!!user) ? user : new Credentials();
     console.log("user loaded:", this.user);
   }
 
   login() {
-    this._accountService.login(this.user, () => {
-      this._router.navigateByUrl('/corps');
+    this.errorMessage = "";
+    if(!!this.user.username) this._accountService.login(this.user, () => {
+      this.errorMessage = this._accountService.getError();
+      if(!this.errorMessage) this._router.navigateByUrl('/corps');
     });
   }
 }

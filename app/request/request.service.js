@@ -32,13 +32,8 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable'], function(
                 function RequestService(http) {
                     this.http = http;
                 }
-                RequestService.prototype.basic = function () {
-                    return this.http.get('http://localhost:3010/api')
-                        .map(function (res) { return res.json().data; })
-                        .catch(this.handleError);
-                };
                 RequestService.prototype.doRequest = function (type, url, body, options) {
-                    var _url = 'http://localhost:3010/' + url;
+                    var _url = '/' + url;
                     var reqObserable;
                     if (type == RequestType.GET) {
                         reqObserable = this.http.get(_url);

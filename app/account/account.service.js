@@ -33,6 +33,7 @@ System.register(['angular2/core', '../storage/storage.service', '../request/requ
                     this._requestService = _requestService;
                     this._storageService = _storageService;
                 }
+                AccountService.prototype.getError = function () { return this._errorMessage; };
                 Object.defineProperty(AccountService.prototype, "User", {
                     get: function () {
                         return this._user;
@@ -45,13 +46,13 @@ System.register(['angular2/core', '../storage/storage.service', '../request/requ
                     console.log("user login:", user);
                     this._requestService.login(user)
                         .subscribe(function (res) {
+                        _this.onLogin(user, res);
                         if (!!callback)
                             callback();
-                        _this.onLogin(user, res);
                     }, function (error) { return _this.onError(error); });
                 };
                 AccountService.prototype.onLogin = function (user, userData) {
-                    console.log("login successfull:", userData);
+                    console.log("login request finished:", userData);
                     if (userData.error > 0)
                         this.onError(userData.message);
                     else {
@@ -61,6 +62,7 @@ System.register(['angular2/core', '../storage/storage.service', '../request/requ
                     }
                 };
                 AccountService.prototype.onError = function (error) {
+                    this._errorMessage = error.toString();
                     console.error(error);
                 };
                 AccountService = __decorate([

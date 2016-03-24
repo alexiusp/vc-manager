@@ -6,7 +6,11 @@ var session = require('express-session');
 var _port = 3010;
 const fs = require('fs');
 var http = require('http');
+const config = require('./api/config');
 
+app.use('/app', express.static(__dirname + '/app'));
+app.use('/img', express.static(__dirname + '/img'));
+app.use('/node_modules', express.static(__dirname + '/node_modules'));
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(session({
@@ -17,9 +21,11 @@ app.use(session({
 }));
 app.use(function(req, res, next) {
   console.log('%s %s %s', req.method, req.url, req.path);
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+  /*
+  res.header('Access-Control-Allow-Origin', config.url);
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
+  */
   next();
 });
 app.all('/api', function (req, res) {
@@ -76,14 +82,14 @@ app.post('/api/login', function (req, res) {
 });
 app.get('/api/corps', function (req, res) {
   let sessCookies = req.session.remoteCookies;
-  //console.log('corps list request', sessCookies);
+  console.log('corps list request', sessCookies);
   if(!!sessCookies) {
     //console.log("loading api...");
     var api = require('./api/corps.js');
     //console.log("calling getCorpsList");
     api.getCorpsList(sessCookies, (result) => {
       let answer = result.data.corporations;
-      //console.log("getCorpsList finished", answer);
+      console.log("getCorpsList finished", answer);
       res.json({
         data    :answer,
         error   :0,
@@ -134,7 +140,7 @@ app.get('/api/corp/storage/:id', function(req, res) {
     let api = require('./api/corps.js');
     api.getCorpStorage(id, sessCookies, (result) => {
       let answer = result.data.storage;
-      parseStorageImg(answer);
+      if(!!answer) parseStorageImg(answer);
       res.json({
         data    : answer,
         error   : 0,
@@ -158,7 +164,7 @@ app.get('/api/company/:id/storage', function(req, res) {
     let api = require('./api/corps.js');
     api.getCompanyStorage(id, sessCookies, (result) => {
       let answer = result.data.storage;
-      parseStorageImg(answer);
+      if(!!answer) parseStorageImg(answer);
       res.json({
         data    : answer,
         error   : 0,

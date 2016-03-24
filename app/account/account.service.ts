@@ -17,6 +17,8 @@ export class AccountService {
     private _storageService: StorageService
   ) {}
   private _user : Account;
+  private _errorMessage:string;
+  getError() {return this._errorMessage}
   get User() {
     return this._user;
   }
@@ -24,13 +26,13 @@ export class AccountService {
     console.log("user login:", user);
     this._requestService.login(user)
       .subscribe(res => {
-                       if(!!callback) callback();
-                       this.onLogin(user, res);
-                     },
-                     error =>  this.onError(error));
+        this.onLogin(user, res);
+        if(!!callback) callback();
+      },
+      error =>  this.onError(error));
   }
   onLogin(user : Credentials, userData : ResponseWrapper<Account>) {
-    console.log("login successfull:", userData);
+    console.log("login request finished:", userData);
     if(userData.error > 0) this.onError(userData.message);
     else {
       this._user = userData.data;
@@ -39,6 +41,7 @@ export class AccountService {
     }
   }
   onError(error) {
+    this._errorMessage = error.toString();
     console.error(error);
   }
 }

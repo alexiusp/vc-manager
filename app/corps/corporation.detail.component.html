@@ -1,4 +1,4 @@
-<div class="page-header"><h1>Corporations detail&nbsp;<i class="glyphicon glyphicon-refresh" (click)="loadCorpInfo()"></i></h1></div>
+<div class="page-header"><h1>Corporation detail&nbsp;<i class="glyphicon glyphicon-refresh" (click)="loadCorpInfo()"></i></h1></div>
 <div class="row" *ngIf="!corpInfo">
   <div class="col-sm-12"><i class="fa fa-spinner fa-pulse"></i>Loading...</div>
 </div>
@@ -17,7 +17,7 @@
 </div>
 <div class="row" *ngIf="!!corpInfo">
   <div class="col-sm-12">
-    <div class="panel panel-primary">
+    <div class="panel" [ngClass]="{'panel-primary': corpInfo.is_manager, 'panel-danger': !corpInfo.is_manager}">
       <div class="panel-heading">
         {{corpInfo.corporation.name}}
         <span *ngIf="corpInfo.is_manager" class="glyphicon glyphicon-user pull-right" title="Manager"></span>
@@ -27,12 +27,12 @@
           <td class="success" style="width:10%"><img class="pull-right" width="16" height="16" alt="vDollars" src="/img/icons/icon-vdollar.png"/></td>
           <td class="success" style="width:20%">{{corpInfo.corporation.vd_balance}}</td>
           <td class="success" style="width:20%">
-            <button type="button" class="btn btn-xs btn-block btn-default"><i class="glyphicon glyphicon-plus"></i>Invest</button>
+            <button disabled="disabled" type="button" class="btn btn-xs btn-block btn-default" (click)="investToCorp()"><i class="glyphicon glyphicon-plus"></i>Invest</button>
           </td>
           <td class="warning" style="width:10%"><img class="pull-right" width="16" height="16" alt="vGold" src="/img/icons/icon-vgold.png"/></td>
           <td class="warning" style="width:20%">{{corpInfo.corporation.vg_balance}}</td>
           <td class="warning" style="width:20%">
-            <button type="button" class="btn btn-xs btn-block btn-default"><i class="glyphicon glyphicon-plus"></i>Invest</button>
+            <button disabled="disabled" type="button" class="btn btn-xs btn-block btn-default" (click)="investToCorp()"><i class="glyphicon glyphicon-plus"></i>Invest</button>
           </td>
         </tr>
       </table>
@@ -55,12 +55,12 @@
 </div>
 <div class="row" *ngIf="!!corpInfo">
   <div class="col-sm-8">
-    <div class="panel panel-default">
+    <div class="panel panel-default" *ngIf="corpInfo.is_manager">
       <div class="panel-body">
         <div class="row">
           <div class="col-sm-3">
             <button type="button" class="btn btn-default" (click)="selectAll();">
-              <i class="glyphicon glyphicon-asterisk"></i>&nbsp;Select/deselect all
+              <i class="glyphicon" [ngClass]="{'glyphicon-check': !allSelected, 'glyphicon-unchecked': allSelected}"></i>&nbsp;Select/deselect all
             </button>
           </div>
           <div class="col-sm-3">
@@ -83,11 +83,11 @@
     </div>
     <ul class="list-group" *ngFor="#company of corpInfo.companies">
       <li class="list-group-item" [ngClass]="{'active': selectedCompanies[company.id]}">
-          <button type="button" class="btn btn-xs btn-default" (click)="selectCompany(company.id)">
+          <button type="button" class="btn btn-xs btn-default" (click)="selectCompany(company.id)" *ngIf="corpInfo.is_manager">
             <i class="glyphicon" [ngClass]="{'glyphicon-check': selectedCompanies[company.id], 'glyphicon-unchecked': !selectedCompanies[company.id]}"></i>
           </button>
           {{company.name}}
-          <button type="button" class="btn btn-xs btn-default pull-right" (click)="openCompany(company.id)">
+          <button type="button" class="btn btn-xs btn-default pull-right" (click)="openCompany(company.id)" *ngIf="corpInfo.is_manager">
             <i class="glyphicon" [ngClass]="{'glyphicon-menu-down': isCompOpen[company.id], 'glyphicon-menu-right': !isCompOpen[company.id]}"></i>
           </button>
       </li>
@@ -104,7 +104,7 @@
       </li>
       <li class="list-group-item" *ngIf="!!isEmplEdit[company.id]">Edit employees panel</li>
       <li class="list-group-item">
-        <button type="button" class="btn btn-xs btn-default" (click)="setProdEdit(company.id)"><span class="glyphicon glyphicon-cog"></span></button>
+        <button type="button" class="btn btn-xs btn-default" (click)="setProdEdit(company.id)" *ngIf="corpInfo.is_manager"><span class="glyphicon glyphicon-cog"></span></button>
         Current production:&nbsp;
         {{company.current_production.name}}
         <span class="label" [ngClass]="{'label-success': company.current_production.currently_producing, 'label-danger': !company.current_production.currently_producing}">
@@ -116,9 +116,9 @@
         Edit production form
       </li>
       <li class="list-group-item" *ngIf="isCompOpen[company.id]">
-        <pre>{{companies[company.id] | json}}</pre>
+        <!-- <pre>{{companies[company.id] | json}}</pre> -->
       </li>
-      <li class="list-group-item">
+      <li class="list-group-item" *ngIf="corpInfo.is_manager">
         <div class="row">
           <div class="col-sm-3">
             <button type="button" class="btn btn-sm btn-block btn-primary" (click)="putProductionItemsToStorage(company)">
@@ -148,10 +148,10 @@
             </div>
             <div class="row" *ngIf="!!corpStorage">
               <div class="col-sm-12" *ngFor="#item of corpStorage">
-                <button class="btn btn-block btn-default" type="button">
+                <button class="btn btn-block btn-default" type="button" [ngClass]="{'disabled': !corpInfo.is_manager}">
                   <span class="pull-left">
                     <img width="20" height="20" [src]="item.ItemType?.image" align="left"/>
-                    ({{item.ItemType?.id}})&nbsp;{{item.ItemType?.name}}
+                    <!-- ({{item.ItemType?.id}})&nbsp; -->{{item.ItemType?.name}}
                   </span>
                   <span class="badge pull-right">{{item[0]?.total_quantity}}</span>
                 </button>
@@ -169,11 +169,13 @@
 
   </div>
 </div>
+<!--
 <div class="row" *ngIf="!!corpInfo">
   <div class="col-sm-12">
     <pre>{{corpInfo | json}}</pre>
   </div>
 </div>
+-->
 <div class="row">
   <div class="col-sm-12">
   </div>

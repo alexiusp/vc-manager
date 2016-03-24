@@ -25,6 +25,7 @@ export class CorporationDetailComponent implements OnInit {
   private maxProgress: number;
   private iProgress: number;
   private messages: ResultMessage[];
+  private messageCleanTimeout: any;
   private companies: map<CompanyDetail>;
   constructor(
     private _coreService: CoreService,
@@ -47,7 +48,7 @@ export class CorporationDetailComponent implements OnInit {
     }
   }
   loadCompanyDetail(id : number) {
-    this._corporationService
+    if(this.corpInfo.is_manager) this._corporationService
       .getCompanyDetail(id)
       .subscribe((res) => {
         this.companies[id] = res;
@@ -67,7 +68,7 @@ export class CorporationDetailComponent implements OnInit {
             //console.log("storage:",res)
             this.corpStorage = res;
           });
-        res.companies.forEach(c => {
+        if(res.is_manager) res.companies.forEach(c => {
           this.companyStorageMap[c.id] = [];
           this._corporationService
             .getCompanyStorage(c.id)
@@ -78,32 +79,46 @@ export class CorporationDetailComponent implements OnInit {
         });
       });
   }
+  cleanMessage() {
+    clearTimeout(this.messageCleanTimeout);
+    if(this.messages.length > 0) {
+      this.messages.splice(0, 1);
+      this.messageCleanTimeout = setTimeout(()=>{this.cleanMessage()}, 2000);
+    }
+  }
   addMessage(message : ResultMessage) {
     this.messages.push(message);
+    this.messageCleanTimeout = setTimeout(()=>{this.cleanMessage()}, 2000);
   }
   removeMessage(index : number) {
     this.messages.splice(index, 1);
   }
   selectCompany(id : number) {
-    this.selectedCompanies[id] = !this.selectedCompanies[id];
+    if(this.corpInfo.is_manager)this.selectedCompanies[id] = !this.selectedCompanies[id];
   }
   selectAll() {
-    this.allSelected = !this.allSelected;
-    if(!!this.corpInfo && !!this.corpInfo.companies) this.corpInfo.companies.forEach((item : Company, index : number) => {
-      this.selectedCompanies[item.id] = this.allSelected;
-    });
+    if(this.corpInfo.is_manager) {
+      this.allSelected = !this.allSelected;
+      if(!!this.corpInfo && !!this.corpInfo.companies) this.corpInfo.companies.forEach((item : Company, index : number) => {
+        this.selectedCompanies[item.id] = this.allSelected;
+      });
+    }
   }
   setProdEdit(id : number) {
-    this.isProdEdit[id] = !this.isProdEdit[id];
+    if(this.corpInfo.is_manager) this.isProdEdit[id] = !this.isProdEdit[id];
   }
   setEmplEdit(id : number) {
-    this.isEmplEdit[id] = !this.isEmplEdit[id];
+    if(this.corpInfo.is_manager) {
+      this.isEmplEdit[id] = !this.isEmplEdit[id];
+    }
   }
   openCompany(id : number) {
-    this.isCompOpen[id] = !this.isCompOpen[id];
-    if(!this.isCompOpen[id]) {
-      this.isEmplEdit[id] = false;
-      this.isProdEdit[id] = false;
+    if(this.corpInfo.is_manager) {
+      this.isCompOpen[id] = !this.isCompOpen[id];
+      if(!this.isCompOpen[id]) {
+        this.isEmplEdit[id] = false;
+        this.isProdEdit[id] = false;
+      }
     }
   }
   initProgress(maxNum : number) {
@@ -123,64 +138,77 @@ export class CorporationDetailComponent implements OnInit {
     console.log("progress:",this.progressValue);
   }
   putProductionItemsToStorage(company : Company, callback?: any) {
-    console.log("company:", company);
-    let compId = company.id;
-    let amount = company.current_production.quantity;
-    if(amount > 0) {
-      let itemId = -1;
-      this.companyStorageMap[compId].forEach((item : CompanyStorageElement) => {
-        if((company.current_production.name == item.ItemType.name) || (company.current_production.img == item.ItemType.image)) itemId = item.ItemType.id;
-      });
-      if(itemId < 0) {
-        this.addMessage({
-          msg:"Production item '"+company.current_production.name+"' not found!",
-          class:"flash_error"
+    if(this.corpInfo.is_manager) {
+      console.log("company:", company);
+      let compId = company.id;
+      let amount = company.current_production.quantity;
+      if(amount > 0) {
+        let itemId = -1;
+        this.companyStorageMap[compId].forEach((item : CompanyStorageElement) => {
+          if((company.current_production.name == item.ItemType.name) || (company.current_production.img == item.ItemType.image)) itemId = item.ItemType.id;
         });
-        console.error("item not found", company.current_production, this.companyStorageMap[compId]);
-      } else {
-        this._corporationService.moveItemToCorporation(compId, itemId, amount)
+        if(itemId < 0) {
+          this.addMessage({
+            msg:"Production item '"+company.current_production.name+"' not found!",
+            class:"flash_error"
+          });
+          console.error("item not found", company.current_production, this.companyStorageMap[compId]);
+        } else {
+          this._corporationService.moveItemToCorporation(compId, itemId, amount)
           .subscribe((res:ResultMessage[]) => {
             console.log("result:",res);
             res.forEach((m:ResultMessage) => this.addMessage(m));
             if(!!callback) callback();
           });
+        }
+      } else {
+        this.addMessage({
+          msg:"Current production is empty",
+          class:"flash_error"
+        });
+        console.log("Current production is empty");
+        if(!!callback) callback();
       }
-    } else {
-      this.addMessage({
-        msg:"Current production is empty",
-        class:"flash_error"
-      });
-      console.log("Current production is empty");
-      if(!!callback) callback();
     }
   }
   putAllProductionItemsToStorage() {
-    let cNum = this.corpInfo.companies.length;
-    this.initProgress(cNum);
-    this.corpInfo.companies.forEach((c : Company, index : number) => {
-      console.log("processing company ", c.name);
-      this.putProductionItemsToStorage(c, () => {this.incrementProgress()});
-    });
+    if(this.corpInfo.is_manager) {
+      let cNum = this.corpInfo.companies.length;
+      this.initProgress(cNum);
+      this.corpInfo.companies.forEach((c : Company, index : number) => {
+        console.log("processing company ", c.name);
+        if(this.selectedCompanies[c.id]) this.putProductionItemsToStorage(c, () => {this.incrementProgress()});
+        else this.incrementProgress();
+      });
+    }
   }
   addFundsToCompany(company : Company, amount : number, callback?:any) {
-    console.log("addFundCompanyAmount", company, amount);
-    let compId = company.id;
-    if(amount > 0) {
-      this._corporationService.addFundsToCompany(compId, amount)
+    if(this.corpInfo.is_manager) {
+      console.log("addFundCompanyAmount", company, amount);
+      let compId = company.id;
+      if(amount > 0) {
+        this._corporationService.addFundsToCompany(compId, amount)
         .subscribe((res:ResultMessage[]) => {
           console.log("result:",res);
           res.forEach((m:ResultMessage) => this.addMessage(m));
           this.loadCompanyDetail(compId);
           if(!!callback) callback();
         })
+      }
     }
   }
   addFundsToAll(amount : number) {
-    let cNum = this.corpInfo.companies.length;
-    this.initProgress(cNum);
-    this.corpInfo.companies.forEach((c : Company, index : number) => {
-      console.log("processing company ", c.name);
-      this.addFundsToCompany(c, amount, () => {this.incrementProgress()});
-    });
+    if(this.corpInfo.is_manager) {
+      let cNum = this.corpInfo.companies.length;
+      this.initProgress(cNum);
+      this.corpInfo.companies.forEach((c : Company, index : number) => {
+        console.log("processing company ", c.name);
+        if(this.selectedCompanies[c.id]) this.addFundsToCompany(c, amount, () => {this.incrementProgress()});
+        else this.incrementProgress();
+      });
+    }
+  }
+  investToCorp(amount : number) {
+    console.log("investToCorp", amount)
   }
 }

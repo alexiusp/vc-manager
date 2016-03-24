@@ -37,15 +37,20 @@ System.register(['angular2/core', 'angular2/router', '../storage/storage.service
                     this._storageService = _storageService;
                 }
                 AccountComponent.prototype.ngOnInit = function () {
+                    this.errorMessage = "";
                     var user = this._storageService.loadData('user');
                     this.user = (!!user) ? user : new credentials_1.Credentials();
                     console.log("user loaded:", this.user);
                 };
                 AccountComponent.prototype.login = function () {
                     var _this = this;
-                    this._accountService.login(this.user, function () {
-                        _this._router.navigateByUrl('/corps');
-                    });
+                    this.errorMessage = "";
+                    if (!!this.user.username)
+                        this._accountService.login(this.user, function () {
+                            _this.errorMessage = _this._accountService.getError();
+                            if (!_this.errorMessage)
+                                _this._router.navigateByUrl('/corps');
+                        });
                 };
                 AccountComponent = __decorate([
                     core_1.Component({
