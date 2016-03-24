@@ -1,0 +1,7 @@
+<div class="page-header"><h1>Your Corporations</h1></div>
+<div class="list-group">
+  <a class="list-group-item" *ngFor="#corp of corporations" [routerLink]="[ '/CorpDetail', {id: corp.id } ]">
+    <h4 class="list-group-item-heading">{{corp.name}}</h4>
+    <p class="list-group-item-text">Number of companies: {{corp.companies_count}}</p>
+  </a>
+</div>

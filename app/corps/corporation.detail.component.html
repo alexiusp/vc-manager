@@ -1,0 +1,184 @@
+<div class="page-header"><h1>Corporations detail&nbsp;<i class="glyphicon glyphicon-refresh" (click)="loadCorpInfo()"></i></h1></div>
+<div class="row" *ngIf="!corpInfo">
+  <div class="col-sm-12"><i class="fa fa-spinner fa-pulse"></i>Loading...</div>
+</div>
+<div class="row" *ngIf="messages?.length > 0">
+  <div class="col-sm-12">
+    <div class="alert alert-dismissible"
+      role="alert"
+      *ngFor="#m of messages; #idx = index"
+      [ngClass]="{'alert-success': m.class == 'flash_success','alert-danger': m.class == 'flash_error'}">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="removeMessage(idx)">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      {{m.msg}}
+    </div>
+  </div>
+</div>
+<div class="row" *ngIf="!!corpInfo">
+  <div class="col-sm-12">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        {{corpInfo.corporation.name}}
+        <span *ngIf="corpInfo.is_manager" class="glyphicon glyphicon-user pull-right" title="Manager"></span>
+      </div>
+      <table class="table table-condensed">
+        <tr>
+          <td class="success" style="width:10%"><img class="pull-right" width="16" height="16" alt="vDollars" src="/img/icons/icon-vdollar.png"/></td>
+          <td class="success" style="width:20%">{{corpInfo.corporation.vd_balance}}</td>
+          <td class="success" style="width:20%">
+            <button type="button" class="btn btn-xs btn-block btn-default"><i class="glyphicon glyphicon-plus"></i>Invest</button>
+          </td>
+          <td class="warning" style="width:10%"><img class="pull-right" width="16" height="16" alt="vGold" src="/img/icons/icon-vgold.png"/></td>
+          <td class="warning" style="width:20%">{{corpInfo.corporation.vg_balance}}</td>
+          <td class="warning" style="width:20%">
+            <button type="button" class="btn btn-xs btn-block btn-default"><i class="glyphicon glyphicon-plus"></i>Invest</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="row" *ngIf="progressValue > 0">
+      <div class="col-sm-12">
+        <div class="progress">
+          <div class="progress-bar progress-bar-striped active"
+            role="progressbar"
+            [attr.aria-valuenow]="progressValue"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            [style.width.%]="progressValue">
+            <span class="sr-only">{{progressValue}}% Complete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row" *ngIf="!!corpInfo">
+  <div class="col-sm-8">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-sm-3">
+            <button type="button" class="btn btn-default" (click)="selectAll();">
+              <i class="glyphicon glyphicon-asterisk"></i>&nbsp;Select/deselect all
+            </button>
+          </div>
+          <div class="col-sm-3">
+            <button type="button" class="btn btn-primary" (click)="putAllProductionItemsToStorage()">
+              <i class="glyphicon glyphicon-save"></i>&nbsp;Unload all production
+            </button>
+          </div>
+          <div class="col-sm-6">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Investment" #addFundAmount (keyup)="0"/>
+              <span class="input-group-btn">
+                <button class="btn btn-success" type="button" (click)="addFundsToAll(addFundAmount.value)">
+                  <i class="glyphicon glyphicon-usd"></i>&nbsp;Invest all
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="list-group" *ngFor="#company of corpInfo.companies">
+      <li class="list-group-item" [ngClass]="{'active': selectedCompanies[company.id]}">
+          <button type="button" class="btn btn-xs btn-default" (click)="selectCompany(company.id)">
+            <i class="glyphicon" [ngClass]="{'glyphicon-check': selectedCompanies[company.id], 'glyphicon-unchecked': !selectedCompanies[company.id]}"></i>
+          </button>
+          {{company.name}}
+          <button type="button" class="btn btn-xs btn-default pull-right" (click)="openCompany(company.id)">
+            <i class="glyphicon" [ngClass]="{'glyphicon-menu-down': isCompOpen[company.id], 'glyphicon-menu-right': !isCompOpen[company.id]}"></i>
+          </button>
+      </li>
+      <li class="list-group-item" *ngIf="!!(companies[company.id])"><img class="pull-left" width="16" height="16" alt="vDollars" src="/img/icons/icon-vdollar.png"/>&nbsp;{{companies[company.id]?.vd_balance}} vDollars</li>
+      <li class="list-group-item" *ngIf="isCompOpen[company.id]">{{company.city}}</li>
+      <li class="list-group-item" *ngIf="isCompOpen[company.id]">
+        <button type="button" class="btn btn-xs btn-default" (click)="setEmplEdit(company.id)"><span class="glyphicon glyphicon-cog"></span></button>
+        Employees:&nbsp;
+        <span class="glyphicon glyphicon-user" title="Employees"></span>{{company.employees}}/{{company.employees_limit}}&nbsp;
+        <span class="glyphicon glyphicon-globe" title="Foreign employees"></span>{{company.foreign_employees}}/{{company.foreign_employees_limit}}&nbsp;
+        <span class="label" [ngClass]="{'label-success': company.is_hiring, 'label-danger': !company.is_hiring}">
+          <i class="glyphicon" [ngClass]="{'glyphicon-thumbs-up': company.is_hiring, 'glyphicon-thumbs-down': !company.is_hiring}"></i>
+        </span>
+      </li>
+      <li class="list-group-item" *ngIf="!!isEmplEdit[company.id]">Edit employees panel</li>
+      <li class="list-group-item">
+        <button type="button" class="btn btn-xs btn-default" (click)="setProdEdit(company.id)"><span class="glyphicon glyphicon-cog"></span></button>
+        Current production:&nbsp;
+        {{company.current_production.name}}
+        <span class="label" [ngClass]="{'label-success': company.current_production.currently_producing, 'label-danger': !company.current_production.currently_producing}">
+          <i class="glyphicon" [ngClass]="{'glyphicon-thumbs-up': company.current_production.currently_producing, 'glyphicon-thumbs-down': !company.current_production.currently_producing}"></i>
+        </span>
+        <span class="badge">{{company.current_production.quantity}}</span>
+      </li>
+      <li class="list-group-item" *ngIf="!!isProdEdit[company.id]">
+        Edit production form
+      </li>
+      <li class="list-group-item" *ngIf="isCompOpen[company.id]">
+        <pre>{{companies[company.id] | json}}</pre>
+      </li>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-sm-3">
+            <button type="button" class="btn btn-sm btn-block btn-primary" (click)="putProductionItemsToStorage(company)">
+              <i class="glyphicon glyphicon-save"></i>Unload production
+            </button>
+          </div>
+          <div class="col-sm-3">
+            <div class="input-group input-group-sm">
+              <input type="text" class="form-control" placeholder="vDollars" #addFundCompanyAmount (keyup)="0"/>
+              <span class="input-group-btn">
+                <button class="btn btn-success" type="button" (click)="addFundsToCompany(company, addFundCompanyAmount.value)">
+                  <i class="glyphicon glyphicon-usd"></i>&nbsp;Invest
+                </button>
+              </span>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div class="col-sm-4">
+        <div class="panel panel-default">
+          <div class="panel-heading"><h3 class="panel-title">Corporation storage</h3></div>
+          <div class="panel-body">
+            <div class="row" *ngIf="!corpStorage">
+              <div class="col-sm-12"><i class="fa fa-spinner fa-pulse"></i>Loading...</div>
+            </div>
+            <div class="row" *ngIf="!!corpStorage">
+              <div class="col-sm-12" *ngFor="#item of corpStorage">
+                <button class="btn btn-block btn-default" type="button">
+                  <span class="pull-left">
+                    <img width="20" height="20" [src]="item.ItemType?.image" align="left"/>
+                    ({{item.ItemType?.id}})&nbsp;{{item.ItemType?.name}}
+                  </span>
+                  <span class="badge pull-right">{{item[0]?.total_quantity}}</span>
+                </button>
+                <!--
+                <div class="panel panel-default">
+                  <div class="panel-body">
+                    <pre>{{item | json}}</pre>
+                  </div>
+                </div>
+              -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+  </div>
+</div>
+<div class="row" *ngIf="!!corpInfo">
+  <div class="col-sm-12">
+    <pre>{{corpInfo | json}}</pre>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+  </div>
+</div>
