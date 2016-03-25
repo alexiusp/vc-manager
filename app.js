@@ -3,12 +3,12 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var session = require('express-session');
-var _port = 5000;
+var _port = (process.env.PORT || 5000);
 const fs = require('fs');
 var http = require('http');
 const config = require('./api/config');
 
-app.set('port', (process.env.PORT || _port));
+app.set('port', _port);
 app.use('/app', express.static(__dirname + '/app'));
 app.use('/img', express.static(__dirname + '/img'));
 app.use('/node_modules', express.static(__dirname + '/node_modules'));
