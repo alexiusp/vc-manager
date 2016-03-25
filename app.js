@@ -29,6 +29,9 @@ app.use(function(req, res, next) {
   */
   next();
 });
+app.all('/app/*', function (req, res) {
+	res.redirect('/app');
+});
 app.all('/api', function (req, res) {
   console.log('api root request');
   res.json({data:"battlecruiser operational"});

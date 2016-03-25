@@ -1,4 +1,5 @@
 import { Injectable } from 'angular2/core';
+import { Router } from 'angular2/router';
 // services
 import { RequestService } from '../request/request.service';
 
@@ -10,7 +11,8 @@ import { Dictionary, map } from '../core/dictionary';
 @Injectable()
 export class CorporationService {
   constructor (
-    private _requestService : RequestService
+    private _requestService : RequestService,
+		private _router : Router
   ) {
     this._corps = new map<CorpInfo>();
     this._corpStorage = new map<CorporationStorageElement[]>();
@@ -75,6 +77,7 @@ export class CorporationService {
   }
   handleError(error : ResponseWrapper<any>) {
     console.error("Error:",error.message);
+		if(error.error == 1) this._router.navigateByUrl('/');
     return error.data;
   }
 }

@@ -9,6 +9,7 @@
     "tsc": "tsc",
     "tsc:w": "tsc -w",
     "typings": "typings",
+		"typings:install": "typings install",
     "express": "node app.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
   },

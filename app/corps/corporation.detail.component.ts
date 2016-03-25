@@ -54,6 +54,20 @@ export class CorporationDetailComponent implements OnInit {
         this.companies[id] = res;
       })
   }
+	loadCorpStorage() {
+		this._corporationService.getCorpStorage(this.corpId)
+			.subscribe((res) => {
+				//console.log("storage:",res)
+				this.corpStorage = res;
+			});
+	}
+	loadCompanyStorage(cId : number) {
+		this._corporationService
+			.getCompanyStorage(cId)
+			.subscribe((res) => {
+				this.companyStorageMap[cId] = res;
+			});
+	}
   loadCorpInfo() {
     this.isProdEdit = [];
     this.isEmplEdit = [];
@@ -63,18 +77,10 @@ export class CorporationDetailComponent implements OnInit {
       .getCorpDetail(this.corpId)
       .subscribe((res : CorpInfo) => {
         this.corpInfo = res;
-        this._corporationService.getCorpStorage(this.corpId)
-          .subscribe((res) => {
-            //console.log("storage:",res)
-            this.corpStorage = res;
-          });
+        this.loadCorpStorage();
         if(res.is_manager) res.companies.forEach(c => {
           this.companyStorageMap[c.id] = [];
-          this._corporationService
-            .getCompanyStorage(c.id)
-            .subscribe((res) => {
-              this.companyStorageMap[c.id] = res;
-            });
+          this.loadCompanyStorage(c.id);
           this.loadCompanyDetail(c.id);
         });
       });
@@ -137,6 +143,20 @@ export class CorporationDetailComponent implements OnInit {
     }
     console.log("progress:",this.progressValue);
   }
+	putItemToStorageWithRefresh(compId : number, itemId : number, amount : number) {
+		this.putItemToStorage(compId, itemId, amount, () => {
+			this.loadCorpStorage();
+			this.loadCompanyStorage(compId);
+		});
+	}
+	putItemToStorage(compId : number, itemId : number, amount : number, callback) {
+		this._corporationService.moveItemToCorporation(compId, itemId, amount)
+		.subscribe((res:ResultMessage[]) => {
+			console.log("result:",res);
+			res.forEach((m:ResultMessage) => this.addMessage(m));
+			if(!!callback) callback();
+		});
+	}
   putProductionItemsToStorage(company : Company, callback?: any) {
     if(this.corpInfo.is_manager) {
       console.log("company:", company);
@@ -154,12 +174,7 @@ export class CorporationDetailComponent implements OnInit {
           });
           console.error("item not found", company.current_production, this.companyStorageMap[compId]);
         } else {
-          this._corporationService.moveItemToCorporation(compId, itemId, amount)
-          .subscribe((res:ResultMessage[]) => {
-            console.log("result:",res);
-            res.forEach((m:ResultMessage) => this.addMessage(m));
-            if(!!callback) callback();
-          });
+          this.putItemToStorage(compId, itemId, amount, callback);
         }
       } else {
         this.addMessage({

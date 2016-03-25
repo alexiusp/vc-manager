@@ -1,4 +1,3 @@
-<div class="page-header"><h1>Corporation detail&nbsp;<i class="glyphicon glyphicon-refresh" (click)="loadCorpInfo()"></i></h1></div>
 <div class="row" *ngIf="!corpInfo">
   <div class="col-sm-12"><i class="fa fa-spinner fa-pulse"></i>Loading...</div>
 </div>
@@ -19,8 +18,11 @@
   <div class="col-sm-12">
     <div class="panel" [ngClass]="{'panel-primary': corpInfo.is_manager, 'panel-danger': !corpInfo.is_manager}">
       <div class="panel-heading">
-        {{corpInfo.corporation.name}}
-        <span *ngIf="corpInfo.is_manager" class="glyphicon glyphicon-user pull-right" title="Manager"></span>
+        <h3 class="panel-title">
+					<span *ngIf="corpInfo.is_manager" class="glyphicon glyphicon-user" title="Manager"></span>
+					Corporation detail: {{corpInfo.corporation.name}}
+					<button type="button" class="btn btn-primary btn-xs pull-right" (click)="loadCorpInfo()"><i class="glyphicon glyphicon-refresh"></i></button>
+				</h3>
       </div>
       <table class="table table-condensed">
         <tr>
@@ -58,17 +60,17 @@
     <div class="panel panel-default" *ngIf="corpInfo.is_manager">
       <div class="panel-body">
         <div class="row">
-          <div class="col-sm-3">
-            <button type="button" class="btn btn-default" (click)="selectAll();">
+          <div class="col-xs-6 col-sm-3">
+            <button type="button" class="btn btn-default btn-block" (click)="selectAll();">
               <i class="glyphicon" [ngClass]="{'glyphicon-check': !allSelected, 'glyphicon-unchecked': allSelected}"></i>&nbsp;Select/deselect all
             </button>
           </div>
-          <div class="col-sm-3">
-            <button type="button" class="btn btn-primary" (click)="putAllProductionItemsToStorage()">
-              <i class="glyphicon glyphicon-save"></i>&nbsp;Unload all production
+          <div class="col-xs-6 col-sm-3">
+            <button type="button" class="btn btn-primary btn-block" (click)="putAllProductionItemsToStorage()">
+              <i class="glyphicon glyphicon-fast-forward"></i>&nbsp;Unload all production
             </button>
           </div>
-          <div class="col-sm-6">
+          <div class="col-xs-12 col-sm-6">
             <div class="input-group">
               <input type="text" class="form-control" placeholder="Investment" #addFundAmount (keyup)="0"/>
               <span class="input-group-btn">
@@ -91,8 +93,69 @@
             <i class="glyphicon" [ngClass]="{'glyphicon-menu-down': isCompOpen[company.id], 'glyphicon-menu-right': !isCompOpen[company.id]}"></i>
           </button>
       </li>
-      <li class="list-group-item" *ngIf="!!(companies[company.id])"><img class="pull-left" width="16" height="16" alt="vDollars" src="/img/icons/icon-vdollar.png"/>&nbsp;{{companies[company.id]?.vd_balance}} vDollars</li>
-      <li class="list-group-item" *ngIf="isCompOpen[company.id]">{{company.city}}</li>
+			<li class="list-group-item" *ngIf="isCompOpen[company.id]">{{company.city}}</li>
+      <li class="list-group-item" *ngIf="!!(companies[company.id])">
+				<div class="row">
+					<div class="col-xs-6">
+						<img class="pull-left" width="16" height="16" alt="vDollars" src="/img/icons/icon-vdollar.png"/>&nbsp;
+						{{companies[company.id]?.vd_balance}} vDollars
+					</div>
+					<div class="col-xs-6">
+						<div class="input-group input-group-sm">
+              <input type="text" class="form-control" placeholder="vDollars" #addFundCompanyAmount (keyup)="0"/>
+              <span class="input-group-btn">
+                <button class="btn btn-success" type="button" (click)="addFundsToCompany(company, addFundCompanyAmount.value)">
+                  <i class="glyphicon glyphicon-usd"></i>&nbsp;Invest
+                </button>
+              </span>
+            </div>
+					</div>
+				</div>
+			</li>
+			<li class="list-group-item">
+				<div class="row">
+					<div class="col-xs-6">
+        		<button type="button" class="btn btn-xs btn-default" (click)="setProdEdit(company.id)" *ngIf="corpInfo.is_manager"><span class="glyphicon glyphicon-cog"></span></button>
+        		Current production:&nbsp;
+        		{{company.current_production.name}}
+		        <span class="label" [ngClass]="{'label-success': company.current_production.currently_producing, 'label-danger': !company.current_production.currently_producing}">
+		          <i class="glyphicon" [ngClass]="{'glyphicon-thumbs-up': company.current_production.currently_producing, 'glyphicon-thumbs-down': !company.current_production.currently_producing}"></i>
+		        </span>
+		        <span class="label label-info">{{company.current_production.quantity}}</span>
+					</div>
+					<div class="col-xs-6">
+						<button type="button" class="btn btn-sm btn-block btn-primary" (click)="putProductionItemsToStorage(company)">
+              <i class="glyphicon glyphicon-fast-forward"></i>&nbsp;Unload production
+            </button>
+					</div>
+				</div>
+      </li>
+      <li class="list-group-item" *ngIf="!!isProdEdit[company.id]">
+        Edit production form
+      </li>
+			<li class="list-group-item" *ngIf="isCompOpen[company.id]">
+      	<div class="row"  *ngFor="#item of companyStorageMap[company.id]">
+					<div class="col-xs-12">
+						<div class="input-group input-group-sm">
+							<span  style="width:80%" class="input-group-addon" [attr.id]="'c'+company.id+'i'+item.id">
+								{{item.ItemType.name}}
+								<span class="label label-info">{{item[0].total_quantity}}</span>
+							</span>
+						  <input type="text" class="form-control" aria-label="Amount to transfer" #amount>
+						  <div class="input-group-btn">
+						    <button type="button" class="btn btn-info" (click)="putItemToStorageWithRefresh(company.id,item.ItemType.id,amount.value)">
+									<i class="glyphicon glyphicon-step-forward"></i>
+								</button>
+								<button type="button" class="btn btn-primary" (click)="putItemToStorageWithRefresh(company.id,item.ItemType.id,item[0].total_quantity)">
+									<i class="glyphicon glyphicon-fast-forward"></i>
+								</button>
+						  </div>
+						</div>
+					</div>
+				</div>
+      </li>
+
+
       <li class="list-group-item" *ngIf="isCompOpen[company.id]">
         <button type="button" class="btn btn-xs btn-default" (click)="setEmplEdit(company.id)"><span class="glyphicon glyphicon-cog"></span></button>
         Employees:&nbsp;
@@ -103,40 +166,8 @@
         </span>
       </li>
       <li class="list-group-item" *ngIf="!!isEmplEdit[company.id]">Edit employees panel</li>
-      <li class="list-group-item">
-        <button type="button" class="btn btn-xs btn-default" (click)="setProdEdit(company.id)" *ngIf="corpInfo.is_manager"><span class="glyphicon glyphicon-cog"></span></button>
-        Current production:&nbsp;
-        {{company.current_production.name}}
-        <span class="label" [ngClass]="{'label-success': company.current_production.currently_producing, 'label-danger': !company.current_production.currently_producing}">
-          <i class="glyphicon" [ngClass]="{'glyphicon-thumbs-up': company.current_production.currently_producing, 'glyphicon-thumbs-down': !company.current_production.currently_producing}"></i>
-        </span>
-        <span class="badge">{{company.current_production.quantity}}</span>
-      </li>
-      <li class="list-group-item" *ngIf="!!isProdEdit[company.id]">
-        Edit production form
-      </li>
-      <li class="list-group-item" *ngIf="isCompOpen[company.id]">
-        <!-- <pre>{{companies[company.id] | json}}</pre> -->
-      </li>
-      <li class="list-group-item" *ngIf="corpInfo.is_manager">
-        <div class="row">
-          <div class="col-sm-3">
-            <button type="button" class="btn btn-sm btn-block btn-primary" (click)="putProductionItemsToStorage(company)">
-              <i class="glyphicon glyphicon-save"></i>Unload production
-            </button>
-          </div>
-          <div class="col-sm-3">
-            <div class="input-group input-group-sm">
-              <input type="text" class="form-control" placeholder="vDollars" #addFundCompanyAmount (keyup)="0"/>
-              <span class="input-group-btn">
-                <button class="btn btn-success" type="button" (click)="addFundsToCompany(company, addFundCompanyAmount.value)">
-                  <i class="glyphicon glyphicon-usd"></i>&nbsp;Invest
-                </button>
-              </span>
-            </div>
-          </div>
-        </div>
-      </li>
+
+
     </ul>
   </div>
   <div class="col-sm-4">

@@ -60,6 +60,22 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                             _this.companies[id] = res;
                         });
                 };
+                CorporationDetailComponent.prototype.loadCorpStorage = function () {
+                    var _this = this;
+                    this._corporationService.getCorpStorage(this.corpId)
+                        .subscribe(function (res) {
+                        //console.log("storage:",res)
+                        _this.corpStorage = res;
+                    });
+                };
+                CorporationDetailComponent.prototype.loadCompanyStorage = function (cId) {
+                    var _this = this;
+                    this._corporationService
+                        .getCompanyStorage(cId)
+                        .subscribe(function (res) {
+                        _this.companyStorageMap[cId] = res;
+                    });
+                };
                 CorporationDetailComponent.prototype.loadCorpInfo = function () {
                     var _this = this;
                     this.isProdEdit = [];
@@ -70,19 +86,11 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                         .getCorpDetail(this.corpId)
                         .subscribe(function (res) {
                         _this.corpInfo = res;
-                        _this._corporationService.getCorpStorage(_this.corpId)
-                            .subscribe(function (res) {
-                            //console.log("storage:",res)
-                            _this.corpStorage = res;
-                        });
+                        _this.loadCorpStorage();
                         if (res.is_manager)
                             res.companies.forEach(function (c) {
                                 _this.companyStorageMap[c.id] = [];
-                                _this._corporationService
-                                    .getCompanyStorage(c.id)
-                                    .subscribe(function (res) {
-                                    _this.companyStorageMap[c.id] = res;
-                                });
+                                _this.loadCompanyStorage(c.id);
                                 _this.loadCompanyDetail(c.id);
                             });
                     });
@@ -152,8 +160,24 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                     }
                     console.log("progress:", this.progressValue);
                 };
-                CorporationDetailComponent.prototype.putProductionItemsToStorage = function (company, callback) {
+                CorporationDetailComponent.prototype.putItemToStorageWithRefresh = function (compId, itemId, amount) {
                     var _this = this;
+                    this.putItemToStorage(compId, itemId, amount, function () {
+                        _this.loadCorpStorage();
+                        _this.loadCompanyStorage(compId);
+                    });
+                };
+                CorporationDetailComponent.prototype.putItemToStorage = function (compId, itemId, amount, callback) {
+                    var _this = this;
+                    this._corporationService.moveItemToCorporation(compId, itemId, amount)
+                        .subscribe(function (res) {
+                        console.log("result:", res);
+                        res.forEach(function (m) { return _this.addMessage(m); });
+                        if (!!callback)
+                            callback();
+                    });
+                };
+                CorporationDetailComponent.prototype.putProductionItemsToStorage = function (company, callback) {
                     if (this.corpInfo.is_manager) {
                         console.log("company:", company);
                         var compId = company.id;
@@ -172,13 +196,7 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                                 console.error("item not found", company.current_production, this.companyStorageMap[compId]);
                             }
                             else {
-                                this._corporationService.moveItemToCorporation(compId, itemId_1, amount)
-                                    .subscribe(function (res) {
-                                    console.log("result:", res);
-                                    res.forEach(function (m) { return _this.addMessage(m); });
-                                    if (!!callback)
-                                        callback();
-                                });
+                                this.putItemToStorage(compId, itemId_1, amount, callback);
                             }
                         }
                         else {
