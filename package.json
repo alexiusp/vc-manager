@@ -9,13 +9,17 @@
     "tsc": "tsc",
     "tsc:w": "tsc -w",
     "typings": "typings",
-    "express": "node app.js"
+    "express": "node app.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Aleksei \"AlexiuS\" Podgaev",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/alexiusp/vc-manager.git"
+  },
+	"engines": {
+    "node": "4.3.1"
   },
   "dependencies": {
     "angular2": "2.0.0-beta.9",
