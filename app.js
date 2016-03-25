@@ -3,11 +3,12 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var session = require('express-session');
-var _port = 3010;
+var _port = (process.env.PORT || 5000);
 const fs = require('fs');
 var http = require('http');
 const config = require('./api/config');
 
+app.set('port', _port);
 app.use('/app', express.static(__dirname + '/app'));
 app.use('/img', express.static(__dirname + '/img'));
 app.use('/node_modules', express.static(__dirname + '/node_modules'));
@@ -257,9 +258,12 @@ app.post('/api/company/:cid/funds', function(req, res) {
 
 
 
-app.listen(_port, function () {
-  console.log(`Express app listening on port ${_port}!`);
+app.listen(app.get('port'), function () {
+  console.log(`Express app listening on port ${app.get('port')}!`);
 });
+
+
+
 var parseStorageImg = function(storage) {
   storage.forEach((item, index) => {
     let imgUrl = item.ItemType.image;

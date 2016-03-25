@@ -4,19 +4,22 @@
   "description": "VirCities corporation manager",
   "main": "app.js",
   "scripts": {
-    "start": "run.bat ",
+    "dev_start": "run.bat ",
+    "start": "node app.js",
     "tsc": "tsc",
     "tsc:w": "tsc -w",
-    "lite": "lite-server",
     "typings": "typings",
-    "postinstall": "typings install",
-    "express": "node app.js"
+    "express": "node app.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Aleksei \"AlexiuS\" Podgaev",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/alexiusp/vc-manager.git"
+  },
+	"engines": {
+    "node": "4.3.1"
   },
   "dependencies": {
     "angular2": "2.0.0-beta.9",
