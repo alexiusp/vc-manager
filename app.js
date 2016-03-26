@@ -100,14 +100,7 @@ app.get('/api/corps', function (req, res) {
         message :""
       });
     });
-  } else {
-    console.error("session cookies not found");
-    res.json({
-      error:1,
-      message:"Session expired",
-      data:[]
-    });
-  }
+  } else handleError(res, 1, "Session expired!");
 });
 app.get('/api/corp/:id', function (req, res) {
   console.log("corp info request", req.params);
@@ -127,14 +120,7 @@ app.get('/api/corp/:id', function (req, res) {
         message : ""
       });
     });
-  } else {
-    console.error("session cookies not found");
-    res.json({
-      error:1,
-      message:"Session expired",
-      data:[]
-    });
-  }
+  } else handleError(res, 1, "Session expired!");
 });
 app.get('/api/corp/storage/:id', function(req, res) {
   console.log("corp storage request", req.params);
@@ -151,14 +137,7 @@ app.get('/api/corp/storage/:id', function(req, res) {
         message : ""
       });
     });
-  } else {
-    console.error("session cookies not found");
-    res.json({
-      error:1,
-      message:"Session expired",
-      data:[]
-    });
-  }
+  } else handleError(res, 1, "Session expired!");
 });
 app.get('/api/company/:id/storage', function(req, res) {
   let id = +req.params.id;
@@ -175,14 +154,7 @@ app.get('/api/company/:id/storage', function(req, res) {
         message : ""
       });
     });
-  } else {
-    console.error("session cookies not found");
-    res.json({
-      error:1,
-      message:"Session expired",
-      data:[]
-    });
-  }
+  } else handleError(res, 1, "Session expired!");
 });
 app.get('/api/company/:id', function(req, res) {
   let id = +req.params.id;
@@ -198,14 +170,7 @@ app.get('/api/company/:id', function(req, res) {
         message : ""
       });
     });
-  } else {
-    console.error("session cookies not found");
-    res.json({
-      error:1,
-      message:"Session expired",
-      data:[]
-    });
-  }
+  } else handleError(res, 1, "Session expired!");
 });
 app.post('/api/company/:cid/storage', function(req, res) {
   let cid = +req.params.cid;
@@ -223,14 +188,7 @@ app.post('/api/company/:cid/storage', function(req, res) {
         message : ""
       });
     });
-  } else {
-    console.error("session cookies not found");
-    res.json({
-      error:1,
-      message:"Session expired",
-      data:[]
-    });
-  }
+  } else handleError(res, 1, "Session expired!");
 });
 app.post('/api/company/:cid/funds', function(req, res) {
   let cid = +req.params.cid;
@@ -248,16 +206,26 @@ app.post('/api/company/:cid/funds', function(req, res) {
         message : ""
       });
     });
-  } else {
-    console.error("session cookies not found");
-    res.json({
-      error:1,
-      message:"Session expired",
-      data:[]
+  } else handleError(res, 1, "Session expired!");
+});
+app.post('/api/corp/:id/funds', function(req, res) {
+	let cid = +req.params.id;
+  let data = req.body;
+  console.log("corporation %s funds change request", cid, req.params, data);
+  let sessCookies = req.session.remoteCookies;
+  if(!!sessCookies) {
+    let api = require('./api/corps.js');
+    api.addFundsToCorporation(cid, data.amount, sessCookies, (result) => {
+      let answer = result.data.setFlash;
+      console.log("add funds for corporation %s success:", cid, answer);
+      res.json({
+        data    : answer,
+        error   : 0,
+        message : ""
+      });
     });
-  }
-})
-
+  } else handleError(res, 1, "Session expired!");
+});
 
 
 
@@ -266,7 +234,14 @@ app.listen(app.get('port'), function () {
 });
 
 
-
+var handleError = function(res, errCode, errMessage) {
+	console.error("Error:", errCode, errMessage);
+	res.json({
+		error		: errCode,
+		message	: errMessage,
+		data		: []
+	});
+}
 var parseStorageImg = function(storage) {
   storage.forEach((item, index) => {
     let imgUrl = item.ItemType.image;

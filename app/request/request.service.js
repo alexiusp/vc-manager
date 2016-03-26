@@ -1,4 +1,4 @@
-System.register(['angular2/core', 'angular2/http', 'rxjs/Observable'], function(exports_1, context_1) {
+System.register(['angular2/core', 'angular2/http', 'rxjs/Observable', 'angular2/router', '../core/core.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable'], function(
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, http_1, Observable_1;
+    var core_1, http_1, Observable_1, router_1, core_service_1;
     var RequestType, RequestService;
     return {
         setters:[
@@ -22,6 +22,12 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable'], function(
             },
             function (Observable_1_1) {
                 Observable_1 = Observable_1_1;
+            },
+            function (router_1_1) {
+                router_1 = router_1_1;
+            },
+            function (core_service_1_1) {
+                core_service_1 = core_service_1_1;
             }],
         execute: function() {
             (function (RequestType) {
@@ -29,10 +35,13 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable'], function(
                 RequestType[RequestType["POST"] = 1] = "POST";
             })(RequestType || (RequestType = {}));
             RequestService = (function () {
-                function RequestService(http) {
+                function RequestService(http, _router, _coreService) {
                     this.http = http;
+                    this._router = _router;
+                    this._coreService = _coreService;
                 }
                 RequestService.prototype.doRequest = function (type, url, body, options) {
+                    var _this = this;
                     var _url = '/' + url;
                     var reqObserable;
                     if (type == RequestType.GET) {
@@ -42,8 +51,14 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable'], function(
                         reqObserable = this.http.post(_url, body, options);
                     }
                     return reqObserable.map(function (res) { return res.json(); })
-                        .do(function (res) { return console.log("Request to [" + url + "] result:", res); })
-                        .catch(this.handleError);
+                        .do(function (res) {
+                        console.log("Request to [" + url + "] result:", res);
+                        if (res.error == 1) {
+                            console.error("Auth error:", res.message);
+                            _this._coreService.isLoggedIn = false;
+                            _this._router.navigateByUrl('/');
+                        }
+                    }).catch(this.handleError);
                 };
                 RequestService.prototype.login = function (user) {
                     var body = JSON.stringify(user);
@@ -83,13 +98,21 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable'], function(
                     var options = new http_1.RequestOptions({ headers: headers });
                     return this.doRequest(RequestType.POST, 'api/company/' + compId + '/funds', body, options);
                 };
+                RequestService.prototype.addFundsToCorporation = function (corpId, amount) {
+                    var body = JSON.stringify({
+                        amount: amount
+                    });
+                    var headers = new http_1.Headers({ 'Content-Type': 'application/json' });
+                    var options = new http_1.RequestOptions({ headers: headers });
+                    return this.doRequest(RequestType.POST, 'api/corp/' + corpId + '/funds', body, options);
+                };
                 RequestService.prototype.handleError = function (error) {
                     console.error(error);
                     return Observable_1.Observable.throw(error.json().message || 'Server error');
                 };
                 RequestService = __decorate([
                     core_1.Injectable(), 
-                    __metadata('design:paramtypes', [http_1.Http])
+                    __metadata('design:paramtypes', [http_1.Http, router_1.Router, core_service_1.CoreService])
                 ], RequestService);
                 return RequestService;
             }());

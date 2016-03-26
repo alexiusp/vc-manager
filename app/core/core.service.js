@@ -28,12 +28,10 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                         return this._isLoggedIn;
                     },
                     set: function (val) {
-                        if (!!val && !this._isLoggedIn) {
+                        if (!!val != this._isLoggedIn) {
+                            console.info("isLoggedIn changed to", val);
                             this._isLoggedIn = !!val;
                             this._observers.forEach(function (callback) { return callback(); });
-                        }
-                        else {
-                            this._isLoggedIn = !!val;
                         }
                     },
                     enumerable: true,

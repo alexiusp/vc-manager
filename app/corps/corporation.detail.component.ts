@@ -68,22 +68,28 @@ export class CorporationDetailComponent implements OnInit {
 				this.companyStorageMap[cId] = res;
 			});
 	}
+	loadCorpDetail(callback?: any) {
+		this._corporationService
+			.getCorpDetail(this.corpId)
+			.subscribe((res : CorpInfo) => {
+				this.corpInfo = res;
+				if(!!callback) callback();
+			});
+	}
   loadCorpInfo() {
+		this.allSelected = false;
     this.isProdEdit = [];
     this.isEmplEdit = [];
     this.selectedCompanies = [];
     this.isCompOpen = [];
-    this._corporationService
-      .getCorpDetail(this.corpId)
-      .subscribe((res : CorpInfo) => {
-        this.corpInfo = res;
-        this.loadCorpStorage();
-        if(res.is_manager) res.companies.forEach(c => {
-          this.companyStorageMap[c.id] = [];
-          this.loadCompanyStorage(c.id);
-          this.loadCompanyDetail(c.id);
-        });
-      });
+		this.loadCorpDetail(() => {
+			this.loadCorpStorage();
+			if(this.corpInfo.is_manager) this.corpInfo.companies.forEach(c => {
+				this.companyStorageMap[c.id] = [];
+				this.loadCompanyStorage(c.id);
+				this.loadCompanyDetail(c.id);
+			});
+		});
   }
   cleanMessage() {
     clearTimeout(this.messageCleanTimeout);
@@ -149,7 +155,7 @@ export class CorporationDetailComponent implements OnInit {
 			this.loadCompanyStorage(compId);
 		});
 	}
-	putItemToStorage(compId : number, itemId : number, amount : number, callback) {
+	putItemToStorage(compId : number, itemId : number, amount : number, callback?: any) {
 		this._corporationService.moveItemToCorporation(compId, itemId, amount)
 		.subscribe((res:ResultMessage[]) => {
 			console.log("result:",res);
@@ -224,6 +230,14 @@ export class CorporationDetailComponent implements OnInit {
     }
   }
   investToCorp(amount : number) {
-    console.log("investToCorp", amount)
+    console.log("investToCorp", amount);
+		if(this.corpInfo.is_manager) {
+			this._corporationService.addFundsToCorporation(this.corpId, amount)
+				.subscribe((res:ResultMessage[]) => {
+          console.log("result:",res);
+          res.forEach((m:ResultMessage) => this.addMessage(m));
+					this.loadCorpDetail();
+        });
+		}
   }
 }

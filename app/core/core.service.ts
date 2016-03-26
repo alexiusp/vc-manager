@@ -11,11 +11,10 @@ export class CoreService {
     return this._isLoggedIn;
   }
   set isLoggedIn(val:boolean) {
-    if(!!val && !this._isLoggedIn) {
+    if(!!val != this._isLoggedIn) {
+			console.info("isLoggedIn changed to", val);
       this._isLoggedIn = !!val;
       this._observers.forEach(callback => callback());
-    } else {
-      this._isLoggedIn = !!val;
     }
   }
   private _observers : any[];

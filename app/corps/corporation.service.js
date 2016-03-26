@@ -1,4 +1,4 @@
-System.register(['angular2/core', 'angular2/router', '../request/request.service', '../core/dictionary'], function(exports_1, context_1) {
+System.register(['angular2/core', '../request/request.service', '../core/dictionary'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,15 +10,12 @@ System.register(['angular2/core', 'angular2/router', '../request/request.service
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, router_1, request_service_1, dictionary_1;
+    var core_1, request_service_1, dictionary_1;
     var CorporationService;
     return {
         setters:[
             function (core_1_1) {
                 core_1 = core_1_1;
-            },
-            function (router_1_1) {
-                router_1 = router_1_1;
             },
             function (request_service_1_1) {
                 request_service_1 = request_service_1_1;
@@ -28,9 +25,8 @@ System.register(['angular2/core', 'angular2/router', '../request/request.service
             }],
         execute: function() {
             CorporationService = (function () {
-                function CorporationService(_requestService, _router) {
+                function CorporationService(_requestService) {
                     this._requestService = _requestService;
-                    this._router = _router;
                     this._corps = new dictionary_1.map();
                     this._corpStorage = new dictionary_1.map();
                 }
@@ -110,15 +106,23 @@ System.register(['angular2/core', 'angular2/router', '../request/request.service
                             return _this.handleError(result);
                     });
                 };
+                CorporationService.prototype.addFundsToCorporation = function (corpId, amount) {
+                    var _this = this;
+                    return this._requestService.addFundsToCorporation(corpId, amount)
+                        .map(function (result) {
+                        if (result.error == 0)
+                            return result.data;
+                        else
+                            return _this.handleError(result);
+                    });
+                };
                 CorporationService.prototype.handleError = function (error) {
-                    console.error("Error:", error.message);
-                    if (error.error == 1)
-                        this._router.navigateByUrl('/');
+                    //console.error("Error:",error.message);
                     return error.data;
                 };
                 CorporationService = __decorate([
                     core_1.Injectable(), 
-                    __metadata('design:paramtypes', [request_service_1.RequestService, router_1.Router])
+                    __metadata('design:paramtypes', [request_service_1.RequestService])
                 ], CorporationService);
                 return CorporationService;
             }());

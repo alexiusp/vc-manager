@@ -63,13 +63,15 @@ System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.ha
                 }
                 AppComponent.prototype.ngOnInit = function () {
                     var _this = this;
-                    if (this._coreService.isLoggedIn)
-                        this.isLoggedIn = true;
-                    else {
-                        this._coreService.observeLogin(function (_) {
-                            console.log("onLogin", _this);
-                            _this.isLoggedIn = true;
-                        });
+                    var loggedin = this._coreService.isLoggedIn;
+                    this._coreService.observeLogin(function (_) {
+                        console.log("isLoggedIn", _this._coreService.isLoggedIn);
+                        _this.onAuthEvent(_this._coreService.isLoggedIn);
+                    });
+                };
+                AppComponent.prototype.onAuthEvent = function (loggedin) {
+                    this.isLoggedIn = loggedin;
+                    if (!loggedin) {
                         this._router.navigateByUrl('/');
                     }
                 };

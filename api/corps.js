@@ -39,3 +39,15 @@ exports.addFundsToCompany = function(compId, amount, cookiesArr, callback) {
   });
   http_request.post(`/corporation_companies/add_funds_vd.json?os=unknown&v=${config.version}`, postBody, cookiesArr, callback);
 }
+exports.addFundsToCorporation = function(corpId, amount, cookiesArr, callback) {
+  console.log("add funds to corp", corpId, amount);
+  let postBody = querystring.stringify({
+    data : {
+      Corporation : {
+        id : corpId,
+        vd_invest : amount
+      }
+    }
+  });
+  http_request.post(`/corporations/invest_vd.json?os=unknown&v=${config.version}`, postBody, cookiesArr, callback);
+}

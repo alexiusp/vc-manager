@@ -76,19 +76,27 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                         _this.companyStorageMap[cId] = res;
                     });
                 };
-                CorporationDetailComponent.prototype.loadCorpInfo = function () {
+                CorporationDetailComponent.prototype.loadCorpDetail = function (callback) {
                     var _this = this;
-                    this.isProdEdit = [];
-                    this.isEmplEdit = [];
-                    this.selectedCompanies = [];
-                    this.isCompOpen = [];
                     this._corporationService
                         .getCorpDetail(this.corpId)
                         .subscribe(function (res) {
                         _this.corpInfo = res;
+                        if (!!callback)
+                            callback();
+                    });
+                };
+                CorporationDetailComponent.prototype.loadCorpInfo = function () {
+                    var _this = this;
+                    this.allSelected = false;
+                    this.isProdEdit = [];
+                    this.isEmplEdit = [];
+                    this.selectedCompanies = [];
+                    this.isCompOpen = [];
+                    this.loadCorpDetail(function () {
                         _this.loadCorpStorage();
-                        if (res.is_manager)
-                            res.companies.forEach(function (c) {
+                        if (_this.corpInfo.is_manager)
+                            _this.corpInfo.companies.forEach(function (c) {
                                 _this.companyStorageMap[c.id] = [];
                                 _this.loadCompanyStorage(c.id);
                                 _this.loadCompanyDetail(c.id);
@@ -256,7 +264,16 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                     }
                 };
                 CorporationDetailComponent.prototype.investToCorp = function (amount) {
+                    var _this = this;
                     console.log("investToCorp", amount);
+                    if (this.corpInfo.is_manager) {
+                        this._corporationService.addFundsToCorporation(this.corpId, amount)
+                            .subscribe(function (res) {
+                            console.log("result:", res);
+                            res.forEach(function (m) { return _this.addMessage(m); });
+                            _this.loadCorpDetail();
+                        });
+                    }
                 };
                 CorporationDetailComponent = __decorate([
                     core_1.Component({
