@@ -116,6 +116,16 @@ System.register(['angular2/core', '../request/request.service', '../core/diction
                             return _this.handleError(result);
                     });
                 };
+                CorporationService.prototype.moveItemsToCompany = function (compId, items) {
+                    var _this = this;
+                    return this._requestService.moveItemsToCompany(compId, items)
+                        .map(function (result) {
+                        if (result.error == 0)
+                            return result.data;
+                        else
+                            return _this.handleError(result);
+                    });
+                };
                 CorporationService.prototype.handleError = function (error) {
                     //console.error("Error:",error.message);
                     return error.data;

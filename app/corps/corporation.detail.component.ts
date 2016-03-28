@@ -6,10 +6,13 @@ import { CorporationService } from './corporation.service';
 import { CoreService } from '../core/core.service';
 import { Dictionary, map } from '../core/dictionary';
 import { ResultMessage } from '../request/response';
+import { SupplyListComponent, TransferItem } from './storage/supply.list.component';
+import { AlertListComponent } from '../messages/alert.list.component';
 
 @Component({
   selector: 'ap-corp-detail',
-  templateUrl : 'app/corps/corporation.detail.component.html'
+  templateUrl : 'app/corps/corporation.detail.component.html',
+	directives: [SupplyListComponent, AlertListComponent]
 })
 export class CorporationDetailComponent implements OnInit {
   private corpId : number;
@@ -21,11 +24,11 @@ export class CorporationDetailComponent implements OnInit {
   private selectedCompanies: boolean[]; // selected companies list flags
   private allSelected: boolean;
   private companyStorageMap: map<CompanyStorageElement[]>;
+	private supplyList: CorporationStorageElement[];
   private progressValue: number;
   private maxProgress: number;
   private iProgress: number;
-  private messages: ResultMessage[];
-  private messageCleanTimeout: any;
+  private messages: Array<ResultMessage>;
   private companies: map<CompanyDetail>;
   constructor(
     private _coreService: CoreService,
@@ -38,9 +41,10 @@ export class CorporationDetailComponent implements OnInit {
     this.progressValue = 0;
     this.maxProgress = 0;
     this.iProgress = 0;
+		this.messages = [];
+		this.supplyList = [];
   }
   ngOnInit() {
-    this.messages = [];
     if(!this._coreService.isLoggedIn) this._router.navigateByUrl('/');
     else {
       this.corpId = +this._routeParams.get('id');
@@ -90,20 +94,6 @@ export class CorporationDetailComponent implements OnInit {
 				this.loadCompanyDetail(c.id);
 			});
 		});
-  }
-  cleanMessage() {
-    clearTimeout(this.messageCleanTimeout);
-    if(this.messages.length > 0) {
-      this.messages.splice(0, 1);
-      this.messageCleanTimeout = setTimeout(()=>{this.cleanMessage()}, 2000);
-    }
-  }
-  addMessage(message : ResultMessage) {
-    this.messages.push(message);
-    this.messageCleanTimeout = setTimeout(()=>{this.cleanMessage()}, 2000);
-  }
-  removeMessage(index : number) {
-    this.messages.splice(index, 1);
   }
   selectCompany(id : number) {
     if(this.corpInfo.is_manager)this.selectedCompanies[id] = !this.selectedCompanies[id];
@@ -157,9 +147,9 @@ export class CorporationDetailComponent implements OnInit {
 	}
 	putItemToStorage(compId : number, itemId : number, amount : number, callback?: any) {
 		this._corporationService.moveItemToCorporation(compId, itemId, amount)
-		.subscribe((res:ResultMessage[]) => {
+		.subscribe((res:Array<ResultMessage>) => {
 			console.log("result:",res);
-			res.forEach((m:ResultMessage) => this.addMessage(m));
+			this.messages = res;
 			if(!!callback) callback();
 		});
 	}
@@ -174,20 +164,14 @@ export class CorporationDetailComponent implements OnInit {
           if((company.current_production.name == item.ItemType.name) || (company.current_production.img == item.ItemType.image)) itemId = item.ItemType.id;
         });
         if(itemId < 0) {
-          this.addMessage({
-            msg:"Production item '"+company.current_production.name+"' not found!",
-            class:"flash_error"
-          });
+					this.messages.push(new ResultMessage("flash_error","Production item '"+company.current_production.name+"' not found!"));
           console.error("item not found", company.current_production, this.companyStorageMap[compId]);
         } else {
           this.putItemToStorage(compId, itemId, amount, callback);
         }
       } else {
-        this.addMessage({
-          msg:"Current production is empty",
-          class:"flash_error"
-        });
-        console.log("Current production is empty");
+				this.messages.push(new ResultMessage("flash_error", "Current production is empty:" + JSON.stringify(company.current_production)));
+        console.log("Current production is empty", company.current_production);
         if(!!callback) callback();
       }
     }
@@ -196,11 +180,11 @@ export class CorporationDetailComponent implements OnInit {
     if(this.corpInfo.is_manager) {
       let cNum = this.corpInfo.companies.length;
       this.initProgress(cNum);
-      this.corpInfo.companies.forEach((c : Company, index : number) => {
-        console.log("processing company ", c.name);
+			for(let c of this.corpInfo.companies) {
+				console.log("processing company ", c.name);
         if(this.selectedCompanies[c.id]) this.putProductionItemsToStorage(c, () => {this.incrementProgress()});
         else this.incrementProgress();
-      });
+			}
     }
   }
   addFundsToCompany(company : Company, amount : number, callback?:any) {
@@ -211,7 +195,7 @@ export class CorporationDetailComponent implements OnInit {
         this._corporationService.addFundsToCompany(compId, amount)
         .subscribe((res:ResultMessage[]) => {
           console.log("result:",res);
-          res.forEach((m:ResultMessage) => this.addMessage(m));
+					this.messages = res;
           this.loadCompanyDetail(compId);
           if(!!callback) callback();
         })
@@ -235,9 +219,51 @@ export class CorporationDetailComponent implements OnInit {
 			this._corporationService.addFundsToCorporation(this.corpId, amount)
 				.subscribe((res:ResultMessage[]) => {
           console.log("result:",res);
-          res.forEach((m:ResultMessage) => this.addMessage(m));
+					this.messages = res;
 					this.loadCorpDetail();
         });
 		}
   }
+	itemSelect(item : CorporationStorageElement) {
+		//console.log("itemSelect", item);
+		let list = [];
+		// we need to make a copy of an array to have the = check work
+		for(let item of this.supplyList || []) list.push(item);
+		let idx = list.indexOf(item);
+		if(idx > -1) {
+			// remove item from list
+			//console.log("remove item");
+			list.splice(idx, 1);
+		} else {
+			// add item to list
+			//console.log("add item");
+			list.push(item);
+		}
+		this.supplyList = list;
+	}
+	putItemsToCompanies(list : TransferItem[]) {
+		console.log("putItemsToCompanies", list);
+		if(this.corpInfo.is_manager) {
+			let cNum = this.corpInfo.companies.length;
+			this.initProgress(cNum);
+			let counter = 0;
+			for(let c of this.corpInfo.companies) {
+				if(this.selectedCompanies[c.id]) {
+					counter++;
+					let compId = c.id;
+					this._corporationService.moveItemsToCompany(compId, list)
+						.subscribe((res:ResultMessage[]) => {
+							console.log("result:",res);
+							this.messages = res;
+							this.loadCompanyDetail(compId);
+							this.incrementProgress();
+							this.supplyList = [];
+						})
+				} else this.incrementProgress();
+			}
+			if(!counter) {
+				this.messages = [new ResultMessage("flash_error","No companies selected!")];
+			}
+		}
+	}
 }

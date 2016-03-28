@@ -1,4 +1,4 @@
-System.register(['angular2/core', 'angular2/router', './corporation.service', '../core/core.service', '../core/dictionary'], function(exports_1, context_1) {
+System.register(['angular2/core', 'angular2/router', './corporation.service', '../core/core.service', '../core/dictionary', '../request/response', './storage/supply.list.component', '../messages/alert.list.component'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, router_1, corporation_service_1, core_service_1, dictionary_1;
+    var core_1, router_1, corporation_service_1, core_service_1, dictionary_1, response_1, supply_list_component_1, alert_list_component_1;
     var CorporationDetailComponent;
     return {
         setters:[
@@ -28,6 +28,15 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
             },
             function (dictionary_1_1) {
                 dictionary_1 = dictionary_1_1;
+            },
+            function (response_1_1) {
+                response_1 = response_1_1;
+            },
+            function (supply_list_component_1_1) {
+                supply_list_component_1 = supply_list_component_1_1;
+            },
+            function (alert_list_component_1_1) {
+                alert_list_component_1 = alert_list_component_1_1;
             }],
         execute: function() {
             CorporationDetailComponent = (function () {
@@ -41,9 +50,10 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                     this.progressValue = 0;
                     this.maxProgress = 0;
                     this.iProgress = 0;
+                    this.messages = [];
+                    this.supplyList = [];
                 }
                 CorporationDetailComponent.prototype.ngOnInit = function () {
-                    this.messages = [];
                     if (!this._coreService.isLoggedIn)
                         this._router.navigateByUrl('/');
                     else {
@@ -102,22 +112,6 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                                 _this.loadCompanyDetail(c.id);
                             });
                     });
-                };
-                CorporationDetailComponent.prototype.cleanMessage = function () {
-                    var _this = this;
-                    clearTimeout(this.messageCleanTimeout);
-                    if (this.messages.length > 0) {
-                        this.messages.splice(0, 1);
-                        this.messageCleanTimeout = setTimeout(function () { _this.cleanMessage(); }, 2000);
-                    }
-                };
-                CorporationDetailComponent.prototype.addMessage = function (message) {
-                    var _this = this;
-                    this.messages.push(message);
-                    this.messageCleanTimeout = setTimeout(function () { _this.cleanMessage(); }, 2000);
-                };
-                CorporationDetailComponent.prototype.removeMessage = function (index) {
-                    this.messages.splice(index, 1);
                 };
                 CorporationDetailComponent.prototype.selectCompany = function (id) {
                     if (this.corpInfo.is_manager)
@@ -180,7 +174,7 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                     this._corporationService.moveItemToCorporation(compId, itemId, amount)
                         .subscribe(function (res) {
                         console.log("result:", res);
-                        res.forEach(function (m) { return _this.addMessage(m); });
+                        _this.messages = res;
                         if (!!callback)
                             callback();
                     });
@@ -197,10 +191,7 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                                     itemId_1 = item.ItemType.id;
                             });
                             if (itemId_1 < 0) {
-                                this.addMessage({
-                                    msg: "Production item '" + company.current_production.name + "' not found!",
-                                    class: "flash_error"
-                                });
+                                this.messages.push(new response_1.ResultMessage("flash_error", "Production item '" + company.current_production.name + "' not found!"));
                                 console.error("item not found", company.current_production, this.companyStorageMap[compId]);
                             }
                             else {
@@ -208,11 +199,8 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                             }
                         }
                         else {
-                            this.addMessage({
-                                msg: "Current production is empty",
-                                class: "flash_error"
-                            });
-                            console.log("Current production is empty");
+                            this.messages.push(new response_1.ResultMessage("flash_error", "Current production is empty:" + JSON.stringify(company.current_production)));
+                            console.log("Current production is empty", company.current_production);
                             if (!!callback)
                                 callback();
                         }
@@ -223,13 +211,14 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                     if (this.corpInfo.is_manager) {
                         var cNum = this.corpInfo.companies.length;
                         this.initProgress(cNum);
-                        this.corpInfo.companies.forEach(function (c, index) {
+                        for (var _i = 0, _a = this.corpInfo.companies; _i < _a.length; _i++) {
+                            var c = _a[_i];
                             console.log("processing company ", c.name);
-                            if (_this.selectedCompanies[c.id])
-                                _this.putProductionItemsToStorage(c, function () { _this.incrementProgress(); });
+                            if (this.selectedCompanies[c.id])
+                                this.putProductionItemsToStorage(c, function () { _this.incrementProgress(); });
                             else
-                                _this.incrementProgress();
-                        });
+                                this.incrementProgress();
+                        }
                     }
                 };
                 CorporationDetailComponent.prototype.addFundsToCompany = function (company, amount, callback) {
@@ -241,7 +230,7 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                             this._corporationService.addFundsToCompany(compId_1, amount)
                                 .subscribe(function (res) {
                                 console.log("result:", res);
-                                res.forEach(function (m) { return _this.addMessage(m); });
+                                _this.messages = res;
                                 _this.loadCompanyDetail(compId_1);
                                 if (!!callback)
                                     callback();
@@ -270,15 +259,70 @@ System.register(['angular2/core', 'angular2/router', './corporation.service', '.
                         this._corporationService.addFundsToCorporation(this.corpId, amount)
                             .subscribe(function (res) {
                             console.log("result:", res);
-                            res.forEach(function (m) { return _this.addMessage(m); });
+                            _this.messages = res;
                             _this.loadCorpDetail();
                         });
+                    }
+                };
+                CorporationDetailComponent.prototype.itemSelect = function (item) {
+                    //console.log("itemSelect", item);
+                    var list = [];
+                    // we need to make a copy of an array to have the = check work
+                    for (var _i = 0, _a = this.supplyList || []; _i < _a.length; _i++) {
+                        var item_1 = _a[_i];
+                        list.push(item_1);
+                    }
+                    var idx = list.indexOf(item);
+                    if (idx > -1) {
+                        // remove item from list
+                        //console.log("remove item");
+                        list.splice(idx, 1);
+                    }
+                    else {
+                        // add item to list
+                        //console.log("add item");
+                        list.push(item);
+                    }
+                    this.supplyList = list;
+                };
+                CorporationDetailComponent.prototype.putItemsToCompanies = function (list) {
+                    var _this = this;
+                    console.log("putItemsToCompanies", list);
+                    if (this.corpInfo.is_manager) {
+                        var cNum = this.corpInfo.companies.length;
+                        this.initProgress(cNum);
+                        var counter = 0;
+                        var _loop_1 = function(c) {
+                            if (this_1.selectedCompanies[c.id]) {
+                                counter++;
+                                var compId_2 = c.id;
+                                this_1._corporationService.moveItemsToCompany(compId_2, list)
+                                    .subscribe(function (res) {
+                                    console.log("result:", res);
+                                    _this.messages = res;
+                                    _this.loadCompanyDetail(compId_2);
+                                    _this.incrementProgress();
+                                    _this.supplyList = [];
+                                });
+                            }
+                            else
+                                this_1.incrementProgress();
+                        };
+                        var this_1 = this;
+                        for (var _i = 0, _a = this.corpInfo.companies; _i < _a.length; _i++) {
+                            var c = _a[_i];
+                            _loop_1(c);
+                        }
+                        if (!counter) {
+                            this.messages = [new response_1.ResultMessage("flash_error", "No companies selected!")];
+                        }
                     }
                 };
                 CorporationDetailComponent = __decorate([
                     core_1.Component({
                         selector: 'ap-corp-detail',
-                        templateUrl: 'app/corps/corporation.detail.component.html'
+                        templateUrl: 'app/corps/corporation.detail.component.html',
+                        directives: [supply_list_component_1.SupplyListComponent, alert_list_component_1.AlertListComponent]
                     }), 
                     __metadata('design:paramtypes', [core_service_1.CoreService, router_1.Router, corporation_service_1.CorporationService, router_1.RouteParams])
                 ], CorporationDetailComponent);

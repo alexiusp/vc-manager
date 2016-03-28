@@ -96,11 +96,11 @@ app.get('/api/corps', function (req, res) {
       console.log("getCorpsList finished", answer);
       res.json({
         data    :answer,
-        error   :0,
+        error   :result.data.error,
         message :""
       });
     });
-  } else handleError(res, 1, "Session expired!");
+  } else handleError(res, -1, "Session expired!");
 });
 app.get('/api/corp/:id', function (req, res) {
   console.log("corp info request", req.params);
@@ -116,11 +116,11 @@ app.get('/api/corp/:id', function (req, res) {
       };
       res.json({
         data    : answer,
-        error   : 0,
+        error   : result.data.error,
         message : ""
       });
     });
-  } else handleError(res, 1, "Session expired!");
+  } else handleError(res, -1, "Session expired!");
 });
 app.get('/api/corp/storage/:id', function(req, res) {
   console.log("corp storage request", req.params);
@@ -133,11 +133,11 @@ app.get('/api/corp/storage/:id', function(req, res) {
       if(!!answer) parseStorageImg(answer);
       res.json({
         data    : answer,
-        error   : 0,
+        error   : result.data.error,
         message : ""
       });
     });
-  } else handleError(res, 1, "Session expired!");
+  } else handleError(res, -1, "Session expired!");
 });
 app.get('/api/company/:id/storage', function(req, res) {
   let id = +req.params.id;
@@ -150,11 +150,11 @@ app.get('/api/company/:id/storage', function(req, res) {
       if(!!answer) parseStorageImg(answer);
       res.json({
         data    : answer,
-        error   : 0,
+        error   : result.data.error,
         message : ""
       });
     });
-  } else handleError(res, 1, "Session expired!");
+  } else handleError(res, -1, "Session expired!");
 });
 app.get('/api/company/:id', function(req, res) {
   let id = +req.params.id;
@@ -166,11 +166,11 @@ app.get('/api/company/:id', function(req, res) {
       let answer = result.data.company;
       res.json({
         data    : answer,
-        error   : 0,
+        error   : result.data.error,
         message : ""
       });
     });
-  } else handleError(res, 1, "Session expired!");
+  } else handleError(res, -1, "Session expired!");
 });
 app.post('/api/company/:cid/storage', function(req, res) {
   let cid = +req.params.cid;
@@ -184,11 +184,11 @@ app.post('/api/company/:cid/storage', function(req, res) {
       console.log("storage move for company %s success:", cid, answer);
       res.json({
         data    : answer,
-        error   : 0,
+        error   : result.data.error,
         message : ""
       });
     });
-  } else handleError(res, 1, "Session expired!");
+  } else handleError(res, -1, "Session expired!");
 });
 app.post('/api/company/:cid/funds', function(req, res) {
   let cid = +req.params.cid;
@@ -202,11 +202,11 @@ app.post('/api/company/:cid/funds', function(req, res) {
       console.log("add funds for company %s success:", cid, answer);
       res.json({
         data    : answer,
-        error   : 0,
+        error   : result.data.error,
         message : ""
       });
     });
-  } else handleError(res, 1, "Session expired!");
+  } else handleError(res, -1, "Session expired!");
 });
 app.post('/api/corp/:id/funds', function(req, res) {
 	let cid = +req.params.id;
@@ -220,13 +220,44 @@ app.post('/api/corp/:id/funds', function(req, res) {
       console.log("add funds for corporation %s success:", cid, answer);
       res.json({
         data    : answer,
-        error   : 0,
+        error   : result.data.error,
         message : ""
       });
     });
-  } else handleError(res, 1, "Session expired!");
+  } else handleError(res, -1, "Session expired!");
 });
-
+app.put('/api/company/:cid/storage', function(req, res) {
+  let cid = +req.params.cid;
+  let data = req.body;
+  console.log("company %s storage move request", cid, req.params, data);
+  let sessCookies = req.session.remoteCookies;
+  if(!!sessCookies) {
+    let api = require('./api/corps.js');
+		let results = [];
+		let error = 0;
+		let counter = 0;
+		let timeout = 0;
+		if(!!data && !!data.items) data.items.forEach(elem => {
+			counter++;
+			api.moveItemToCompany(cid, elem.id, elem.amount, sessCookies, (result) => {
+	      let answer = result.data.setFlash;
+				results = results.concat(answer);
+				error += result.data.error;
+				timeout = setTimeout(()=>{
+					counter--;
+					if(counter == 0) {
+						clearTimeout(timeout);
+						res.json({
+			        data    : results,
+			        error   : error,
+			        message : ""
+			      });
+					}
+				},10);
+			});
+		});
+  } else handleError(res, -1, "Session expired!");
+});
 
 
 app.listen(app.get('port'), function () {
@@ -261,7 +292,7 @@ var parseStorageImg = function(storage) {
         });
       });
     }).on('error', function(err) {
-      console.log("http error: ", err);
+      console.error("http error: ", err);
     });;
   });
 }

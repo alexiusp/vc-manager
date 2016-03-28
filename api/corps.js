@@ -21,14 +21,12 @@ exports.getCompanyDetail = function(compId, cookiesArr, callback) {
   http_request.get(`/companies/info/${compId}.json?os=unknown&v=${config.version}`, cookiesArr, callback);
 }
 exports.moveItemToCorporation = function(compId, itemId, amount, cookiesArr, callback) {
-  console.log("inner call moveItemToCorporation",compId, itemId, amount);
   let postBody = "";
   let calcPath = `/company_items/move_items_to_corporation/${compId}/${itemId}/${amount}.json?os=unknown&v=${config.version}`;
-  console.log("moveItemToCorporation request path:", calcPath);
+  //console.log("moveItemToCorporation request path:", calcPath);
   http_request.post(calcPath, postBody, cookiesArr, callback);
 }
 exports.addFundsToCompany = function(compId, amount, cookiesArr, callback) {
-  console.log("add funds", compId, amount);
   let postBody = querystring.stringify({
     data : {
       Company : {
@@ -40,7 +38,6 @@ exports.addFundsToCompany = function(compId, amount, cookiesArr, callback) {
   http_request.post(`/corporation_companies/add_funds_vd.json?os=unknown&v=${config.version}`, postBody, cookiesArr, callback);
 }
 exports.addFundsToCorporation = function(corpId, amount, cookiesArr, callback) {
-  console.log("add funds to corp", corpId, amount);
   let postBody = querystring.stringify({
     data : {
       Corporation : {
@@ -50,4 +47,10 @@ exports.addFundsToCorporation = function(corpId, amount, cookiesArr, callback) {
     }
   });
   http_request.post(`/corporations/invest_vd.json?os=unknown&v=${config.version}`, postBody, cookiesArr, callback);
+}
+exports.moveItemToCompany = function(compId, itemId, amount, cookiesArr, callback) {
+  let postBody = "";
+  let calcPath = `/corporation_items/move_items_to_company/${compId}/${itemId}/${amount}.json?os=unknown&v=${config.version}`;
+  //console.log("moveItemToCorporation request path:", calcPath);
+  http_request.post(calcPath, postBody, cookiesArr, callback);
 }

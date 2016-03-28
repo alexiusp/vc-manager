@@ -81,6 +81,13 @@ export class CorporationService {
         else return this.handleError(result);
       });
   }
+	moveItemsToCompany(compId, items) {
+    return this._requestService.moveItemsToCompany(compId, items)
+      .map((result : ResponseWrapper<ResultMessage[]>) => {
+        if(result.error == 0) return result.data;
+        else return this.handleError(result);
+      });
+  }
   handleError(error : ResponseWrapper<any>) {
     //console.error("Error:",error.message);
     return error.data;

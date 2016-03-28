@@ -61,13 +61,6 @@ export interface CorpInfo {
   companies:Array<Company>
 }
 
-export enum CompanySuperType {
-  Factory,
-  Mine,
-  Farm,
-  Sawmill
-}
-
 export interface BaseItem {
   item_type_id:number,
   strength:number,

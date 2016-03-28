@@ -8,7 +8,7 @@ import {Credentials} from '../account/credentials';
 import {Account} from '../account/account';
 import { CoreService } from '../core/core.service';
 
-enum RequestType {GET,POST}
+enum RequestType {GET,POST,PUT}
 
 @Injectable()
 export class RequestService {
@@ -21,15 +21,22 @@ export class RequestService {
   doRequest(type : RequestType, url : string, body? : string, options? : RequestOptions) {
     let _url = '/' + url;
     let reqObserable : Observable<Response>;
-    if(type == RequestType.GET) {
-      reqObserable = this.http.get(_url);
-    } else {
-      reqObserable = this.http.post(_url, body, options);
-    }
+		switch(type) {
+			case RequestType.PUT:
+				reqObserable = this.http.put(_url, body, options);
+				break;
+			case RequestType.POST:
+				reqObserable = this.http.post(_url, body, options);
+				break;
+			case RequestType.GET:
+			default:
+				reqObserable = this.http.get(_url);
+				break;
+		}
     return reqObserable.map(res =>  <ResponseWrapper<any>> res.json())
       .do((res : ResponseWrapper<any>) => {
 				console.log("Request to [" + url + "] result:", res);
-				if(res.error == 1) {
+				if(res.error == -1) {
 					console.error("Auth error:", res.message);
 					this._coreService.isLoggedIn = false;
 					this._router.navigateByUrl('/');
@@ -81,6 +88,14 @@ export class RequestService {
     let headers = new Headers({ 'Content-Type': 'application/json' });
     let options = new RequestOptions({ headers: headers });
     return this.doRequest(RequestType.POST, 'api/corp/'+corpId+'/funds', body, options);
+  }
+	moveItemsToCompany(compId:number, items:any[]) : Observable<ResponseWrapper<any>> {
+    let body = JSON.stringify({
+      items:items
+    });
+    let headers = new Headers({ 'Content-Type': 'application/json' });
+    let options = new RequestOptions({ headers: headers });
+    return this.doRequest(RequestType.PUT, 'api/company/'+compId+'/storage', body, options);
   }
   private handleError (error: Response) {
     console.error(error);

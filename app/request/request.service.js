@@ -33,6 +33,7 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable', 'angular2/
             (function (RequestType) {
                 RequestType[RequestType["GET"] = 0] = "GET";
                 RequestType[RequestType["POST"] = 1] = "POST";
+                RequestType[RequestType["PUT"] = 2] = "PUT";
             })(RequestType || (RequestType = {}));
             RequestService = (function () {
                 function RequestService(http, _router, _coreService) {
@@ -44,16 +45,22 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable', 'angular2/
                     var _this = this;
                     var _url = '/' + url;
                     var reqObserable;
-                    if (type == RequestType.GET) {
-                        reqObserable = this.http.get(_url);
-                    }
-                    else {
-                        reqObserable = this.http.post(_url, body, options);
+                    switch (type) {
+                        case RequestType.PUT:
+                            reqObserable = this.http.put(_url, body, options);
+                            break;
+                        case RequestType.POST:
+                            reqObserable = this.http.post(_url, body, options);
+                            break;
+                        case RequestType.GET:
+                        default:
+                            reqObserable = this.http.get(_url);
+                            break;
                     }
                     return reqObserable.map(function (res) { return res.json(); })
                         .do(function (res) {
                         console.log("Request to [" + url + "] result:", res);
-                        if (res.error == 1) {
+                        if (res.error == -1) {
                             console.error("Auth error:", res.message);
                             _this._coreService.isLoggedIn = false;
                             _this._router.navigateByUrl('/');
@@ -105,6 +112,14 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable', 'angular2/
                     var headers = new http_1.Headers({ 'Content-Type': 'application/json' });
                     var options = new http_1.RequestOptions({ headers: headers });
                     return this.doRequest(RequestType.POST, 'api/corp/' + corpId + '/funds', body, options);
+                };
+                RequestService.prototype.moveItemsToCompany = function (compId, items) {
+                    var body = JSON.stringify({
+                        items: items
+                    });
+                    var headers = new http_1.Headers({ 'Content-Type': 'application/json' });
+                    var options = new http_1.RequestOptions({ headers: headers });
+                    return this.doRequest(RequestType.PUT, 'api/company/' + compId + '/storage', body, options);
                 };
                 RequestService.prototype.handleError = function (error) {
                     console.error(error);

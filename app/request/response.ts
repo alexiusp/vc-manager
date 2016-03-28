@@ -3,7 +3,11 @@ export interface ResponseWrapper<T> {
   message : string;
   data    : T;
 }
-export interface ResultMessage {
+export class ResultMessage {
   msg : string;
   class: string;
+	constructor(c,m) {
+		this.msg = m;
+		this.class = c;
+	}
 }
