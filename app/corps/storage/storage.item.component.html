@@ -1,13 +1,15 @@
 <div class="input-group input-group-sm">
-	<span  style="width:80%" class="input-group-addon">
-		 ({{item.ItemType?.id}})&nbsp;{{item.ItemType.name}}
-		<span class="label label-info">{{item[0].total_quantity}}</span>
+	<span  style="width:60%" class="input-group-addon">
+		<span class="pull-left">
+			({{item.ItemType?.id}})&nbsp;{{item.ItemType.name}}
+			<span class="label label-info">{{item[0].total_quantity}}</span>
+		</span>
 	</span>
 	<input type="text" class="form-control"
 		aria-label="Amount to transfer"
 		[value]="item[0].total_quantity"
 		#amount
-    (keyup.enter)="setAmount(amount.value)"
+    (keyup)="setAmount(amount.value)"
     (blur)="setAmount(amount.value)">
 	<div class="input-group-btn">
 		<button type="button" class="btn btn-danger" (click)="removeItem()">

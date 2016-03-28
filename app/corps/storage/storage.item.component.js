@@ -28,6 +28,7 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                         this.onDelete.emit(null);
                 };
                 StorageItemComponent.prototype.setAmount = function (value) {
+                    //console.log("setAmount",value);
                     this._amount = value;
                     if (!!this.onChange)
                         this.onChange.emit(value);

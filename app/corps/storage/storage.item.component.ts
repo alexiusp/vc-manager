@@ -14,10 +14,11 @@ export class StorageItemComponent {
 	removeItem() {
 		if(!!this.onDelete) this.onDelete.emit(null);
 	}
-	
+
 	private _amount;
 	@Output('on-change') onChange = new EventEmitter();
 	setAmount(value : number) {
+		//console.log("setAmount",value);
 		this._amount = value;
 		if(!!this.onChange) this.onChange.emit(value);
 	}
