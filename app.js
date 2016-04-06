@@ -342,6 +342,6 @@ var parseStorageImg = function(storage) {
   });
 }
 var parseAvatar = function(url) {
-  let imgUrl = "/images/avatars/" + url;
+  let imgUrl = "/app/images/avatars/" + url;
   getFile(imgUrl);
 }

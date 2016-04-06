@@ -1,4 +1,4 @@
-System.register(['angular2/core', '../storage/storage.service', '../request/request.service', '../core/core.service'], function(exports_1, context_1) {
+System.register(['angular2/core', 'rxjs/Observable', '../request/request.service', '../core/core.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,15 +10,15 @@ System.register(['angular2/core', '../storage/storage.service', '../request/requ
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, storage_service_1, request_service_1, core_service_1;
+    var core_1, Observable_1, request_service_1, core_service_1;
     var AccountService;
     return {
         setters:[
             function (core_1_1) {
                 core_1 = core_1_1;
             },
-            function (storage_service_1_1) {
-                storage_service_1 = storage_service_1_1;
+            function (Observable_1_1) {
+                Observable_1 = Observable_1_1;
             },
             function (request_service_1_1) {
                 request_service_1 = request_service_1_1;
@@ -28,10 +28,9 @@ System.register(['angular2/core', '../storage/storage.service', '../request/requ
             }],
         execute: function() {
             AccountService = (function () {
-                function AccountService(_core, _requestService, _storageService) {
+                function AccountService(_core, _requestService) {
                     this._core = _core;
                     this._requestService = _requestService;
-                    this._storageService = _storageService;
                 }
                 AccountService.prototype.getError = function () { return this._errorMessage; };
                 Object.defineProperty(AccountService.prototype, "User", {
@@ -41,15 +40,13 @@ System.register(['angular2/core', '../storage/storage.service', '../request/requ
                     enumerable: true,
                     configurable: true
                 });
-                AccountService.prototype.login = function (user, callback) {
+                AccountService.prototype.login = function (user) {
                     var _this = this;
                     console.log("user login:", user);
-                    this._requestService.login(user)
-                        .subscribe(function (res) {
+                    return this._requestService.login(user)
+                        .do(function (res) {
                         _this.onLogin(user, res);
-                        if (!!callback)
-                            callback();
-                    }, function (error) { return _this.onError(error); });
+                    }).catch(this.handleError);
                 };
                 AccountService.prototype.onLogin = function (user, userData) {
                     console.log("login request finished:", userData);
@@ -58,16 +55,20 @@ System.register(['angular2/core', '../storage/storage.service', '../request/requ
                     else {
                         this._user = userData.data;
                         this._core.isLoggedIn = true;
-                        this._storageService.saveData("user", user);
                     }
                 };
                 AccountService.prototype.onError = function (error) {
                     this._errorMessage = error.toString();
                     console.error(error);
                 };
+                AccountService.prototype.handleError = function (error) {
+                    var errString = error.json().message || 'Server error';
+                    this.onError(errString);
+                    return Observable_1.Observable.throw(errString);
+                };
                 AccountService = __decorate([
                     core_1.Injectable(), 
-                    __metadata('design:paramtypes', [core_service_1.CoreService, request_service_1.RequestService, storage_service_1.StorageService])
+                    __metadata('design:paramtypes', [core_service_1.CoreService, request_service_1.RequestService])
                 ], AccountService);
                 return AccountService;
             }());
