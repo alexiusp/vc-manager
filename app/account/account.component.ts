@@ -19,11 +19,18 @@ export class AccountComponent implements OnInit {
     private _storageService: StorageService
   ) {}
 
+  private accountSaved : boolean;
   ngOnInit() {
     this.errorMessage = "";
     let user : Credentials = this._storageService.loadData('user');
-    this.user = (!!user) ? user : new Credentials();
-    console.log("user loaded:", this.user);
+    if(!!user) {
+      this.accountSaved = true;
+      this.user = user;
+      console.log("user loaded:", this.user);
+    } else {
+      this.accountSaved = false;
+      this.user = new Credentials();
+    }
   }
 
   login() {

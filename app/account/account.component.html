@@ -1,22 +1,32 @@
-<h1>Login</h1>
-<div class="alert alert-danger" *ngIf="!!errorMessage">{{errorMessage}}</div>
-<form class="form-horizontal">
-  <div class="form-group">
-    <label for="username" class="col-sm-2 control-label">Username</label>
-    <div class="col-sm-10">
-      <input [(ngModel)]="user.username" type="text" class="form-control" id="username" placeholder="Citizen.1234" required>
+<div class="page-header"><h1>Login</h1></div>
+<div class="row">
+  <div class="col-sm-4">
+    <div class="panel panel-default" *ngIf="false && accountSaved">
     </div>
   </div>
-  <div class="form-group">
-    <label for="password" class="col-sm-2 control-label">Password</label>
-    <div class="col-sm-10">
-      <input [(ngModel)]="user.password" type="password" class="form-control" id="password" placeholder="Password" required>
-    </div>
+  <div class="col-sm-6">
+    <!--<div class="alert alert-danger" *ngIf="!!errorMessage">{{errorMessage}}</div>-->
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="username" class="col-sm-2 control-label">Username</label>
+        <div class="col-sm-10">
+          <input [(ngModel)]="user.username" type="text" class="form-control" id="username" placeholder="Citizen.1234" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="password" class="col-sm-2 control-label">Password</label>
+        <div class="col-sm-10">
+          <input [(ngModel)]="user.password" type="password" class="form-control" id="password" placeholder="Password" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-5">
+          <button (click)="login()" type="submit" class="btn btn-primary btn-block"><i class="fa fa-check"></i> Login</button>
+        </div>
+        <div class="col-sm-5">
+          <button type="reset" class="btn btn-danger btn-block"><i class="fa fa-times"></i> Reset</button>
+        </div>
+      </div>
+    </form>
   </div>
-  <div class="form-group">
-    <div class="col-sm-offset-2 col-sm-10">
-      <button (click)="login()" type="submit" class="btn btn-primary">Login</button>
-      <button type="reset" class="btn btn-danger">Reset</button>
-    </div>
-  </div>
-</form>
+</div>

@@ -53,7 +53,7 @@ import { CorporationDetailComponent } from './corps/corporation.detail.component
   }
 ])
 export class AppComponent implements OnInit {
-  title = 'VirCities corporations manager';
+  title = 'VC Manager';
   private isLoggedIn : boolean = false;
   constructor(private _coreService: CoreService, private _router : Router) {}
   ngOnInit() {
@@ -69,4 +69,14 @@ export class AppComponent implements OnInit {
 			this._router.navigateByUrl('/');
 		}
 	}
+  private showHelp : boolean;
+  private helpDisplay;
+  openHelp() {
+    this.showHelp = true;
+    this.helpDisplay = "block";
+  }
+  closeHelp() {
+    this.showHelp = false;
+    this.helpDisplay = "none";
+  }
 }

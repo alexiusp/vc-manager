@@ -6,7 +6,7 @@ export interface ResponseWrapper<T> {
 export class ResultMessage {
   msg : string;
   class: string;
-	constructor(c,m) {
+	constructor(c, m) {
 		this.msg = m;
 		this.class = c;
 	}

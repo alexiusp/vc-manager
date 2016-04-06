@@ -9,6 +9,7 @@ var _request = function(type, path, body, cookies, callback) {
     'Content-Type': 'application/x-www-form-urlencoded'
   };
   if(!!body && body.length > 0) headers['Content-Length'] = body.length;
+  //console.log("_request cookies:", JSON.stringify(cookies));
   if(!!cookies && cookies.length > 0) headers['Cookie'] = cookies.join('; ');
   let options = {
     hostname: 'api.vircities.com',
@@ -28,7 +29,12 @@ var _request = function(type, path, body, cookies, callback) {
       result.data += chunk;
     });
     res.on('end', () => {
-      result.data = JSON.parse(result.data);
+      try {
+        result.data = JSON.parse(result.data);
+      } catch (e) {
+        result.data = `problem with request: ${e.message}`;
+        result.statusCode = 2;
+      }
       callback(result);
     })
   });
@@ -44,5 +50,5 @@ exports.get = function(path, cookiesArr, callback) {
   _request(requestType.GET, path, undefined, cookiesArr, callback);
 }
 exports.post = function(path, postBody, cookiesArr, callback) {
-  _request(requestType.POST, path, postBody, cookiesArr, callback)
+  _request(requestType.POST, path, postBody, cookiesArr, callback);
 }

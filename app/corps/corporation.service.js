@@ -28,26 +28,43 @@ System.register(['angular2/core', '../request/request.service', '../core/diction
                 function CorporationService(_requestService) {
                     this._requestService = _requestService;
                     this._corps = new dictionary_1.map();
-                    this._corpStorage = new dictionary_1.map();
                 }
                 CorporationService.prototype.getCorpsList = function () {
                     var _this = this;
                     return this._requestService.getCorpsList().map(function (corpList) {
                         if (corpList.error == 0) {
-                            _this._corpList = corpList.data;
-                            return _this._corpList;
+                            var l = corpList.data;
+                            _this._corpList = l;
+                            //console.log("corporation list:", l);
+                            return l;
                         }
                         else
                             return _this.handleError(corpList);
                     });
                 };
+                CorporationService.prototype.getCorporation = function (id) {
+                    //console.log("getCorporation", id);
+                    var corp;
+                    if (!!this._corpList) {
+                        for (var _i = 0, _a = this._corpList; _i < _a.length; _i++) {
+                            var c = _a[_i];
+                            if (c.id == id)
+                                corp = c;
+                        }
+                    }
+                    else
+                        console.error("Corporation list is undefined or empty", id, JSON.stringify(this._corpList), corp);
+                    //console.log("corp", corp);
+                    return corp;
+                };
                 CorporationService.prototype.getCorpDetail = function (id) {
                     var _this = this;
+                    var pId = "" + id;
                     return this._requestService.getCorpDetail(id)
                         .map(function (corpInfo) {
                         if (corpInfo.error == 0) {
-                            _this._corps[("" + id)] = corpInfo.data;
-                            return _this._corps[("" + id)];
+                            _this._corps[pId] = corpInfo.data;
+                            return _this._corps[pId];
                         }
                         else
                             return _this.handleError(corpInfo);
@@ -55,11 +72,14 @@ System.register(['angular2/core', '../request/request.service', '../core/diction
                 };
                 CorporationService.prototype.getCorpStorage = function (id) {
                     var _this = this;
+                    var pId = "" + id;
+                    if (!this._corpStorage)
+                        this._corpStorage = new dictionary_1.map();
                     return this._requestService.getCorpStorage(id)
                         .map(function (cStorage) {
                         if (cStorage.error == 0) {
                             var _resStorage = cStorage.data;
-                            _this._corpStorage[("" + id)] = _resStorage;
+                            _this._corpStorage[pId] = _resStorage;
                             return _resStorage;
                         }
                         else
@@ -119,6 +139,27 @@ System.register(['angular2/core', '../request/request.service', '../core/diction
                 CorporationService.prototype.moveItemsToCompany = function (compId, items) {
                     var _this = this;
                     return this._requestService.moveItemsToCompany(compId, items)
+                        .map(function (result) {
+                        if (result.error == 0)
+                            return result.data;
+                        else
+                            return _this.handleError(result);
+                    });
+                };
+                CorporationService.prototype.sellItemFromCorporation = function (corpId, itemId, amount, price) {
+                    var _this = this;
+                    console.log("debugging request:", this._requestService, corpId, itemId, amount, price);
+                    return this._requestService.sellItemFromCorporation(corpId, itemId, amount, price)
+                        .map(function (result) {
+                        if (result.error == 0)
+                            return result.data;
+                        else
+                            return _this.handleError(result);
+                    });
+                };
+                CorporationService.prototype.sellItemFromCompany = function (compId, itemId, amount, price) {
+                    var _this = this;
+                    return this._requestService.sellItemFromCompany(compId, itemId, amount, price)
                         .map(function (result) {
                         if (result.error == 0)
                             return result.data;

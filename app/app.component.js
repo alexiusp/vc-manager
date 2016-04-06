@@ -58,7 +58,7 @@ System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.ha
                 function AppComponent(_coreService, _router) {
                     this._coreService = _coreService;
                     this._router = _router;
-                    this.title = 'VirCities corporations manager';
+                    this.title = 'VC Manager';
                     this.isLoggedIn = false;
                 }
                 AppComponent.prototype.ngOnInit = function () {
@@ -74,6 +74,14 @@ System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.ha
                     if (!loggedin) {
                         this._router.navigateByUrl('/');
                     }
+                };
+                AppComponent.prototype.openHelp = function () {
+                    this.showHelp = true;
+                    this.helpDisplay = "block";
+                };
+                AppComponent.prototype.closeHelp = function () {
+                    this.showHelp = false;
+                    this.helpDisplay = "none";
                 };
                 AppComponent = __decorate([
                     core_1.Component({

@@ -59,7 +59,7 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable', 'angular2/
                     }
                     return reqObserable.map(function (res) { return res.json(); })
                         .do(function (res) {
-                        console.log("Request to [" + url + "] result:", res);
+                        //console.log("Request to [" + url + "] result:", res);
                         if (res.error == -1) {
                             console.error("Auth error:", res.message);
                             _this._coreService.isLoggedIn = false;
@@ -120,6 +120,26 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable', 'angular2/
                     var headers = new http_1.Headers({ 'Content-Type': 'application/json' });
                     var options = new http_1.RequestOptions({ headers: headers });
                     return this.doRequest(RequestType.PUT, 'api/company/' + compId + '/storage', body, options);
+                };
+                RequestService.prototype.sellItemFromCorporation = function (corpId, itemId, amount, price) {
+                    var body = JSON.stringify({
+                        itemId: itemId,
+                        amount: amount,
+                        price: price
+                    });
+                    var headers = new http_1.Headers({ 'Content-Type': 'application/json' });
+                    var options = new http_1.RequestOptions({ headers: headers });
+                    return this.doRequest(RequestType.POST, 'api/corp/' + corpId + '/exchange', body, options);
+                };
+                RequestService.prototype.sellItemFromCompany = function (compId, itemId, amount, price) {
+                    var body = JSON.stringify({
+                        itemId: itemId,
+                        amount: amount,
+                        price: price
+                    });
+                    var headers = new http_1.Headers({ 'Content-Type': 'application/json' });
+                    var options = new http_1.RequestOptions({ headers: headers });
+                    return this.doRequest(RequestType.POST, 'api/company/' + compId + '/exchange', body, options);
                 };
                 RequestService.prototype.handleError = function (error) {
                     console.error(error);

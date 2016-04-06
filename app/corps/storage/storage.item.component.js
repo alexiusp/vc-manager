@@ -1,4 +1,4 @@
-System.register(['angular2/core'], function(exports_1, context_1) {
+System.register(['angular2/core', './models'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,44 +10,44 @@ System.register(['angular2/core'], function(exports_1, context_1) {
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1;
+    var core_1, models_1;
     var StorageItemComponent;
     return {
         setters:[
             function (core_1_1) {
                 core_1 = core_1_1;
+            },
+            function (models_1_1) {
+                models_1 = models_1_1;
             }],
         execute: function() {
             StorageItemComponent = (function () {
                 function StorageItemComponent() {
-                    this.onDelete = new core_1.EventEmitter();
                     this.onChange = new core_1.EventEmitter();
                 }
-                StorageItemComponent.prototype.removeItem = function () {
-                    if (!!this.onDelete)
-                        this.onDelete.emit(null);
-                };
-                StorageItemComponent.prototype.setAmount = function (value) {
-                    //console.log("setAmount",value);
-                    this._amount = value;
+                StorageItemComponent.prototype.transfer = function () {
+                    var v = !this.item.isTransfer;
+                    this.item.isTransfer = v;
                     if (!!this.onChange)
-                        this.onChange.emit(value);
+                        this.onChange.emit(this.item);
+                };
+                StorageItemComponent.prototype.sell = function () {
+                    var v = !this.item.isSell;
+                    this.item.isSell = v;
+                    if (!!this.onChange)
+                        this.onChange.emit(this.item);
                 };
                 __decorate([
-                    core_1.Input('corp-storage-item'), 
-                    __metadata('design:type', Object)
+                    core_1.Input('storage-item'), 
+                    __metadata('design:type', models_1.StorageItem)
                 ], StorageItemComponent.prototype, "item", void 0);
-                __decorate([
-                    core_1.Output('on-delete'), 
-                    __metadata('design:type', Object)
-                ], StorageItemComponent.prototype, "onDelete", void 0);
                 __decorate([
                     core_1.Output('on-change'), 
                     __metadata('design:type', Object)
                 ], StorageItemComponent.prototype, "onChange", void 0);
                 StorageItemComponent = __decorate([
                     core_1.Component({
-                        selector: '[corp-storage-item]',
+                        selector: '[storage-item]',
                         templateUrl: 'app/corps/storage/storage.item.component.html'
                     }), 
                     __metadata('design:paramtypes', [])

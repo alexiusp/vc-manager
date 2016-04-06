@@ -20,6 +20,7 @@ System.register(['angular2/core'], function(exports_1, context_1) {
         execute: function() {
             AlertListComponent = (function () {
                 function AlertListComponent() {
+                    this.onEmpty = new core_1.EventEmitter();
                     this._messages = [];
                 }
                 Object.defineProperty(AlertListComponent.prototype, "messages", {
@@ -52,12 +53,20 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                         this.removeMessage(0);
                         this.messageCleanTimeout = setTimeout(function () { _this.cleanMessage(); }, 2000);
                     }
+                    if (this._messages.length == 0) {
+                        if (!!this.onEmpty)
+                            this.onEmpty.emit(true);
+                    }
                 };
                 __decorate([
                     core_1.Input(), 
                     __metadata('design:type', Array), 
                     __metadata('design:paramtypes', [Array])
                 ], AlertListComponent.prototype, "messages", null);
+                __decorate([
+                    core_1.Output('on-empty'), 
+                    __metadata('design:type', Object)
+                ], AlertListComponent.prototype, "onEmpty", void 0);
                 AlertListComponent = __decorate([
                     core_1.Component({
                         selector: 'alert-list',

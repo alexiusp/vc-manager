@@ -1,7 +1,7 @@
 import { Component, OnInit } from 'angular2/core';
 import { ROUTER_DIRECTIVES } from 'angular2/router';
 
-import { Corporation } from './corporation';
+import { Corporation } from './contracts';
 import { CorporationService } from './corporation.service';
 import { CoreService } from '../core/core.service';
 

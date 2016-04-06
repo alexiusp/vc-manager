@@ -35,7 +35,7 @@ export class RequestService {
 		}
     return reqObserable.map(res =>  <ResponseWrapper<any>> res.json())
       .do((res : ResponseWrapper<any>) => {
-				console.log("Request to [" + url + "] result:", res);
+				//console.log("Request to [" + url + "] result:", res);
 				if(res.error == -1) {
 					console.error("Auth error:", res.message);
 					this._coreService.isLoggedIn = false;
@@ -96,6 +96,26 @@ export class RequestService {
     let headers = new Headers({ 'Content-Type': 'application/json' });
     let options = new RequestOptions({ headers: headers });
     return this.doRequest(RequestType.PUT, 'api/company/'+compId+'/storage', body, options);
+  }
+  sellItemFromCorporation(corpId, itemId, amount, price) : Observable<ResponseWrapper<any>> {
+    let body = JSON.stringify({
+      itemId  : itemId,
+      amount  : amount,
+      price   : price
+    });
+    let headers = new Headers({ 'Content-Type': 'application/json' });
+    let options = new RequestOptions({ headers: headers });
+    return this.doRequest(RequestType.POST, 'api/corp/'+corpId+'/exchange', body, options);
+  }
+  sellItemFromCompany(compId, itemId, amount, price) : Observable<ResponseWrapper<any>> {
+    let body = JSON.stringify({
+      itemId  : itemId,
+      amount  : amount,
+      price   : price
+    });
+    let headers = new Headers({ 'Content-Type': 'application/json' });
+    let options = new RequestOptions({ headers: headers });
+    return this.doRequest(RequestType.POST, 'api/company/'+compId+'/exchange', body, options);
   }
   private handleError (error: Response) {
     console.error(error);

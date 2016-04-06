@@ -1,4 +1,4 @@
-import {Component, Input} from 'angular2/core';
+import {Component, Input, EventEmitter, Output} from 'angular2/core';
 
 import { ResultMessage } from '../request/response';
 
@@ -21,6 +21,8 @@ export class AlertListComponent {
 	}
 	get messages() { return this._messages; }
 
+  @Output('on-empty') onEmpty = new EventEmitter();
+
 	removeMessage(idx : number) {
 		this._messages.splice(idx, 1);
 	}
@@ -35,5 +37,8 @@ export class AlertListComponent {
 			this.removeMessage(0);
 			this.messageCleanTimeout = setTimeout(()=>{this.cleanMessage()}, 2000);
 		}
+    if(this._messages.length == 0) {
+      if(!!this.onEmpty) this.onEmpty.emit(true);
+    }
 	}
 }

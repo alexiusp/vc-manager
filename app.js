@@ -48,6 +48,7 @@ app.post('/api/login', function (req, res) {
         let a = result.data;
         let b = a.user.User;
         let c = a.user.UserLevel;
+        if(!!b.avatar_img) parseAvatar(b.avatar_img);
         let answer = {
           id          : b.id,
           avatar      : b.avatar,
@@ -95,9 +96,9 @@ app.get('/api/corps', function (req, res) {
       let answer = result.data.corporations;
       console.log("getCorpsList finished", answer);
       res.json({
-        data    :answer,
-        error   :result.data.error,
-        message :""
+        data    : answer,
+        error   : (!!answer)? 0 : result.data.error,
+        message : (result.data.setFlash.length > 0)? result.data.setFlash[0].msg : ""
       });
     });
   } else handleError(res, -1, "Session expired!");
@@ -258,6 +259,47 @@ app.put('/api/company/:cid/storage', function(req, res) {
 		});
   } else handleError(res, -1, "Session expired!");
 });
+app.post('/api/company/:cid/exchange', function(req, res) {
+	let cid = +req.params.cid;
+  let data = req.body;
+  //console.log("company %s exchange request", cid, req.params, data);
+  let sessCookies = req.session.remoteCookies;
+  if(!!sessCookies) {
+    let api = require('./api/corps.js');
+    api.sellItemFromCompany(cid, +data.itemId, +data.amount, +data.price, "vdollars", sessCookies, (result) => {
+      let answer = result.data.setFlash;
+      console.log("company %s exchange success:", cid, answer);
+      res.json({
+        data    : answer,
+        error   : +result.data.error,
+        message : ""
+      });
+    });
+  } else handleError(res, -1, "Session expired!");
+});
+app.post('/api/corp/:id/exchange', function(req, res) {
+	let cid = +req.params.id;
+  let data = req.body;
+  let sessCookies = req.session.remoteCookies;
+  console.log("corporation %s exchange request", cid, req.params, data, sessCookies);
+  if(!!sessCookies) {
+    let api = require('./api/corps.js');
+    //console.log("app.post", sessCookies);
+    api.sellItemFromCorporation(cid, +data.itemId, +data.amount, +data.price, "vdollars", sessCookies, (result) => {
+      let answer = result.data.setFlash;
+      console.log("corporation %s exchange success:", cid, answer);
+      res.json({
+        data    : answer,
+        error   : +result.data.error,
+        message : ""
+      });
+    });
+  } else handleError(res, -1, "Session expired!");
+});
+
+
+
+
 
 
 app.listen(app.get('port'), function () {
@@ -273,26 +315,33 @@ var handleError = function(res, errCode, errMessage) {
 		data		: []
 	});
 }
+var getFile = function(url) {
+  let file = fs.createWriteStream("."+url, {
+    flags: 'wx',
+    defaultEncoding: 'binary'
+  }).on('error', function(err) {
+    // bypassing errors
+    //console.log(".");
+  });
+  var request = http.get("http://api.vircities.com"+url, function(response) {
+    response.pipe(file);
+    file.on('finish', function() {
+      file.close(function() {
+        console.log("new image file %s was saved!", url);
+      });
+    });
+  }).on('error', function(err) {
+    console.error("http error: ", err);
+  });;
+}
 var parseStorageImg = function(storage) {
   storage.forEach((item, index) => {
     let imgUrl = item.ItemType.image;
     //console.log("image file found ", imgUrl);
-    let file = fs.createWriteStream("."+imgUrl, {
-      flags: 'wx',
-      defaultEncoding: 'binary'
-    }).on('error', function(err) {
-      // bypassing errors
-      //console.log(".");
-    });
-    var request = http.get("http://api.vircities.com"+imgUrl, function(response) {
-      response.pipe(file);
-      file.on('finish', function() {
-        file.close(function() {
-          console.log("new image file %s was saved!", imgUrl);
-        });
-      });
-    }).on('error', function(err) {
-      console.error("http error: ", err);
-    });;
+    getFile(imgUrl);
   });
+}
+var parseAvatar = function(url) {
+  let imgUrl = "/images/avatars/" + url;
+  getFile(imgUrl);
 }

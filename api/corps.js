@@ -54,3 +54,34 @@ exports.moveItemToCompany = function(compId, itemId, amount, cookiesArr, callbac
   //console.log("moveItemToCorporation request path:", calcPath);
   http_request.post(calcPath, postBody, cookiesArr, callback);
 }
+exports.sellItemFromCorporation = function(corpId, itemId, amount, price, currency, cookiesArr, callback) {
+  //console.log("sellItemFromCorporation", cookiesArr);
+  let postBody = querystring.stringify({
+    data : {
+      Exchange : {
+        corporation_id : +corpId,
+        currency : currency,
+        item_type_id : +itemId,
+        number : +amount,
+        price : `${price}.00`
+      }
+    }
+  });
+  console.log("postBody:", postBody);
+  http_request.post(`/exchanges/add_corporation_exchange.json?os=unknown&v=${config.version}`, postBody, cookiesArr, callback);
+}
+exports.sellItemFromCompany = function(compId, itemId, amount, price, currency, cookiesArr, callback) {
+  let postBody = querystring.stringify({
+    data : {
+      Exchange : {
+        company_id : +compId,
+        currency : currency,
+        item_type_id : +itemId,
+        number : +amount,
+        price : `${price}.00`
+      }
+    }
+  });
+  console.log("postBody:", postBody);
+  http_request.post(`/exchanges/add_company_exchange.json?os=unknown&v=${config.version}`, postBody, cookiesArr, callback);
+}

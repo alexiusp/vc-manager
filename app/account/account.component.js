@@ -39,8 +39,15 @@ System.register(['angular2/core', 'angular2/router', '../storage/storage.service
                 AccountComponent.prototype.ngOnInit = function () {
                     this.errorMessage = "";
                     var user = this._storageService.loadData('user');
-                    this.user = (!!user) ? user : new credentials_1.Credentials();
-                    console.log("user loaded:", this.user);
+                    if (!!user) {
+                        this.accountSaved = true;
+                        this.user = user;
+                        console.log("user loaded:", this.user);
+                    }
+                    else {
+                        this.accountSaved = false;
+                        this.user = new credentials_1.Credentials();
+                    }
                 };
                 AccountComponent.prototype.login = function () {
                     var _this = this;
