@@ -10,6 +10,7 @@ const config = require('./api/config');
 
 app.set('port', _port);
 app.use('/app', express.static(__dirname + '/app'));
+app.use('/app/images', express.static(__dirname + '/app/images'));
 app.use('/img', express.static(__dirname + '/img'));
 app.use('/node_modules', express.static(__dirname + '/node_modules'));
 app.use(bodyParser.json()); // for parsing application/json
