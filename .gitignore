@@ -1,6 +1,5 @@
 # server parsed images
-img/icons
-img/items
+img/items/*
 
 # Logs
 logs
