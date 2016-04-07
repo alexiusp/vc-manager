@@ -103,7 +103,7 @@ export class CorporationDetailComponent implements OnInit {
               // transform incoming contracted data
               // to view presenter class
               let list : StorageItem[] = [];
-              for(let i of res) {
+              if(!!res) for(let i of res) {
                 let t = new StorageItem(i);
                 list.push(t);
               }

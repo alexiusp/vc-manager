@@ -128,11 +128,12 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                                     // transform incoming contracted data
                                     // to view presenter class
                                     var list = [];
-                                    for (var _i = 0, res_2 = res; _i < res_2.length; _i++) {
-                                        var i = res_2[_i];
-                                        var t = new models_1.StorageItem(i);
-                                        list.push(t);
-                                    }
+                                    if (!!res)
+                                        for (var _i = 0, res_2 = res; _i < res_2.length; _i++) {
+                                            var i = res_2[_i];
+                                            var t = new models_1.StorageItem(i);
+                                            list.push(t);
+                                        }
                                     //console.log("company storage:", list);
                                     _this._storages[c.id] = list;
                                 });
