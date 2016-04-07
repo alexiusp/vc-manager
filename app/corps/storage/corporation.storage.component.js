@@ -32,11 +32,36 @@ System.register(['angular2/core', '../corporation.service', './storage.item.comp
                     this.isListOpen = true;
                 }
                 CorporationStorageComponent.prototype.ngOnInit = function () {
+                    this.filterDropdownOpen = false;
+                    this.currentFilter = "all";
+                    this.filterTitle = "Filter";
                 };
                 Object.defineProperty(CorporationStorageComponent.prototype, "items", {
-                    get: function () { return this._items; },
+                    get: function () {
+                        if (this.currentFilter != "all") {
+                            var iArr = [];
+                            for (var _i = 0, _a = this._items; _i < _a.length; _i++) {
+                                var i = _a[_i];
+                                if (i.item.ItemType.type == this.currentFilter)
+                                    iArr.push(i);
+                            }
+                            return iArr;
+                        }
+                        else
+                            return this._items;
+                    },
                     set: function (itemArr) {
                         //console.log("storage list setter", JSON.stringify(itemArr));
+                        var types = [];
+                        if (!!itemArr)
+                            for (var _i = 0, itemArr_1 = itemArr; _i < itemArr_1.length; _i++) {
+                                var i = itemArr_1[_i];
+                                if (types.indexOf(i.item.ItemType.type) == -1)
+                                    types.push(i.item.ItemType.type);
+                            }
+                        console.log("item types:", types);
+                        types.unshift("all");
+                        this.types = types;
                         this._items = itemArr;
                     },
                     enumerable: true,
@@ -48,6 +73,15 @@ System.register(['angular2/core', '../corporation.service', './storage.item.comp
                             return +i;
                     }
                     return -1;
+                };
+                CorporationStorageComponent.prototype.toggleFilter = function () {
+                    this.filterDropdownOpen = !this.filterDropdownOpen;
+                };
+                CorporationStorageComponent.prototype.filterList = function (type) {
+                    //console.log("filter:", type);
+                    this.currentFilter = type;
+                    this.filterTitle = (type == "all") ? "Filter" : type;
+                    this.toggleFilter();
                 };
                 CorporationStorageComponent.prototype.openList = function () {
                     this.isListOpen = !this.isListOpen;
