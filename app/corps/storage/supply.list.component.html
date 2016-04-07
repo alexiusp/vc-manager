@@ -11,30 +11,28 @@
 		<div class="list-group-item" *ngIf="hasTransfer && !!toCompTransfer && toCompTransfer.length > 0">
 			<div class="row">
 				<div class="col-sm-4">
-					<div class="list-group">
-						<div class="list-group-item" *ngFor="#c of companies">
+					<div class="panel panel-default" *ngFor="#c of companies">
+					  <div class="panel-body">
 							<div class="row">
-							  <div class="col-sm-12">
-									<span class="pull-left">{{c.name}}<span *ngIf="!!c.city"> in {{c.city}}</span></span>
-									<button type="button" class="btn btn-danger btn-sm pull-right" (click)="removeCompany(c)">
+								<div class="col-sm-8">
+									<span>{{c.name}}<span *ngIf="!!c.city"> in {{c.city}}</span></span>
+								</div>
+								<div class="col-sm-4">
+									<button type="button" class="btn btn-danger btn-sm btn-block" (click)="removeCompany(c)">
 										<i class="glyphicon glyphicon-trash"></i>
 									</button>
-							  </div>
+								</div>
 							</div>
-						</div>
+					  </div>
 					</div>
 			  </div>
 				<div class="col-sm-8">
-					<div class="list-group">
-						<div class="list-group-item" *ngFor="#item of toCompTransfer">
+					<div class="panel panel-default" *ngFor="#item of toCompTransfer">
+						<div class="panel-body">
 							<div class="row">
 								<div class="col-sm-8">
-									<span class="pull-left">
-										<span class="label label-info">{{item.amount}}</span>
-										of
-										<span class="label label-info">{{item.item[0].total_quantity}}</span>
-										&nbsp;<span class="label label-default">{{item.item.ItemType.name}}</span>
-									</span>
+									<span class="label label-info">{{item.amount}}</span> of <span class="label label-info">{{item.item[0].total_quantity}}</span>
+									&nbsp;<span class="label label-default">{{item.item.ItemType.name}}</span>
 								</div>
 								<div class="col-sm-4">
 									<div class="input-group input-group-sm">
