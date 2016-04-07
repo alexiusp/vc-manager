@@ -4,7 +4,7 @@
       <button type="button" class="btn btn-default btn-xs pull-left" (click)="selectAll();">
         <i class="glyphicon"  [ngClass]="{'glyphicon-check': !allSelected, 'glyphicon-unchecked': allSelected}"></i>
       </button>&nbsp;
-      Companies
+      Companies&nbsp;({{companies?.length}})
       <button type="button" class="btn btn-default btn-xs pull-right" (click)="openList()">
         <i class="fa" [ngClass]="{'fa-minus': isListOpen, 'fa-plus': !isListOpen}"></i>
       </button>
