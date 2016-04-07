@@ -1,14 +1,14 @@
 <div class="page-header"><h1>Login</h1></div>
 <div class="row">
-  <div class="col-sm-4">
+  <div class="col-sm-2">
 		<div class="list-group" *ngIf="accountSaved && !!account">
 		  <button type="button" class="list-group-item thumbnail" (click)="recall()">
-				<img width="80px" [src]="'/app/images/avatars/'+account.avatar" [alt]="account.name">
+				<img class="img-responsive img-thumbnail" [src]="'/app/images/avatars/'+account.avatar" [alt]="account.name">
 				<h4 class="list-group-item-heading text-center">{{account?.name}}</h4>
 			</button>
 		</div>
   </div>
-  <div class="col-sm-6">
+  <div class="col-sm-offset-2 col-sm-6">
     <!--<div class="alert alert-danger" *ngIf="!!errorMessage">{{errorMessage}}</div>-->
     <form class="form-horizontal">
       <div class="form-group">

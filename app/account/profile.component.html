@@ -1,2 +1,113 @@
-<h2>Manager profile</h2>
-<pre>{{_profile | json}}</pre>
+<div class="page-header"><h1>Manager profile</h1></div>
+<div class="row" *ngIf="!!_profile">
+  <div class="col-sm-4">
+    <img class="img-responsive img-thumbnail" [src]="'/app/images/avatars/'+_profile.avatar_img" [alt]="_profile.username">
+  </div>
+  <div class="col-sm-8">
+    <ul class="list-group">
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-sm-2">
+            Name:
+          </div>
+          <div class="col-sm-10">
+            {{_profile.username}}
+          </div>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-sm-2">
+            Level:
+          </div>
+          <div class="col-sm-10">
+            {{_profile.level}}
+          </div>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-sm-2">
+            Experience:
+          </div>
+          <div class="col-sm-10">
+            <div class="progress">
+      	      <div class="progress-bar progress-bar-warning"
+      	        role="progressbar"
+      	        [attr.aria-valuenow]="progress.xp"
+      	        aria-valuemin="0"
+      	        aria-valuemax="100"
+                style="min-width: 6em;"
+      	        [style.width.%]="progress.xp">
+      	        {{_profile.xp}} / {{_profile.nextLevelExperience}} XP
+      	      </div>
+      	    </div>
+          </div>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-sm-2">
+            Health:
+          </div>
+          <div class="col-sm-10">
+            <div class="progress">
+      	      <div class="progress-bar progress-bar-danger"
+      	        role="progressbar"
+      	        [attr.aria-valuenow]="progress.health"
+      	        aria-valuemin="0"
+      	        aria-valuemax="100"
+                style="min-width: 2em;"
+      	        [style.width.%]="progress.health">
+      	        {{_profile.health}} / {{_profile.max_health}} HP
+      	      </div>
+      	    </div>
+          </div>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-sm-2">
+            Energy:
+          </div>
+          <div class="col-sm-10">
+            <div class="progress">
+      	      <div class="progress-bar"
+      	        role="progressbar"
+      	        [attr.aria-valuenow]="progress.energy"
+      	        aria-valuemin="0"
+      	        aria-valuemax="100"
+                style="min-width: 2em;"
+      	        [style.width.%]="progress.energy">
+      	        {{_profile.energy}} / {{_profile.max_energy}} EP
+      	      </div>
+      	    </div>
+          </div>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-sm-2">
+            <img class="pull-left" width="16" height="16" alt="vDollars" src="/img/icons/icon-vdollar.png"/>&nbsp;
+            VDollars:
+          </div>
+          <div class="col-sm-10">
+            {{_profile.vd_balance}}
+          </div>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-sm-2">
+            <img class="pull-left" width="16" height="16" alt="vGold" src="/img/icons/icon-vgold.png"/>&nbsp;
+            vGold:
+          </div>
+          <div class="col-sm-10">
+            {{_profile.vg_balance}}
+          </div>
+        </div>
+      </li>
+    </ul>
+    <!--<pre>{{_profile | json}}</pre>-->
+  </div>
+</div>

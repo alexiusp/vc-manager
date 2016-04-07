@@ -16,7 +16,14 @@ export class ProfileComponent implements OnInit {
     //private _storageService: StorageService
   ) {}
 
+  private progress : any;
   ngOnInit() {
-    this._profile = this._accountService.User;
+    let p = this._accountService.User;
+    this._profile = p;
+    this.progress = {
+      health: (+p.health / +p.max_health)*100,
+      energy: (+p.energy / +p.max_energy)*100,
+      xp  : (+p.xp / +p.nextLevelExperience)*100
+    }
   }
 }
