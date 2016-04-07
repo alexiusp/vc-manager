@@ -85,12 +85,16 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     },
                     set: function (cArr) {
                         var types = [];
+                        var isAllSelected = true;
                         for (var _i = 0, cArr_1 = cArr; _i < cArr_1.length; _i++) {
                             var c = cArr_1[_i];
                             if (types.indexOf(c.item.type) == -1)
                                 types.push(c.item.type);
+                            if (!c.isSelected)
+                                isAllSelected = false;
                         }
-                        console.log("types:", types);
+                        this.allSelected = isAllSelected;
+                        //console.log("types:", types);
                         types.unshift("all");
                         this.types = types;
                         this._companies = cArr;
@@ -102,7 +106,7 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     this.filterDropdownOpen = !this.filterDropdownOpen;
                 };
                 CompaniesListComponent.prototype.filterList = function (type) {
-                    console.log("filter:", type);
+                    //console.log("filter:", type);
                     this.currentFilter = type;
                     this.filterTitle = (type == "all") ? "Filter" : type;
                     this.toggleFilter();

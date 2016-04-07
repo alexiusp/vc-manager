@@ -50,10 +50,13 @@ export class CompaniesListComponent {
   @Input('companies')
 	set companies(cArr : CompanyItem[]) {
     let types = [];
+    let isAllSelected = true;
     for(let c of cArr) {
       if(types.indexOf(c.item.type) == -1) types.push(c.item.type);
+      if(!c.isSelected) isAllSelected = false;
     }
-		console.log("types:", types);
+    this.allSelected = isAllSelected;
+		//console.log("types:", types);
     types.unshift("all");
     this.types = types;
 		this._companies = cArr;
@@ -75,7 +78,7 @@ export class CompaniesListComponent {
     this.filterDropdownOpen = !this.filterDropdownOpen;
   }
   filterList(type : string) {
-    console.log("filter:", type);
+    //console.log("filter:", type);
     this.currentFilter = type;
     this.filterTitle = (type == "all")? "Filter" : type;
     this.toggleFilter();
