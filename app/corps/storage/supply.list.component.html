@@ -10,7 +10,21 @@
 		</div>
 		<div class="list-group-item" *ngIf="hasTransfer && !!toCompTransfer && toCompTransfer.length > 0">
 			<div class="row">
-			  <div class="col-sm-6">
+				<div class="col-sm-4">
+					<div class="list-group">
+						<div class="list-group-item" *ngFor="#c of companies">
+							<div class="row">
+							  <div class="col-sm-12">
+									<span class="pull-left">{{c.name}}<span *ngIf="!!c.city"> in {{c.city}}</span></span>
+									<button type="button" class="btn btn-danger btn-sm pull-right" (click)="removeCompany(c)">
+										<i class="glyphicon glyphicon-trash"></i>
+									</button>
+							  </div>
+							</div>
+						</div>
+					</div>
+			  </div>
+				<div class="col-sm-8">
 					<div class="list-group">
 						<div class="list-group-item" *ngFor="#item of toCompTransfer">
 							<div class="row">
@@ -37,20 +51,6 @@
 										</div>
 									</div>
 								</div>
-							</div>
-						</div>
-					</div>
-			  </div>
-				<div class="col-sm-6">
-					<div class="list-group">
-						<div class="list-group-item" *ngFor="#c of companies">
-							<div class="row">
-							  <div class="col-sm-12">
-									<span class="pull-left">{{c.name}}<span *ngIf="!!c.city"> in {{c.city}}</span></span>
-									<button type="button" class="btn btn-danger btn-sm pull-right" (click)="removeCompany(c)">
-										<i class="glyphicon glyphicon-trash"></i>
-									</button>
-							  </div>
 							</div>
 						</div>
 					</div>
