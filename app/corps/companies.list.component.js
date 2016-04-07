@@ -114,7 +114,7 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                 Object.defineProperty(CompaniesListComponent.prototype, "details", {
                     get: function () { return this._details; },
                     set: function (d) {
-                        console.log("companies details list setter", d);
+                        //console.log("companies details list setter", d);
                         this._details = d;
                     },
                     enumerable: true,
@@ -156,7 +156,7 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     var current = this.details[c.id].current_production;
                     var current2 = c.current_production;
                     var cStorage = this.storages[c.id];
-                    console.log("uloadProduction", current, cStorage);
+                    //console.log("uloadProduction", current, cStorage);
                     if (current.quantity > 0) {
                         // look for production item in storage
                         var prodItem = void 0;

@@ -87,7 +87,7 @@ export class CompaniesListComponent {
   private _details : map<CompanyDetail>;
   @Input()
   set details(d: map<CompanyDetail>) {
-    console.log("companies details list setter", d);
+    //console.log("companies details list setter", d);
     this._details = d;
   }
   get details() {return this._details}
@@ -132,7 +132,7 @@ export class CompaniesListComponent {
     let current = this.details[c.id].current_production;
     let current2 = c.current_production;
     let cStorage = this.storages[c.id];
-    console.log("uloadProduction", current, cStorage);
+    //console.log("uloadProduction", current, cStorage);
     if(current.quantity > 0) {
       // look for production item in storage
       let prodItem : StorageItem;

@@ -28,7 +28,7 @@ export class CorporationStorageComponent implements OnInit {
       if(types.indexOf(i.item.ItemType.type) == -1) types.push(i.item.ItemType.type);
       //if(types.indexOf(i.item.ItemType.receipt_type) == -1) types.push(i.item.ItemType.receipt_type);
     }
-		console.log("item types:", types);
+		//console.log("item types:", types);
     types.unshift("all");
     this.types = types;
     this._items = itemArr;

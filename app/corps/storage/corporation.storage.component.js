@@ -59,7 +59,7 @@ System.register(['angular2/core', '../corporation.service', './storage.item.comp
                                 if (types.indexOf(i.item.ItemType.type) == -1)
                                     types.push(i.item.ItemType.type);
                             }
-                        console.log("item types:", types);
+                        //console.log("item types:", types);
                         types.unshift("all");
                         this.types = types;
                         this._items = itemArr;

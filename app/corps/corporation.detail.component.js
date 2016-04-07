@@ -171,7 +171,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     if (this.corpInfo.is_manager) {
                         this._corporationService.addFundsToCorporation(this.corpId, amount)
                             .subscribe(function (res) {
-                            console.log("result:", res);
+                            //console.log("result:",res);
                             //this.messages = res;
                             _this.loadCorpDetail();
                         });

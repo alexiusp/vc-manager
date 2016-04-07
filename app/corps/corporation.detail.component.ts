@@ -138,7 +138,7 @@ export class CorporationDetailComponent implements OnInit {
 		if(this.corpInfo.is_manager) {
 			this._corporationService.addFundsToCorporation(this.corpId, amount)
 				.subscribe((res:ResultMessage[]) => {
-          console.log("result:",res);
+          //console.log("result:",res);
 					//this.messages = res;
 					this.loadCorpDetail();
         });
