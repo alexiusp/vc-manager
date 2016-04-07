@@ -44,6 +44,9 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     this.allSelected = false;
                     this._storages = new dictionary_1.map();
                     this._details = new dictionary_1.map();
+                    this.filterDropdownOpen = false;
+                    this.currentFilter = "all";
+                    this.filterTitle = "Filter";
                 }
                 Object.defineProperty(CompaniesListComponent.prototype, "storages", {
                     get: function () { return this._storages; },
@@ -67,14 +70,43 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                         this.onChange.emit({ cId: cId, list: list });
                 };
                 Object.defineProperty(CompaniesListComponent.prototype, "companies", {
-                    get: function () { return this._companies; },
+                    get: function () {
+                        if (this.currentFilter != "all") {
+                            var cArr = [];
+                            for (var _i = 0, _a = this._companies; _i < _a.length; _i++) {
+                                var c = _a[_i];
+                                if (c.item.type == this.currentFilter)
+                                    cArr.push(c);
+                            }
+                            return cArr;
+                        }
+                        else
+                            return this._companies;
+                    },
                     set: function (cArr) {
-                        //console.log("companies list setter", cArr);
+                        var types = [];
+                        for (var _i = 0, cArr_1 = cArr; _i < cArr_1.length; _i++) {
+                            var c = cArr_1[_i];
+                            if (types.indexOf(c.item.type) == -1)
+                                types.push(c.item.type);
+                        }
+                        console.log("types:", types);
+                        types.unshift("all");
+                        this.types = types;
                         this._companies = cArr;
                     },
                     enumerable: true,
                     configurable: true
                 });
+                CompaniesListComponent.prototype.toggleFilter = function () {
+                    this.filterDropdownOpen = !this.filterDropdownOpen;
+                };
+                CompaniesListComponent.prototype.filterList = function (type) {
+                    console.log("filter:", type);
+                    this.currentFilter = type;
+                    this.filterTitle = (type == "all") ? "Filter" : type;
+                    this.toggleFilter();
+                };
                 Object.defineProperty(CompaniesListComponent.prototype, "details", {
                     get: function () { return this._details; },
                     set: function (d) {

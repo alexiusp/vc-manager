@@ -17,14 +17,18 @@
     <li class="list-group-item" *ngIf="is_manager">
       <div class="row">
         <div class="col-sm-12 col-md-4">
-          <div class="dropdown">
-            <button type="button" class="btn btn-default btn-sm btn-block dropdown-toggle disabled" disabled data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Filter&nbsp;
+          <div class="dropdown" [ngClass]="{'open': !!filterDropdownOpen}">
+            <button type="button" class="btn btn-default btn-sm btn-block dropdown-toggle" (click)="toggleFilter()">
+              {{filterTitle}}&nbsp;
               <span class="caret"></span>
               <span class="sr-only">Toggle Dropdown</span>
             </button>
             <ul class="dropdown-menu">
-              <li><a href="#">not implemented</a></li>
+              <li>
+                <a href=""
+                  *ngFor="#type of types"
+                  (click)="$event.preventDefault();filterList(type)">{{type}}</a>
+              </li>
             </ul>
           </div>
         </div>

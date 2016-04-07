@@ -23,6 +23,9 @@ export class CompaniesListComponent {
     this.allSelected = false;
     this._storages = new map<StorageItem[]>();
     this._details = new map<CompanyDetail>();
+    this.filterDropdownOpen = false;
+    this.currentFilter = "all";
+    this.filterTitle = "Filter";
 	}
 
   @Input()
@@ -46,10 +49,37 @@ export class CompaniesListComponent {
   private _companies : CompanyItem[];
   @Input('companies')
 	set companies(cArr : CompanyItem[]) {
-		//console.log("companies list setter", cArr);
+    let types = [];
+    for(let c of cArr) {
+      if(types.indexOf(c.item.type) == -1) types.push(c.item.type);
+    }
+		console.log("types:", types);
+    types.unshift("all");
+    this.types = types;
 		this._companies = cArr;
 	}
-	get companies() { return this._companies }
+	get companies() {
+    if(this.currentFilter != "all") {
+      let cArr = [];
+      for(let c of this._companies)
+        if(c.item.type == this.currentFilter) cArr.push(c);
+      return cArr;
+    } else return this._companies
+  }
+
+  private types : string[];
+  private filterDropdownOpen : boolean;
+  private currentFilter : string;
+  private filterTitle : string;
+  toggleFilter() {
+    this.filterDropdownOpen = !this.filterDropdownOpen;
+  }
+  filterList(type : string) {
+    console.log("filter:", type);
+    this.currentFilter = type;
+    this.filterTitle = (type == "all")? "Filter" : type;
+    this.toggleFilter();
+  }
 
   private _details : map<CompanyDetail>;
   @Input()
