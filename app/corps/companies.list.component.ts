@@ -129,7 +129,7 @@ export class CompaniesListComponent {
   }
 
   uloadProduction(c : Company) {
-    let current = this.details[c.id].current_production;
+    let current = (!!this.details[c.id])? this.details[c.id].current_production : c.current_production;
     let current2 = c.current_production;
     let cStorage = this.storages[c.id];
     //console.log("uloadProduction", current, cStorage);

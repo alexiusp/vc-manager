@@ -153,7 +153,7 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                         this.onInvest.emit({ cId: c.item.id, amount: amount });
                 };
                 CompaniesListComponent.prototype.uloadProduction = function (c) {
-                    var current = this.details[c.id].current_production;
+                    var current = (!!this.details[c.id]) ? this.details[c.id].current_production : c.current_production;
                     var current2 = c.current_production;
                     var cStorage = this.storages[c.id];
                     //console.log("uloadProduction", current, cStorage);
