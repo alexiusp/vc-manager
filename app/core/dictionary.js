@@ -15,7 +15,6 @@ System.register([], function(exports_1, context_1) {
                 function Dictionary() {
                     this.keys = [];
                     this.values = [];
-                    this._data = {};
                 }
                 Dictionary.prototype.getKeys = function () {
                     return this.keys;
@@ -30,8 +29,6 @@ System.register([], function(exports_1, context_1) {
                     this.removeValue(key);
                     this.keys.push(key);
                     this.values.push(value);
-                    this.lastIndex = this.keys.length;
-                    this._data[key] = value;
                 };
                 Dictionary.prototype.removeValue = function (key) {
                     var i = this.keys.indexOf(key);
@@ -39,6 +36,13 @@ System.register([], function(exports_1, context_1) {
                         this.keys.splice(i, 1);
                         this.values.splice(i, 1);
                     }
+                };
+                Dictionary.prototype.get = function (key) {
+                    var i = this.keys.indexOf(key);
+                    if (i >= 0)
+                        return this.values[i];
+                    else
+                        return null;
                 };
                 return Dictionary;
             }());

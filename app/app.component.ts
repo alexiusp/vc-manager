@@ -53,17 +53,30 @@ import { CorporationDetailComponent } from './corps/corporation.detail.component
   }
 ])
 export class AppComponent implements OnInit {
-  title = 'VirCities corporations manager';
+  title = 'VC Manager';
   private isLoggedIn : boolean = false;
   constructor(private _coreService: CoreService, private _router : Router) {}
   ngOnInit() {
-    if(this._coreService.isLoggedIn) this.isLoggedIn = true;
-    else {
-      this._coreService.observeLogin(_ => {
-        console.log("onLogin", this);
-        this.isLoggedIn = true;
-      });
-      this._router.navigateByUrl('/');
-    }
+		let loggedin = this._coreService.isLoggedIn;
+		this._coreService.observeLogin(_ => {
+			console.log("isLoggedIn", this._coreService.isLoggedIn);
+			this.onAuthEvent(this._coreService.isLoggedIn);
+		});
+  }
+	onAuthEvent(loggedin : boolean) {
+		this.isLoggedIn = loggedin;
+		if(!loggedin) {
+			this._router.navigateByUrl('/');
+		}
+	}
+  private showHelp : boolean;
+  private helpDisplay;
+  openHelp() {
+    this.showHelp = true;
+    this.helpDisplay = "block";
+  }
+  closeHelp() {
+    this.showHelp = false;
+    this.helpDisplay = "none";
   }
 }

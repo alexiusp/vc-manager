@@ -1,7 +1,6 @@
 # server parsed images
-img/icons
-img/items
-
+img/items/*
+app/images/avatars/*
 # Logs
 logs
 *.log
@@ -35,3 +34,8 @@ node_modules
 
 # Optional REPL history
 .node_repl_history
+
+# heroku files
+*.env
+Dockerfile
+docker-compose.yml

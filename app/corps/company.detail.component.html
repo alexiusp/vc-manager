@@ -1,0 +1,39 @@
+<div class="list-group-item" [ngClass]="{'active': isSelected}">
+  <div class="row">
+    <div class="col-xs-6">
+      <img class="pull-left" width="16" height="16" alt="vDollars" src="/img/icons/icon-vdollar.png"/>&nbsp;
+      {{_company.vd_balance}}&nbsp;vD
+    </div>
+    <div class="col-xs-6">
+      <div class="input-group input-group-sm">
+        <input type="text" class="form-control" placeholder="vDollars" #addFundCompanyAmount (keyup)="0"/>
+        <span class="input-group-btn">
+          <button class="btn btn-success" type="button" (click)="addFundsToCompany(addFundCompanyAmount.value)">
+            <i class="glyphicon glyphicon-usd"></i>&nbsp;Invest
+          </button>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="list-group-item" [ngClass]="{'active': isSelected}">
+  <span><img width="20" height="20" [src]="_company.current_production?.img" align="left"/>{{_company.current_production?.name}}</span>
+  <span class="label" [ngClass]="{'label-success': company.current_production.currently_producing, 'label-danger': !company.current_production.currently_producing}">
+    <i class="glyphicon" [ngClass]="{'glyphicon-thumbs-up': company.current_production.currently_producing, 'glyphicon-thumbs-down': !company.current_production.currently_producing}"></i>
+  </span>
+  <span class="label label-info">{{_company.current_production?.quantity}}</span>
+  <span class="pull-right">
+    <button type="button" class="btn btn-xs btn-default disabled" disabled="true">
+  		<i class="fa fa-cog"></i>
+  	</button>
+  	<button type="button" class="btn btn-xs btn-primary"
+  		(click)="unloadProduction()">
+  		<i class="fa fa-truck"></i>
+  	</button>
+  </span>
+</div>
+<!--
+<div class="list-group-item" [ngClass]="{'active': isSelected}">
+  <pre>{{_company | json}}</pre>
+</div>
+-->

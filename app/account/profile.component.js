@@ -27,7 +27,13 @@ System.register(['angular2/core', './account.service'], function(exports_1, cont
                     this._accountService = _accountService;
                 }
                 ProfileComponent.prototype.ngOnInit = function () {
-                    this._profile = this._accountService.User;
+                    var p = this._accountService.User;
+                    this._profile = p;
+                    this.progress = {
+                        health: (+p.health / +p.max_health) * 100,
+                        energy: (+p.energy / +p.max_energy) * 100,
+                        xp: (+p.xp / +p.nextLevelExperience) * 100
+                    };
                 };
                 ProfileComponent = __decorate([
                     core_1.Component({

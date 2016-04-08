@@ -1,0 +1,189 @@
+<div class="panel panel-default" *ngIf="isActive">
+	<div class="panel-heading">
+		<h3 class="panel-title">
+			<i class="glyphicon glyphicon-transfer"></i> Transactions
+		</h3>
+	</div>
+	<div class="list-group">
+		<div class="list-group-item list-group-item-info" *ngIf="hasTransfer">
+			<i class="fa fa-truck"></i> Transfer goods ({{toCompTransfer.length + toCorpTransfer.length}}):
+		</div>
+		<div class="list-group-item" *ngIf="hasTransfer && !!toCompTransfer && toCompTransfer.length > 0">
+			<div class="row">
+				<div class="col-sm-4">
+					<div class="panel panel-default" *ngFor="#c of companies">
+					  <div class="panel-body">
+							<div class="row">
+								<div class="col-sm-8">
+									<span>{{c.name}}<span *ngIf="!!c.city"> in {{c.city}}</span></span>
+								</div>
+								<div class="col-sm-4">
+									<button type="button" class="btn btn-danger btn-sm btn-block" (click)="removeCompany(c)">
+										<i class="glyphicon glyphicon-trash"></i>
+									</button>
+								</div>
+							</div>
+					  </div>
+					</div>
+			  </div>
+				<div class="col-sm-8">
+					<div class="panel panel-default" *ngFor="#item of toCompTransfer">
+						<div class="panel-body">
+							<div class="row">
+								<div class="col-sm-8">
+									<span class="label label-info">{{item.amount}}</span> of <span class="label label-info">{{item.item[0].total_quantity}}</span>
+									&nbsp;<span class="label label-default">{{item.item.ItemType.name}}</span>
+								</div>
+								<div class="col-sm-4">
+									<div class="input-group input-group-sm">
+										<input type="number" class="form-control"
+											aria-label="Amount to transfer"
+											[value]="item.item[0].total_quantity"
+											#amount
+											(keyup)="item.amount = +amount.value"
+											(blur)="item.amount = +amount.value">
+										<div class="input-group-btn">
+											<button type="button" class="btn btn-danger" (click)="removeTransfer(item)">
+												<i class="glyphicon glyphicon-trash"></i>
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+			  </div>
+			</div>
+		</div>
+		<div class="list-group-item" *ngFor="#item of toCorpTransfer">
+			<div class="row">
+				<div class="col-sm-8">
+					<span class="pull-left">
+						From <span class="label label-default">{{item.source.name}}</span> to <span class="label label-default">{{item.target?.name}}</span>
+						<span class="label label-info">{{item.amount}}</span>
+						of
+						<span class="label label-info">{{item.item[0].total_quantity}}</span>
+						<span class="label label-default">{{item.item.ItemType.name}}</span>
+					</span>
+				</div>
+				<div class="col-sm-4">
+					<div class="input-group input-group-sm">
+						<input type="number" class="form-control"
+							aria-label="Amount to transfer"
+							[value]="item.item[0].total_quantity"
+							#amount
+							(keyup)="item.amount = +amount.value"
+							(blur)="item.amount = +amount.value">
+						<div class="input-group-btn">
+							<button type="button" class="btn btn-danger" (click)="removeTransfer(item)">
+								<i class="glyphicon glyphicon-trash"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="list-group-item list-group-item-info" *ngIf="hasTrade">
+			<i class="fa fa-shopping-bag"></i> Sell goods ({{trade.length}}):
+		</div>
+		<div class="list-group-item" *ngFor="#sell of trade">
+			<div class="row">
+				<div class="col-sm-6">
+					<span class="pull-left">
+						Sell
+						<span class="label label-info">{{sell.amount}}</span>
+						of
+						<span class="label label-info">{{sell.item[0].total_quantity}}</span>
+						<span class="label label-default">{{sell.item.ItemType.name}}</span> from <span class="label label-default">{{sell.source.name}}</span>
+						for
+						<span class="label label-success">{{sell.price}} <i class="glyphicon glyphicon-usd"></i></span> vD
+					</span>
+				</div>
+				<div class="col-sm-6">
+					<div class="row">
+						<div class="col-xs-4">
+							<input type="number" class="form-control input-sm"
+								aria-label="Amount to sell"
+								[value]="sell.item[0].total_quantity"
+								#amount
+						    (keyup)="sell.amount = +amount.value"
+						    (blur)="sell.amount = +amount.value"/>
+						</div>
+						<div class="col-xs-4">
+							<input type="number" class="form-control input-sm"
+								aria-label="Price"
+								[value]="0"
+								#price
+						    (keyup)="sell.price = +price.value"
+						    (blur)="sell.price = +price.value"/>
+						</div>
+						<div class="col-xs-4">
+							<button type="button" class="btn btn-block btn-sm btn-danger pull-right" (click)="removeTrade(sell)">
+								<i class="glyphicon glyphicon-trash"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--<pre>{{sell | json}}</pre>-->
+		</div>
+		<div class="list-group-item list-group-item-info" *ngIf="hasInvestments">
+			<i class="fa fa-money"></i> Investments ({{investments.length}}):
+		</div>
+		<div class="list-group-item" *ngFor="#invest of investments">
+			<div class="row">
+				<div class="col-sm-8">
+					<span class="pull-left">Invest <span class="label label-success">{{invest.amount}}</span> vDollars in <span class="label label-default">{{invest.target.name}}</span></span>
+				</div>
+				<div class="col-sm-4">
+					<div class="input-group input-group-sm">
+						<input type="number" class="form-control"
+							aria-label="vDollars to invest"
+							[value]="invest.amount"
+							#amount
+							(keyup)="invest.amount = +amount.value"
+							(blur)="invest.amount = +amount.value">
+						<div class="input-group-btn">
+							<button type="button" class="btn btn-danger" (click)="removeInvestment(invest)">
+								<i class="glyphicon glyphicon-trash"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="list-group">
+		<div class="list-group-item">
+			<div class="progress" *ngIf="progressValue > 0">
+	      <div class="progress-bar progress-bar-striped active"
+	        role="progressbar"
+	        [attr.aria-valuenow]="progressValue"
+	        aria-valuemin="0"
+	        aria-valuemax="100"
+	        [style.width.%]="progressValue">
+	        <span class="sr-only">{{progressValue}}% Complete</span>
+	      </div>
+	    </div>
+		</div>
+	</div>
+	<div class="panel-footer">
+		<div class="btn-group btn-group-sm btn-group-justified" role="group" aria-label="Transaction operation">
+			<div class="btn-group" role="group">
+				<button type="button" class="btn btn-primary" (click)="go()">
+					<i class="glyphicon glyphicon-ok"></i>&nbsp;Go!
+				</button>
+			</div>
+			<div class="btn-group" role="group">
+				<button type="button" class="btn btn-info disabled" (click)="save()">
+					<i class="glyphicon glyphicon-save"></i>&nbsp;save
+				</button>
+			</div>
+			<div class="btn-group" role="group">
+				<button type="button" class="btn btn-danger" (click)="clear()">
+					<i class="glyphicon glyphicon-trash"></i>&nbsp;Clear
+				</button>
+			</div>
+		</div>
+	</div>
+</div>

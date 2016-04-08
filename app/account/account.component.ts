@@ -1,8 +1,11 @@
 import { Component, OnInit } from 'angular2/core';
 import { Router } from 'angular2/router';
+import {NgForm}    from 'angular2/common';
 
 import { StorageService } from '../storage/storage.service';
 import { AccountService } from './account.service';
+import { ResponseWrapper } from '../request/response';
+import { Account } from './account';
 
 import {Credentials} from './credentials';
 
@@ -19,17 +22,41 @@ export class AccountComponent implements OnInit {
     private _storageService: StorageService
   ) {}
 
+  private accountSaved : boolean;
+	private account : any;
   ngOnInit() {
+		this.remember = true;
     this.errorMessage = "";
     let user : Credentials = this._storageService.loadData('user');
-    this.user = (!!user) ? user : new Credentials();
-    console.log("user loaded:", this.user);
+    if(!!user) {
+      this.accountSaved = true;
+      this.user = user;
+      console.log("user loaded:", this.user);
+			this.account = this._storageService.loadData("acc");
+    } else {
+      this.accountSaved = false;
+      this.user = new Credentials();
+    }
   }
-
+	recall() {
+		this.user = this._storageService.loadData('user');
+		this.login();
+	}
+	private remember;
   login() {
     this.errorMessage = "";
-    if(!!this.user.username) this._accountService.login(this.user, () => {
-      this.errorMessage = this._accountService.getError();
+    if(!!this.user.username) this._accountService.login(this.user)
+		.subscribe((res : ResponseWrapper<Account>) => {
+			if(res.error != 0) this.errorMessage = res.message;
+			else this.errorMessage = "";
+			if(this.remember) {
+				this._storageService.saveData("user", this.user);
+				let userData = {
+					name 		: res.data.username,
+					avatar	: res.data.avatar_img
+				};
+				this._storageService.saveData("acc", userData);
+			}
       if(!this.errorMessage) this._router.navigateByUrl('/corps');
     });
   }

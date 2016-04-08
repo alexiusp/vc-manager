@@ -37,17 +37,42 @@ System.register(['angular2/core', 'angular2/router', '../storage/storage.service
                     this._storageService = _storageService;
                 }
                 AccountComponent.prototype.ngOnInit = function () {
+                    this.remember = true;
                     this.errorMessage = "";
                     var user = this._storageService.loadData('user');
-                    this.user = (!!user) ? user : new credentials_1.Credentials();
-                    console.log("user loaded:", this.user);
+                    if (!!user) {
+                        this.accountSaved = true;
+                        this.user = user;
+                        console.log("user loaded:", this.user);
+                        this.account = this._storageService.loadData("acc");
+                    }
+                    else {
+                        this.accountSaved = false;
+                        this.user = new credentials_1.Credentials();
+                    }
+                };
+                AccountComponent.prototype.recall = function () {
+                    this.user = this._storageService.loadData('user');
+                    this.login();
                 };
                 AccountComponent.prototype.login = function () {
                     var _this = this;
                     this.errorMessage = "";
                     if (!!this.user.username)
-                        this._accountService.login(this.user, function () {
-                            _this.errorMessage = _this._accountService.getError();
+                        this._accountService.login(this.user)
+                            .subscribe(function (res) {
+                            if (res.error != 0)
+                                _this.errorMessage = res.message;
+                            else
+                                _this.errorMessage = "";
+                            if (_this.remember) {
+                                _this._storageService.saveData("user", _this.user);
+                                var userData = {
+                                    name: res.data.username,
+                                    avatar: res.data.avatar_img
+                                };
+                                _this._storageService.saveData("acc", userData);
+                            }
                             if (!_this.errorMessage)
                                 _this._router.navigateByUrl('/corps');
                         });
