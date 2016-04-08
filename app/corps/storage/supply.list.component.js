@@ -275,7 +275,7 @@ System.register(['angular2/core', './transactions', './storage.item.component', 
                     if (!!this.investments)
                         for (var _e = 0, _f = this.investments; _e < _f.length; _e++) {
                             var t = _f[_e];
-                            this._corporationService.addFundsToCompany(t.target.id, t.amount).subscribe(function (res) {
+                            this._corporationService.addFundsToCompany(t.target.id, t.price).subscribe(function (res) {
                                 console.log("invest money in companies result", res);
                                 _this.incrementProgress();
                             });

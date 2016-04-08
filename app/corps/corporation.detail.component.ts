@@ -427,7 +427,7 @@ export class CorporationDetailComponent implements OnInit {
     if(!!this.investList) for(let i of this.investList) {
       if(i.target.id!== investEvent.cId) list.push(i);
       else {
-        i.amount = investEvent.amount;
+        i.price = investEvent.amount;
         present = true;
         list.push(i);
       }
@@ -435,7 +435,7 @@ export class CorporationDetailComponent implements OnInit {
     if(!present) {
       let t : InvestTransaction = {
         owner : TransactionObject.Company,
-        amount: investEvent.amount,
+        price: investEvent.amount,
         target: this.companiesDetails[investEvent.cId]
       }
       list.push(t);

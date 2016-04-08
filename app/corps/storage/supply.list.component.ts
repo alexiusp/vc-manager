@@ -225,7 +225,7 @@ export class SupplyListComponent {
     }
     // invest money in companies
     if(!!this.investments) for(let t of this.investments) {
-      this._corporationService.addFundsToCompany(t.target.id, t.amount).subscribe((res:ResultMessage[]) => {
+      this._corporationService.addFundsToCompany(t.target.id, t.price).subscribe((res:ResultMessage[]) => {
         console.log("invest money in companies result", res);
         this.incrementProgress();
       });

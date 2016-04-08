@@ -500,7 +500,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                             if (i.target.id !== investEvent.cId)
                                 list.push(i);
                             else {
-                                i.amount = investEvent.amount;
+                                i.price = investEvent.amount;
                                 present = true;
                                 list.push(i);
                             }
@@ -508,7 +508,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     if (!present) {
                         var t = {
                             owner: transactions_1.TransactionObject.Company,
-                            amount: investEvent.amount,
+                            price: investEvent.amount,
                             target: this.companiesDetails[investEvent.cId]
                         };
                         list.push(t);
