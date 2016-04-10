@@ -1,15 +1,20 @@
-<img width="20" height="20" [src]="item.item.ItemType?.image" align="left"/>
-{{item.item.ItemType?.name}}
-<span class="label label-info">{{item.item[0]?.total_quantity}}</span>
-<span class="pull-right">
-	<button type="button" class="btn btn-xs"
-		[ngClass]="{'btn-primary': !item.isTransfer, 'btn-danger' : item.isTransfer}"
-		(click)="transfer()">
-		<i class="fa fa-truck"></i>
-	</button>
-	<button type="button" class="btn btn-xs"
-		[ngClass]="{'btn-success': !item.isSell, 'btn-danger' : item.isSell}"
-		(click)="sell()">
-		<i class="fa fa-shopping-bag"></i>
-	</button>
-</span>
+<div *ngIf="!item">
+	<i class="fa fa-spinner fa-pulse"></i>Loading...
+</div>
+<div *ngIf="!!item">
+	<img width="20" height="20" [src]="item.item.ItemType?.image" align="left"/>
+	{{item.item.ItemType?.name}}
+	<span class="label label-info">{{item.item[0]?.total_quantity}}</span>
+	<span class="pull-right">
+		<button type="button" class="btn btn-xs"
+			[ngClass]="{'btn-primary': !item.isTransfer, 'btn-danger' : item.isTransfer}"
+			(click)="transfer()">
+			<i class="fa fa-truck"></i>
+		</button>
+		<button type="button" class="btn btn-xs"
+			[ngClass]="{'btn-success': !item.isSell, 'btn-danger' : item.isSell}"
+			(click)="sell()">
+			<i class="fa fa-shopping-bag"></i>
+		</button>
+	</span>
+</div>

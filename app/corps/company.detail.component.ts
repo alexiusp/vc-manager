@@ -1,4 +1,5 @@
 import {Component, Input, EventEmitter, Output} from 'angular2/core';
+import { Router } from 'angular2/router';
 
 import { Company } from './contracts';
 
@@ -16,7 +17,7 @@ export class CompanyOptions {
 	templateUrl: 'app/corps/company.detail.component.html',
 })
 export class CompanyDetailComponent {
-  constructor() {}
+  constructor(private _router : Router) {}
 
   private _company;
   @Input('company-detail')
@@ -39,4 +40,8 @@ export class CompanyDetailComponent {
     //console.log("company-detail unloadProduction click");
     if(!!this.onUnload) this.onUnload.emit(null);
   }
+
+	openProduction() {
+		this._router.navigate( ['Company', { id: this.company.id }] );
+	}
 }

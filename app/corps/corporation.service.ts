@@ -118,6 +118,13 @@ export class CorporationService {
         else return this.handleError(result);
       });
   }
+	getCompanyWorkers(compId) {
+		return this._requestService.getCompanyWorkers(compId)
+		.map((result : ResponseWrapper<ResultMessage[]>) => {
+			if(result.error == 0) return result.data;
+			else return this.handleError(result);
+		});
+	}
   handleError(error : ResponseWrapper<any>) {
     //console.error("Error:",error.message);
     return error.data;

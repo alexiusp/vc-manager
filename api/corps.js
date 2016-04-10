@@ -85,3 +85,6 @@ exports.sellItemFromCompany = function(compId, itemId, amount, price, currency, 
   console.log("postBody:", postBody);
   http_request.post(`/exchanges/add_company_exchange.json?os=unknown&v=${config.version}`, postBody, cookiesArr, callback);
 }
+exports.getCompanyWorkers = function(compId, cookiesArr, callback) {
+	http_request.get(`/company_workers/workers_info/${compId}.json?os=unknown&v=${config.version}`, cookiesArr, callback);
+}

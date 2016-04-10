@@ -1,4 +1,4 @@
-System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.hack', './storage/storage.service', './request/request.service', './account/account.service', './account/account.component', './account/profile.component', './core/core.service', './corps/corporation.service', './corps/corporations.component', './corps/corporation.detail.component'], function(exports_1, context_1) {
+System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.hack', './storage/storage.service', './request/request.service', './account/account.service', './account/account.component', './account/profile.component', './core/core.service', './corps/corporation.service', './corps/corporations.component', './corps/corporation.detail.component', './corps/company.component'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.ha
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, router_1, http_1, http_hack_1, storage_service_1, request_service_1, account_service_1, account_component_1, profile_component_1, core_service_1, corporation_service_1, corporations_component_1, corporation_detail_component_1;
+    var core_1, router_1, http_1, http_hack_1, storage_service_1, request_service_1, account_service_1, account_component_1, profile_component_1, core_service_1, corporation_service_1, corporations_component_1, corporation_detail_component_1, company_component_1;
     var AppComponent;
     return {
         setters:[
@@ -52,6 +52,9 @@ System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.ha
             },
             function (corporation_detail_component_1_1) {
                 corporation_detail_component_1 = corporation_detail_component_1_1;
+            },
+            function (company_component_1_1) {
+                company_component_1 = company_component_1_1;
             }],
         execute: function() {
             AppComponent = (function () {
@@ -120,6 +123,11 @@ System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.ha
                             path: '/corps',
                             name: 'Corporations',
                             component: corporations_component_1.CorporationsComponent
+                        },
+                        {
+                            path: '/company/:id',
+                            name: 'Company',
+                            component: company_component_1.CompanyComponent
                         }
                     ]), 
                     __metadata('design:paramtypes', [core_service_1.CoreService, router_1.Router])

@@ -21,24 +21,29 @@ app.use(session({
   resave: true,
   saveUninitialized: true
 }));
+/*
 app.use(function(req, res, next) {
-  console.log('%s %s %s', req.method, req.url, req.path);
-  /*
+  //console.log('%s %s %s', req.method, req.url, req.path);
+
   res.header('Access-Control-Allow-Origin', config.url);
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
-  */
+
   next();
 });
+*/
+app.get('/', function(req, res) {
+	res.redirect('/app');
+})
 app.all('/app/*', function (req, res) {
 	res.redirect('/app');
 });
 app.all('/api', function (req, res) {
-  console.log('api root request');
+  //console.log('api root request');
   res.json({data:"battlecruiser operational"});
 });
 app.post('/api/login', function (req, res) {
-  console.log('login request', req.body);
+  //console.log('login request', req.body);
   var user = req.body;
   var api = require('./api/login.js');
   api.login(user, (result) => {
@@ -88,14 +93,14 @@ app.post('/api/login', function (req, res) {
 });
 app.get('/api/corps', function (req, res) {
   let sessCookies = req.session.remoteCookies;
-  console.log('corps list request', sessCookies);
+  //console.log('corps list request', sessCookies);
   if(!!sessCookies) {
     //console.log("loading api...");
     var api = require('./api/corps.js');
     //console.log("calling getCorpsList");
     api.getCorpsList(sessCookies, (result) => {
       let answer = result.data.corporations;
-      console.log("getCorpsList finished", answer);
+      //console.log("getCorpsList finished", answer);
       res.json({
         data    : answer,
         error   : (!!answer)? 0 : result.data.error,
@@ -105,7 +110,7 @@ app.get('/api/corps', function (req, res) {
   } else handleError(res, -1, "Session expired!");
 });
 app.get('/api/corp/:id', function (req, res) {
-  console.log("corp info request", req.params);
+  //console.log("corp info request", req.params);
   let id = +req.params.id;
   let sessCookies = req.session.remoteCookies;
   if(!!sessCookies) {
@@ -125,7 +130,7 @@ app.get('/api/corp/:id', function (req, res) {
   } else handleError(res, -1, "Session expired!");
 });
 app.get('/api/corp/storage/:id', function(req, res) {
-  console.log("corp storage request", req.params);
+  //console.log("corp storage request", req.params);
   let id = +req.params.id;
   let sessCookies = req.session.remoteCookies;
   if(!!sessCookies) {
@@ -143,7 +148,7 @@ app.get('/api/corp/storage/:id', function(req, res) {
 });
 app.get('/api/company/:id/storage', function(req, res) {
   let id = +req.params.id;
-  console.log("company %s storage request", id, req.params);
+  //console.log("company %s storage request", id, req.params);
   let sessCookies = req.session.remoteCookies;
   if(!!sessCookies) {
     let api = require('./api/corps.js');
@@ -160,12 +165,13 @@ app.get('/api/company/:id/storage', function(req, res) {
 });
 app.get('/api/company/:id', function(req, res) {
   let id = +req.params.id;
-  console.log("company %s detail request", id);
+  //console.log("company %s detail request", id);
   let sessCookies = req.session.remoteCookies;
   if(!!sessCookies) {
     let api = require('./api/corps.js');
     api.getCompanyDetail(id, sessCookies, (result) => {
       let answer = result.data.company;
+			if(!!answer.img) getFile(answer.img);
       res.json({
         data    : answer,
         error   : result.data.error,
@@ -177,7 +183,7 @@ app.get('/api/company/:id', function(req, res) {
 app.post('/api/company/:cid/storage', function(req, res) {
   let cid = +req.params.cid;
   let data = req.body;
-  console.log("company %s storage move request", cid, req.params, data);
+  //console.log("company %s storage move request", cid, req.params, data);
   let sessCookies = req.session.remoteCookies;
   if(!!sessCookies) {
     let api = require('./api/corps.js');
@@ -195,13 +201,13 @@ app.post('/api/company/:cid/storage', function(req, res) {
 app.post('/api/company/:cid/funds', function(req, res) {
   let cid = +req.params.cid;
   let data = req.body;
-  console.log("company %s funds change request", cid, req.params, data);
+  //console.log("company %s funds change request", cid, req.params, data);
   let sessCookies = req.session.remoteCookies;
   if(!!sessCookies) {
     let api = require('./api/corps.js');
     api.addFundsToCompany(cid, data.amount, sessCookies, (result) => {
       let answer = result.data.setFlash;
-      console.log("add funds for company %s success:", cid, answer);
+      //console.log("add funds for company %s success:", cid, answer);
       res.json({
         data    : answer,
         error   : result.data.error,
@@ -213,13 +219,13 @@ app.post('/api/company/:cid/funds', function(req, res) {
 app.post('/api/corp/:id/funds', function(req, res) {
 	let cid = +req.params.id;
   let data = req.body;
-  console.log("corporation %s funds change request", cid, req.params, data);
+  //console.log("corporation %s funds change request", cid, req.params, data);
   let sessCookies = req.session.remoteCookies;
   if(!!sessCookies) {
     let api = require('./api/corps.js');
     api.addFundsToCorporation(cid, data.amount, sessCookies, (result) => {
       let answer = result.data.setFlash;
-      console.log("add funds for corporation %s success:", cid, answer);
+      //console.log("add funds for corporation %s success:", cid, answer);
       res.json({
         data    : answer,
         error   : result.data.error,
@@ -231,7 +237,7 @@ app.post('/api/corp/:id/funds', function(req, res) {
 app.put('/api/company/:cid/storage', function(req, res) {
   let cid = +req.params.cid;
   let data = req.body;
-  console.log("company %s storage move request", cid, req.params, data);
+  //console.log("company %s storage move request", cid, req.params, data);
   let sessCookies = req.session.remoteCookies;
   if(!!sessCookies) {
     let api = require('./api/corps.js');
@@ -269,7 +275,7 @@ app.post('/api/company/:cid/exchange', function(req, res) {
     let api = require('./api/corps.js');
     api.sellItemFromCompany(cid, +data.itemId, +data.amount, +data.price, "vdollars", sessCookies, (result) => {
       let answer = result.data.setFlash;
-      console.log("company %s exchange success:", cid, answer);
+      //console.log("company %s exchange success:", cid, answer);
       res.json({
         data    : answer,
         error   : +result.data.error,
@@ -282,13 +288,13 @@ app.post('/api/corp/:id/exchange', function(req, res) {
 	let cid = +req.params.id;
   let data = req.body;
   let sessCookies = req.session.remoteCookies;
-  console.log("corporation %s exchange request", cid, req.params, data, sessCookies);
+  //console.log("corporation %s exchange request", cid, req.params, data, sessCookies);
   if(!!sessCookies) {
     let api = require('./api/corps.js');
     //console.log("app.post", sessCookies);
     api.sellItemFromCorporation(cid, +data.itemId, +data.amount, +data.price, "vdollars", sessCookies, (result) => {
       let answer = result.data.setFlash;
-      console.log("corporation %s exchange success:", cid, answer);
+      //console.log("corporation %s exchange success:", cid, answer);
       res.json({
         data    : answer,
         error   : +result.data.error,
@@ -297,7 +303,31 @@ app.post('/api/corp/:id/exchange', function(req, res) {
     });
   } else handleError(res, -1, "Session expired!");
 });
-
+app.get('/api/company/:id/workers', function(req, res) {
+  let id = +req.params.id;
+  //console.log("company %s workers request", id);
+  let sessCookies = req.session.remoteCookies;
+  if(!!sessCookies) {
+    let api = require('./api/corps.js');
+    api.getCompanyWorkers(id, sessCookies, (result) => {
+      let answer = {
+				employees : +result.data.employees,
+   			employees_possible : +result.data.employees_possible,
+   			foreign_employees : +result.data.foreign_employees,
+   			foreign_employees_possible : +result.data.foreign_employees_possible,
+   			manager : result.data.manager,
+				employment : result.data.employment,
+				expansion : result.data.expansion
+			};
+			if(!!answer.manager && !!answer.manager.avatar) parseAvatar(answer.manager.avatar);
+      res.json({
+        data    : answer,
+        error   : result.data.error,
+        message : ""
+      });
+    });
+  } else handleError(res, -1, "Session expired!");
+});
 
 
 

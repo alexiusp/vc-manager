@@ -141,6 +141,9 @@ System.register(['angular2/core', 'angular2/http', 'rxjs/Observable', 'angular2/
                     var options = new http_1.RequestOptions({ headers: headers });
                     return this.doRequest(RequestType.POST, 'api/company/' + compId + '/exchange', body, options);
                 };
+                RequestService.prototype.getCompanyWorkers = function (compId) {
+                    return this.doRequest(RequestType.GET, 'api/company/' + compId + '/workers');
+                };
                 RequestService.prototype.handleError = function (error) {
                     console.error(error);
                     return Observable_1.Observable.throw(error.json().message || 'Server error');

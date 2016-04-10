@@ -11,13 +11,14 @@ import { StorageItemComponent } from './storage.item.component';
 export class CompanyStorageComponent {
 
   constructor(){
+		this._items = [];
   }
 
   private _items : StorageItem[];
   @Input('company-storage')
 	set items(itemArr : StorageItem[]) {
 		//console.log("storage list setter", itemArr);
-    this._items = itemArr;
+    if(!!itemArr) this._items = itemArr;
 	}
 	get items() { return this._items; }
   findItemIndex(item : StorageItem) : number {

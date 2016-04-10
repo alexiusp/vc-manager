@@ -62,3 +62,30 @@ export interface CorpInfo {
   corporation:CorpDetail,
   companies:Array<Company>
 }
+export interface CompanyManager {
+	username : string,
+	avatar : string
+}
+export interface CompanyEmployment {
+	id	: number,
+  company_id	: number,
+  profession_type_id	: number,
+  level	: number,
+  salary	: string,
+  is_hiring	: boolean,
+  max_profession_level	: number
+}
+export interface CompanyWorkersExpansion {
+	additional_workplaces	:	number,
+  price	: number,
+  currency	: string
+}
+export interface CompanyWorkers {
+	employees : number,
+	employees_possible : number,
+	foreign_employees : number,
+	foreign_employees_possible : number,
+	manager : CompanyManager
+	employment : CompanyEmployment,
+	expansion : CompanyWorkersExpansion
+}

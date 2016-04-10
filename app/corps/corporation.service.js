@@ -167,6 +167,16 @@ System.register(['angular2/core', '../request/request.service', '../core/diction
                             return _this.handleError(result);
                     });
                 };
+                CorporationService.prototype.getCompanyWorkers = function (compId) {
+                    var _this = this;
+                    return this._requestService.getCompanyWorkers(compId)
+                        .map(function (result) {
+                        if (result.error == 0)
+                            return result.data;
+                        else
+                            return _this.handleError(result);
+                    });
+                };
                 CorporationService.prototype.handleError = function (error) {
                     //console.error("Error:",error.message);
                     return error.data;

@@ -24,12 +24,14 @@ System.register(['angular2/core', './storage.item.component'], function(exports_
             CompanyStorageComponent = (function () {
                 function CompanyStorageComponent() {
                     this.onChange = new core_1.EventEmitter();
+                    this._items = [];
                 }
                 Object.defineProperty(CompanyStorageComponent.prototype, "items", {
                     get: function () { return this._items; },
                     set: function (itemArr) {
                         //console.log("storage list setter", itemArr);
-                        this._items = itemArr;
+                        if (!!itemArr)
+                            this._items = itemArr;
                     },
                     enumerable: true,
                     configurable: true

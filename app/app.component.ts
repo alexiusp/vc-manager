@@ -13,6 +13,7 @@ import { CoreService } from './core/core.service';
 import { CorporationService } from './corps/corporation.service';
 import { CorporationsComponent } from './corps/corporations.component';
 import { CorporationDetailComponent } from './corps/corporation.detail.component';
+import { CompanyComponent } from './corps/company.component';
 
 @Component({
   selector: 'my-app',
@@ -50,6 +51,11 @@ import { CorporationDetailComponent } from './corps/corporation.detail.component
     path: '/corps',
     name: 'Corporations',
     component: CorporationsComponent
+  },
+  {
+    path: '/company/:id',
+    name: 'Company',
+    component: CompanyComponent
   }
 ])
 export class AppComponent implements OnInit {

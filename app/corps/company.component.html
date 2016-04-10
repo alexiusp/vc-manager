@@ -1,0 +1,115 @@
+<div class="page-header">
+	<h1 *ngIf="!!company">
+		<button type="button" class="btn btn-default" (click)="goBack()">
+			<i class="glyphicon glyphicon-chevron-left"></i>
+		</button>
+		<img width="36px" [src]="company.img"/> {{company.name}}
+	</h1>
+</div>
+<div class="row" *ngIf="!company">
+  <div class="col-sm-12"><i class="fa fa-spinner fa-pulse"></i>Loading...</div>
+</div>
+<div class="row" *ngIf="!!company">
+  <div class="col-sm-12">
+		<ul class="nav nav-pills nav-justified">
+			<li role="presentation" [ngClass]="{'active': activePage == 0}">
+				<a href="#" (click)="$event.preventDefault();setPage(0)"><i class="fa fa-building-o"></i> Common</a>
+			</li>
+			<li role="presentation" [ngClass]="{'active': activePage == 1}">
+				<a href="#" (click)="$event.preventDefault();setPage(1)"><i class="fa fa-plug"></i> Workers</a>
+			</li>
+			<li role="presentation" [ngClass]="{'active': activePage == 2}">
+				<a href="#" (click)="$event.preventDefault();setPage(2)">Storage</a>
+			</li>
+		</ul>
+	</div>
+</div>
+<div class="row" *ngIf="!!company">
+  <div class="col-sm-12">
+		<div class="panel panel-default" *ngIf="activePage == 0">
+			<div class="list-group">
+				<div class="list-group-item list-group-item-info"><i class="fa fa-building-o"></i> Info</div>
+				<div class="list-group-item"><i class="fa fa-map-marker"></i> City: {{company.city}}</div>
+				<div class="list-group-item"><i class="fa fa-book"></i> Type: <img width="16" [src]="company.img"/>&nbsp;{{company.type}}</div>
+				<div class="list-group-item"><i class="fa fa-trophy"></i> Level: {{company.company_level}}</div>
+				<div class="list-group-item">
+					<div class="row">
+				    <div class="col-xs-6">
+				      <img class="pull-left" width="16" height="16" alt="vDollars" src="/img/icons/icon-vdollar.png"/>&nbsp;
+				      {{company.vd_balance}}&nbsp;vD
+				    </div>
+				    <div class="col-xs-6">
+				      <div class="input-group input-group-sm">
+				        <input type="number" class="form-control" placeholder="vDollars" #addFundCompanyAmount (keyup)="0"/>
+				        <span class="input-group-btn">
+				          <button class="btn btn-success" type="button" (click)="addFundsToCompany(addFundCompanyAmount.value)">
+				            <i class="glyphicon glyphicon-usd"></i>&nbsp;Invest
+				          </button>
+				        </span>
+				      </div>
+				    </div>
+				  </div>
+				</div>
+				<div class="list-group-item" *ngIf="!!workers">
+					Manager: <img width="16" [src]="'/app/images/avatars/'+workers.manager.avatar"/>&nbsp;{{workers.manager.username}}
+					<button type="button" disabled="true"
+						class="btn btn-defaul btn-xs pull-right disabled"
+						(click)="changeManager()">
+						<i class="fa fa-cog"></i>
+					</button>
+				</div>
+				<div class="list-group-item list-group-item-info"><i class="fa fa-cogs"></i> Production</div>
+				<div class="list-group-item">
+					<span><img width="20" height="20" [src]="company.current_production?.img" align="left"/>{{company.current_production?.name}}</span>
+				  <span class="label" [ngClass]="{'label-success': company.current_production.currently_producing, 'label-danger': !company.current_production.currently_producing}">
+				    {{company.current_production.production_status_title}}
+				  </span>
+				  <span class="label label-info">{{company.current_production?.quantity}}</span>
+				</div>
+				<div class="list-group-item">
+					<div class="progress">
+			      <div class="progress-bar progress-bar-striped active"
+			        role="progressbar"
+			        [attr.aria-valuenow]="company.current_production.production_progress"
+			        aria-valuemin="0"
+			        aria-valuemax="100"
+			        [style.width.%]="company.current_production.production_progress">
+			        {{company.current_production.production_progress | number:'1.2-2'}}%
+			      </div>
+			    </div>
+				</div>
+				<div class="list-group-item" *ngIf="company.current_production.resources.length > 0">Resources:</div>
+				<div class="list-group-item"
+					[ngClass]="{'list-group-item-danger': !company.can_start_production}"
+					*ngFor="#item of company.current_production.resources">
+					{{item.title}} {{item.have}}/{{item.needs}}
+					<span *ngIf="item.needs_for_start > 0" class="badge">Needs for start: {{item.needs_for_start}}</span>
+				</div>
+
+				<div class="list-group-item">
+					<pre>{{ company | json}}</pre>
+				</div>
+				<div class="list-group-item"></div>
+
+			</div>
+		</div>
+		<div class="panel panel-default" *ngIf="activePage == 1">
+			<div class="list-group" *ngIf="!!workers">
+				<div class="list-group-item">
+					Workplaces: <i class="fa fa-users"></i> {{workers.employees}} / {{workers.employees_possible}} <i class="fa fa-user-secret"></i> {{workers.foreign_employees}} / {{workers.foreign_employees_possible}}
+				</div>
+				<div class="list-group-item">Work conditions: Level: {{workers.employment.level}} Salary: {{workers.employment.salary}}</div>
+				<div class="list-group-item">
+					<pre>{{ workers | json}}</pre>
+				</div>
+				<div class="list-group-item"></div>
+			</div>
+		</div>
+		<div class="panel panel-default" *ngIf="activePage == 2">
+			<div class="list-group" *ngIf="!!storage"
+				[company-storage]="storage"
+				(on-change)="storageChange($event)">
+			</div>
+		</div>
+	</div>
+</div>
