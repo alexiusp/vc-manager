@@ -328,8 +328,47 @@ app.get('/api/company/:id/workers', function(req, res) {
     });
   } else handleError(res, -1, "Session expired!");
 });
-
-
+app.get('/api/company/:id/production', function(req, res) {
+  let id = +req.params.id;
+  //console.log("company %s production list request", id);
+  let sessCookies = req.session.remoteCookies;
+  if(!!sessCookies) {
+    let api = require('./api/corps.js');
+    api.getProductionList(id, sessCookies, (result) => {
+      let answer = result.data.company_productions;
+			// parse production items and components images
+			for(let item of answer) {
+				if(!!item.item_type.image) getFile(item.item_type.image);
+				if(!!item.item_type.ItemTypeResource) for(let resource of item.item_type.ItemTypeResource) {
+					if(!!resource.ItemTypeMain) getFile(resource.ItemTypeMain.image);
+				}
+			}
+      res.json({
+        data    : answer,
+        error   : result.data.error,
+        message : ""
+      });
+    });
+  } else handleError(res, -1, "Session expired!");
+});
+app.post('/api/company/:id/production', function(req, res) {
+	let cid = +req.params.id;
+  let data = req.body;
+  let sessCookies = req.session.remoteCookies;
+  //console.log("corporation %s production change request", cid, req.params, data, sessCookies);
+  if(!!sessCookies) {
+    let api = require('./api/corps.js');
+    api.setProduction(cid, +data.itemId, sessCookies, (result) => {
+      let answer = result.data.setFlash;
+      //console.log("corporation %s production change result:", cid, answer);
+      res.json({
+        data    : answer,
+        error   : +result.data.error,
+        message : ""
+      });
+    });
+  } else handleError(res, -1, "Session expired!");
+});
 
 
 

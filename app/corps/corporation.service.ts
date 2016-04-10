@@ -125,6 +125,20 @@ export class CorporationService {
 			else return this.handleError(result);
 		});
 	}
+	getCompanyProduction(compId) {
+		return this._requestService.getCompanyProduction(compId)
+		.map((result : ResponseWrapper<ResultMessage[]>) => {
+			if(result.error == 0) return result.data;
+			else return this.handleError(result);
+		});
+	}
+	setCompanyProduction(compId, itemId) {
+		return this._requestService.setCompanyProduction(compId, itemId)
+		.map((result : ResponseWrapper<ResultMessage[]>) => {
+			if(result.error == 0) return result.data;
+			else return this.handleError(result);
+		});
+	}
   handleError(error : ResponseWrapper<any>) {
     //console.error("Error:",error.message);
     return error.data;

@@ -9,7 +9,7 @@ export interface BaseItem {
 
 export interface ItemType {
   id:number,
-  produce_hours:string,
+  produce_hours:string,// production points!
   class:string,
   stack:number,
   type:string,
@@ -50,7 +50,7 @@ export interface ItemType {
   can_use:number,
   description:string,
   category_id:number,
-  prod:number,
+  prod:number,// value?
   energy_bonus:number,
   energy_rest_speed_bonus:number,
   energy_rest_speed_expire:number,
@@ -72,4 +72,28 @@ export interface CorporationStorageElement extends BaseStorageElement {
 
 export interface CompanyStorageElement extends BaseStorageElement {
   CompanyItem: BaseItem
+}
+
+export interface ProductionType extends ItemType {
+	ItemTypeResource : ResourceItem[]
+}
+export interface ResourceItem {
+	id								: number,
+	item_type_main_id	: number,
+	item_type_id			: number,
+	resource_count		: string,
+	production_count	: number,
+	ItemTypeMain			: ItemType
+}
+export interface ResourceRequirement {
+	title	: string,
+	needs	: string,
+	have	: number
+}
+export interface CompanyProduction {
+	item_type : ProductionType,
+	resources	: ResourceRequirement[],
+	current_production	: boolean,
+	production_progress	: string,
+	receipt		: boolean
 }

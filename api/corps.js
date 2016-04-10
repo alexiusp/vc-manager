@@ -82,9 +82,23 @@ exports.sellItemFromCompany = function(compId, itemId, amount, price, currency, 
       }
     }
   });
-  console.log("postBody:", postBody);
+  //console.log("postBody:", postBody);
   http_request.post(`/exchanges/add_company_exchange.json?os=unknown&v=${config.version}`, postBody, cookiesArr, callback);
 }
 exports.getCompanyWorkers = function(compId, cookiesArr, callback) {
 	http_request.get(`/company_workers/workers_info/${compId}.json?os=unknown&v=${config.version}`, cookiesArr, callback);
+}
+exports.getProductionList = function(compId, cookiesArr, callback) {
+	http_request.get(`/companies/production_list/${compId}.json?os=unknown&v=${config.version}`, cookiesArr, callback);
+}
+exports.setProduction = function(compId, itemId, cookiesArr, callback) {
+	let postBody = querystring.stringify({
+    data : {
+      Company : {
+        id : +compId,
+        current_production : +itemId
+      }
+    }
+  });
+	http_request.post(`/companies/set_production.json?os=unknown&v=${config.version}`, postBody, cookiesArr, callback);
 }

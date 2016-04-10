@@ -47,30 +47,46 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './corp
                     this._location.back();
                 };
                 CompanyComponent.prototype.ngOnInit = function () {
-                    var _this = this;
                     if (!this._coreService.isLoggedIn)
                         this._router.navigateByUrl('/');
                     else {
                         this.cId = +this._routeParams.get('id');
-                        this._corporationService.getCompanyDetail(this.cId)
-                            .subscribe(function (res) {
-                            //console.log(res);
-                            _this.company = res;
-                        });
-                        this._corporationService.getCompanyStorage(this.cId)
-                            .subscribe(function (res) {
-                            var list = [];
-                            for (var _i = 0, res_1 = res; _i < res_1.length; _i++) {
-                                var i = res_1[_i];
-                                list.push(new models_1.StorageItem(i));
-                            }
-                            _this.storage = list;
-                        });
-                        this._corporationService.getCompanyWorkers(this.cId)
-                            .subscribe(function (res) {
-                            _this.workers = res;
-                        });
+                        this.loadInfo();
+                        this.loadStorage();
+                        this.loadWorkers();
                     }
+                };
+                CompanyComponent.prototype.loadInfo = function () {
+                    var _this = this;
+                    this._corporationService.getCompanyDetail(this.cId)
+                        .subscribe(function (res) {
+                        //console.log(res);
+                        _this.company = res;
+                    });
+                    this._corporationService.getCompanyProduction(this.cId)
+                        .subscribe(function (res) {
+                        //console.log("received production", res);
+                        _this.production = res;
+                    });
+                };
+                CompanyComponent.prototype.loadStorage = function () {
+                    var _this = this;
+                    this._corporationService.getCompanyStorage(this.cId)
+                        .subscribe(function (res) {
+                        var list = [];
+                        for (var _i = 0, res_1 = res; _i < res_1.length; _i++) {
+                            var i = res_1[_i];
+                            list.push(new models_1.StorageItem(i));
+                        }
+                        _this.storage = list;
+                    });
+                };
+                CompanyComponent.prototype.loadWorkers = function () {
+                    var _this = this;
+                    this._corporationService.getCompanyWorkers(this.cId)
+                        .subscribe(function (res) {
+                        _this.workers = res;
+                    });
                 };
                 CompanyComponent.prototype.setPage = function (page) {
                     this.activePage = page;
@@ -80,6 +96,17 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './corp
                 };
                 CompanyComponent.prototype.storageChange = function (list) {
                     console.log("storage change:", list);
+                };
+                CompanyComponent.prototype.openProduction = function () {
+                    this.productionOpen = !this.productionOpen;
+                };
+                CompanyComponent.prototype.setProduction = function (item) {
+                    var _this = this;
+                    this._corporationService.setCompanyProduction(this.cId, item.item_type.id)
+                        .subscribe(function (res) {
+                        console.log("set production result", res);
+                        _this.loadInfo();
+                    });
                 };
                 CompanyComponent = __decorate([
                     core_1.Component({

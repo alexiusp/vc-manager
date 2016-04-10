@@ -19,7 +19,7 @@
 				<a href="#" (click)="$event.preventDefault();setPage(1)"><i class="fa fa-plug"></i> Workers</a>
 			</li>
 			<li role="presentation" [ngClass]="{'active': activePage == 2}">
-				<a href="#" (click)="$event.preventDefault();setPage(2)">Storage</a>
+				<a href="#" (click)="$event.preventDefault();setPage(2)"><i class="fa fa-cubes"></i> Storage</a>
 			</li>
 		</ul>
 	</div>
@@ -58,6 +58,10 @@
 						<i class="fa fa-cog"></i>
 					</button>
 				</div>
+			</div>
+		</div>
+		<div class="panel panel-default" *ngIf="activePage == 0">
+			<div class="list-group">
 				<div class="list-group-item list-group-item-info"><i class="fa fa-cogs"></i> Production</div>
 				<div class="list-group-item">
 					<span><img width="20" height="20" [src]="company.current_production?.img" align="left"/>{{company.current_production?.name}}</span>
@@ -65,8 +69,9 @@
 				    {{company.current_production.production_status_title}}
 				  </span>
 				  <span class="label label-info">{{company.current_production?.quantity}}</span>
+					<button type="button" class="btn btn-xs btn-default pull-right" (click)="openProduction()"><i class="fa fa-cog"></i></button>
 				</div>
-				<div class="list-group-item">
+				<div class="list-group-item" *ngIf="!productionOpen">
 					<div class="progress">
 			      <div class="progress-bar progress-bar-striped active"
 			        role="progressbar"
@@ -78,19 +83,37 @@
 			      </div>
 			    </div>
 				</div>
-				<div class="list-group-item" *ngIf="company.current_production.resources.length > 0">Resources:</div>
-				<div class="list-group-item"
-					[ngClass]="{'list-group-item-danger': !company.can_start_production}"
-					*ngFor="#item of company.current_production.resources">
-					{{item.title}} {{item.have}}/{{item.needs}}
-					<span *ngIf="item.needs_for_start > 0" class="badge">Needs for start: {{item.needs_for_start}}</span>
-				</div>
-
+			</div>
+			<div class="list-group" *ngIf="!productionOpen && company.current_production.resources.length > 0">
 				<div class="list-group-item">
-					<pre>{{ company | json}}</pre>
+					<p class="list-group-item-text"
+						[ngClass]="{'bg-danger': !company.can_start_production}"
+						*ngFor="#item of company.current_production.resources">
+						{{item?.title}} {{item?.needs}} / {{item?.have}}
+						<span *ngIf="item?.needs_for_start > 0" class="label label-danger pull-right">Needs for start: {{item?.needs_for_start}}</span>
+					</p>
 				</div>
-				<div class="list-group-item"></div>
-
+			</div>
+			<div class="list-group" *ngIf="productionOpen">
+				<div class="list-group-item list-group-item-info">Select production</div>
+				<template ngFor #item [ngForOf]="production">
+					<button type="button" class="list-group-item"
+						(click)="setProduction(item)"
+						[ngClass]="{'list-group-item-success': item.current_production && company.can_start_production, 'list-group-item-danger': item.current_production && !company.can_start_production}">
+						<span class="glyphicon glyphicon-ok pull-right" *ngIf="item.current_production"></span>&nbsp;
+						<span><img width="20" height="20" [src]="item.item_type.image" align="left"/>{{item.item_type.name}}</span>
+						<!-- <pre>{{item | json}}</pre> -->
+					</button>
+					<div class="list-group-item"
+						[ngClass]="{'list-group-item-success': item.current_production && company.can_start_production, 'list-group-item-danger': item.current_production && !company.can_start_production}">
+						<p class="list-group-item-text" *ngFor="#r of item.resources">
+							{{r.title}} {{r.needs}} / {{r.have}}
+						</p>
+						<p class="list-group-item-text">
+							<img class="pull-left" width="16" height="16" alt="Production points" src="/img/icons/icon-production.png"/> {{item.item_type.produce_hours}} / {{item.production_progress}}
+						</p>
+					</div>
+				</template>
 			</div>
 		</div>
 		<div class="panel panel-default" *ngIf="activePage == 1">

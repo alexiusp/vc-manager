@@ -177,6 +177,26 @@ System.register(['angular2/core', '../request/request.service', '../core/diction
                             return _this.handleError(result);
                     });
                 };
+                CorporationService.prototype.getCompanyProduction = function (compId) {
+                    var _this = this;
+                    return this._requestService.getCompanyProduction(compId)
+                        .map(function (result) {
+                        if (result.error == 0)
+                            return result.data;
+                        else
+                            return _this.handleError(result);
+                    });
+                };
+                CorporationService.prototype.setCompanyProduction = function (compId, itemId) {
+                    var _this = this;
+                    return this._requestService.setCompanyProduction(compId, itemId)
+                        .map(function (result) {
+                        if (result.error == 0)
+                            return result.data;
+                        else
+                            return _this.handleError(result);
+                    });
+                };
                 CorporationService.prototype.handleError = function (error) {
                     //console.error("Error:",error.message);
                     return error.data;

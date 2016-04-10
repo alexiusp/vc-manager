@@ -120,6 +120,17 @@ export class RequestService {
 	getCompanyWorkers(compId) : Observable<ResponseWrapper<any>> {
 		return this.doRequest(RequestType.GET, 'api/company/'+compId+'/workers');
 	}
+	getCompanyProduction(compId : number) : Observable<ResponseWrapper<any>> {
+		return this.doRequest(RequestType.GET, 'api/company/'+compId+'/production');
+	}
+	setCompanyProduction(compId : number, itemId : number) : Observable<ResponseWrapper<any>> {
+    let body = JSON.stringify({
+      itemId  : itemId
+    });
+    let headers = new Headers({ 'Content-Type': 'application/json' });
+    let options = new RequestOptions({ headers: headers });
+    return this.doRequest(RequestType.POST, 'api/company/'+compId+'/production', body, options);
+	}
   private handleError (error: Response) {
     console.error(error);
     return Observable.throw(error.json().message || 'Server error');
