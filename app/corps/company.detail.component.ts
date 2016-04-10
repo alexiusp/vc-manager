@@ -38,10 +38,14 @@ export class CompanyDetailComponent {
   @Output('on-unload') onUnload = new EventEmitter();
   unloadProduction() {
     //console.log("company-detail unloadProduction click");
-    if(!!this.onUnload) this.onUnload.emit(null);
+    if(!!this.onUnload) this.onUnload.emit(false);
   }
 
 	openProduction() {
 		this._router.navigate( ['Company', { id: this.company.id }] );
+	}
+
+	unloadStorage() {
+		if(!!this.onUnload) this.onUnload.emit(true);
 	}
 }

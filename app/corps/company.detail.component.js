@@ -50,10 +50,14 @@ System.register(['angular2/core', 'angular2/router'], function(exports_1, contex
                 CompanyDetailComponent.prototype.unloadProduction = function () {
                     //console.log("company-detail unloadProduction click");
                     if (!!this.onUnload)
-                        this.onUnload.emit(null);
+                        this.onUnload.emit(false);
                 };
                 CompanyDetailComponent.prototype.openProduction = function () {
                     this._router.navigate(['Company', { id: this.company.id }]);
+                };
+                CompanyDetailComponent.prototype.unloadStorage = function () {
+                    if (!!this.onUnload)
+                        this.onUnload.emit(true);
                 };
                 __decorate([
                     core_1.Input('company-detail'), 

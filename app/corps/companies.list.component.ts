@@ -128,12 +128,15 @@ export class CompaniesListComponent {
 		//console.log("invest to selected", +amount);
     if(!!this.onInvest) this.onInvest.emit({cId : c.item.id, amount: +amount});
   }
-
-  uloadProduction(c : Company) {
+	unload(c : Company, unloadAll : boolean) {
+		if(unloadAll) this.putCompStorageToCorp(c);
+		else this.unloadProduction(c);
+	}
+  unloadProduction(c : Company) {
     let current = (!!this.details[c.id])? this.details[c.id].current_production : c.current_production;
     let current2 = c.current_production;
     let cStorage = this.storages[c.id];
-    //console.log("uloadProduction", current, cStorage);
+    //console.log("unloadProduction", current, cStorage);
     if(current.quantity > 0) {
       // look for production item in storage
       let prodItem : StorageItem;
@@ -158,8 +161,20 @@ export class CompaniesListComponent {
     }
   }
   putAllProductionToStorage() {
-    for(let c of this.companies) if(c.isSelected) this.uloadProduction(c.item);
+    for(let c of this.companies) if(c.isSelected) this.unloadProduction(c.item);
   }
+	putCompStorageToCorp(c : Company) {
+		let sList : StorageItem[] = [];
+		let cStorage = this.storages[c.id];
+		for(let item of cStorage) {
+			item.isTransfer = true;
+			sList.push(item);
+		}
+		this.companyStorageChange(c.id, sList);
+	}
+	putAllStorageToCorp() {
+		for(let c of this.companies) if(c.isSelected) this.putCompStorageToCorp(c.item);
+	}
   addFundsToAll(amount : number) {
 		//console.log("addFundsToAll", amount);
     for(let c of this.companies) if(c.isSelected) this.invest(c, +amount);

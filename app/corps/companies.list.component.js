@@ -153,11 +153,17 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     if (!!this.onInvest)
                         this.onInvest.emit({ cId: c.item.id, amount: +amount });
                 };
-                CompaniesListComponent.prototype.uloadProduction = function (c) {
+                CompaniesListComponent.prototype.unload = function (c, unloadAll) {
+                    if (unloadAll)
+                        this.putCompStorageToCorp(c);
+                    else
+                        this.unloadProduction(c);
+                };
+                CompaniesListComponent.prototype.unloadProduction = function (c) {
                     var current = (!!this.details[c.id]) ? this.details[c.id].current_production : c.current_production;
                     var current2 = c.current_production;
                     var cStorage = this.storages[c.id];
-                    //console.log("uloadProduction", current, cStorage);
+                    //console.log("unloadProduction", current, cStorage);
                     if (current.quantity > 0) {
                         // look for production item in storage
                         var prodItem = void 0;
@@ -193,7 +199,24 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
                         var c = _a[_i];
                         if (c.isSelected)
-                            this.uloadProduction(c.item);
+                            this.unloadProduction(c.item);
+                    }
+                };
+                CompaniesListComponent.prototype.putCompStorageToCorp = function (c) {
+                    var sList = [];
+                    var cStorage = this.storages[c.id];
+                    for (var _i = 0, cStorage_3 = cStorage; _i < cStorage_3.length; _i++) {
+                        var item = cStorage_3[_i];
+                        item.isTransfer = true;
+                        sList.push(item);
+                    }
+                    this.companyStorageChange(c.id, sList);
+                };
+                CompaniesListComponent.prototype.putAllStorageToCorp = function () {
+                    for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
+                        var c = _a[_i];
+                        if (c.isSelected)
+                            this.putCompStorageToCorp(c.item);
                     }
                 };
                 CompaniesListComponent.prototype.addFundsToAll = function (amount) {

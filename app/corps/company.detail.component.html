@@ -17,25 +17,30 @@
   </div>
 </div>
 <div class="list-group-item" [ngClass]="{'active': isSelected}">
+	<div class="btn-group btn-group-xs btn-group-justified" role="group">
+		<div class="btn-group" role="group">
+			<button type="button"
+				class="btn btn-default"
+				(click)="openProduction()">
+	  		<i class="fa fa-building-o"></i>&nbsp;Open
+	  	</button>
+		</div>
+		<div class="btn-group" role="group">
+			<button type="button" class="btn btn-primary" (click)="unloadProduction()">
+				<i class="fa fa-truck"></i>&nbsp;Unload
+			</button>
+		</div>
+		<div class="btn-group" role="group">
+			<button type="button" class="btn btn-default" (click)="unloadStorage()">
+				<i class="glyphicon glyphicon-download-alt"></i>&nbsp;Empty
+			</button>
+		</div>
+	</div>
+</div>
+<div class="list-group-item" [ngClass]="{'active': isSelected}">
   <span><img width="20" height="20" [src]="_company.current_production?.img" align="left"/>{{_company.current_production?.name}}</span>
   <span class="label" [ngClass]="{'label-success': company.current_production.currently_producing, 'label-danger': !company.current_production.currently_producing}">
     <i class="glyphicon" [ngClass]="{'glyphicon-thumbs-up': company.current_production.currently_producing, 'glyphicon-thumbs-down': !company.current_production.currently_producing}"></i>
   </span>
   <span class="label label-info">{{_company.current_production?.quantity}}</span>
-  <span class="pull-right">
-    <button type="button"
-			class="btn btn-xs btn-default"
-			(click)="openProduction()">
-  		<i class="fa fa-cog"></i>
-  	</button>
-  	<button type="button" class="btn btn-xs btn-primary"
-  		(click)="unloadProduction()">
-  		<i class="fa fa-truck"></i>
-  	</button>
-  </span>
 </div>
-<!--
-<div class="list-group-item" [ngClass]="{'active': isSelected}">
-  <pre>{{_company | json}}</pre>
-</div>
--->

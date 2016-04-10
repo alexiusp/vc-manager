@@ -16,7 +16,7 @@
     </li>
     <li class="list-group-item" *ngIf="is_manager">
       <div class="row">
-        <div class="col-sm-12 col-md-4">
+        <div class="col-sm-12 col-md-3">
           <div class="dropdown" [ngClass]="{'open': !!filterDropdownOpen}">
             <button type="button" class="btn btn-default btn-sm btn-block dropdown-toggle" (click)="toggleFilter()">
               {{filterTitle}}&nbsp;
@@ -32,10 +32,19 @@
             </ul>
           </div>
         </div>
-        <div class="col-sm-12 col-md-4">
-          <button type="button" class="btn btn-primary btn-block btn-sm" (click)="putAllProductionToStorage()">
-            <i class="fa fa-truck"></i>&nbsp;Unload
-          </button>
+        <div class="col-sm-12 col-md-5">
+					<div class="btn-group btn-group-sm btn-group-justified" role="group">
+						<div class="btn-group" role="group">
+		          <button type="button" class="btn btn-primary" (click)="putAllProductionToStorage()">
+		            <i class="fa fa-truck"></i>&nbsp;Unload
+		          </button>
+						</div>
+						<div class="btn-group" role="group">
+							<button type="button" class="btn btn-default" (click)="putAllStorageToCorp()">
+		            <i class="glyphicon glyphicon-download-alt"></i>&nbsp;Empty
+		          </button>
+						</div>
+					</div>
         </div>
         <div class="col-sm-12 col-md-4">
           <div class="input-group input-group-sm">
@@ -61,7 +70,7 @@
       [company-detail]="details[c.item.id]"
       [is-manager]="is_manager"
       (on-invest)="invest(c, $event)"
-      (on-unload)="uloadProduction(c.item)"
+      (on-unload)="unload(c.item, $event)"
       >
     </div>
     <div *ngIf="c.isOpen && is_manager && !!storages && !!storages[c.item.id]"
