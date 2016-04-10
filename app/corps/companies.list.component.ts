@@ -125,7 +125,8 @@ export class CompaniesListComponent {
   @Output('on-invest') onInvest = new EventEmitter();
 
   invest(c : CompanyItem, amount : number) {
-    if(!!this.onInvest) this.onInvest.emit({cId : c.item.id, amount: amount});
+		//console.log("invest to selected", +amount);
+    if(!!this.onInvest) this.onInvest.emit({cId : c.item.id, amount: +amount});
   }
 
   uloadProduction(c : Company) {
@@ -160,7 +161,8 @@ export class CompaniesListComponent {
     for(let c of this.companies) if(c.isSelected) this.uloadProduction(c.item);
   }
   addFundsToAll(amount : number) {
-    for(let c of this.companies) if(c.isSelected) this.invest(c, amount);
+		//console.log("addFundsToAll", amount);
+    for(let c of this.companies) if(c.isSelected) this.invest(c, +amount);
   }
   @Output('on-scroll') onScroll = new EventEmitter();
   scroll() {

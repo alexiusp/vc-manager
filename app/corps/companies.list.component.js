@@ -149,8 +149,9 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     c.isOpen = !c.isOpen;
                 };
                 CompaniesListComponent.prototype.invest = function (c, amount) {
+                    //console.log("invest to selected", +amount);
                     if (!!this.onInvest)
-                        this.onInvest.emit({ cId: c.item.id, amount: amount });
+                        this.onInvest.emit({ cId: c.item.id, amount: +amount });
                 };
                 CompaniesListComponent.prototype.uloadProduction = function (c) {
                     var current = (!!this.details[c.id]) ? this.details[c.id].current_production : c.current_production;
@@ -196,10 +197,11 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     }
                 };
                 CompaniesListComponent.prototype.addFundsToAll = function (amount) {
+                    //console.log("addFundsToAll", amount);
                     for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
                         var c = _a[_i];
                         if (c.isSelected)
-                            this.invest(c, amount);
+                            this.invest(c, +amount);
                     }
                 };
                 CompaniesListComponent.prototype.scroll = function () {

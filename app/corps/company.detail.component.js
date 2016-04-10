@@ -1,4 +1,4 @@
-System.register(['angular2/core'], function(exports_1, context_1) {
+System.register(['angular2/core', 'angular2/router'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,12 +10,15 @@ System.register(['angular2/core'], function(exports_1, context_1) {
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1;
+    var core_1, router_1;
     var CompanyOptions, CompanyDetailComponent;
     return {
         setters:[
             function (core_1_1) {
                 core_1 = core_1_1;
+            },
+            function (router_1_1) {
+                router_1 = router_1_1;
             }],
         execute: function() {
             CompanyOptions = (function () {
@@ -27,7 +30,8 @@ System.register(['angular2/core'], function(exports_1, context_1) {
             }());
             exports_1("CompanyOptions", CompanyOptions);
             CompanyDetailComponent = (function () {
-                function CompanyDetailComponent() {
+                function CompanyDetailComponent(_router) {
+                    this._router = _router;
                     this.onInvest = new core_1.EventEmitter();
                     this.onUnload = new core_1.EventEmitter();
                 }
@@ -47,6 +51,9 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                     //console.log("company-detail unloadProduction click");
                     if (!!this.onUnload)
                         this.onUnload.emit(null);
+                };
+                CompanyDetailComponent.prototype.openProduction = function () {
+                    this._router.navigate(['Company', { id: this.company.id }]);
                 };
                 __decorate([
                     core_1.Input('company-detail'), 
@@ -70,7 +77,7 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                         selector: '[company-detail]',
                         templateUrl: 'app/corps/company.detail.component.html',
                     }), 
-                    __metadata('design:paramtypes', [])
+                    __metadata('design:paramtypes', [router_1.Router])
                 ], CompanyDetailComponent);
                 return CompanyDetailComponent;
             }());

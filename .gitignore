@@ -1,6 +1,6 @@
 # server parsed images
 img/items/*
-app/images/avatars/*
+
 # Logs
 logs
 *.log

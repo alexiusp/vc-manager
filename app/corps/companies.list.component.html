@@ -41,7 +41,7 @@
           <div class="input-group input-group-sm">
             <input type="text" class="form-control" placeholder="Investment" #addFundAmount (keyup)="0"/>
             <span class="input-group-btn">
-              <button class="btn btn-success" type="button" (click)="addFundsToAll(addFundAmount.value);addFundAmount.value = ''">
+              <button class="btn btn-success" type="button" (click)="addFundsToAll(+addFundAmount.value);addFundAmount.value = ''">
                 <i class="glyphicon glyphicon-usd"></i>&nbsp;Invest
               </button>
             </span>

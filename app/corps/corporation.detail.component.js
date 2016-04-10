@@ -492,6 +492,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this.transferList = tList;
                 };
                 CorporationDetailComponent.prototype.companyInvest = function (investEvent) {
+                    //console.log("invest event:", investEvent);
                     var list = [];
                     var present = false;
                     if (!!this.investList)
@@ -500,7 +501,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                             if (i.target.id !== investEvent.cId)
                                 list.push(i);
                             else {
-                                i.price = investEvent.amount;
+                                i.price = +investEvent.amount;
                                 present = true;
                                 list.push(i);
                             }
@@ -508,9 +509,10 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     if (!present) {
                         var t = {
                             owner: transactions_1.TransactionObject.Company,
-                            price: investEvent.amount,
+                            price: +investEvent.amount,
                             target: this.companiesDetails[investEvent.cId]
                         };
+                        //console.log("new invest transaction", t);
                         list.push(t);
                     }
                     this.investList = list;
