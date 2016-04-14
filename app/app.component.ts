@@ -14,11 +14,13 @@ import { CorporationService } from './corps/corporation.service';
 import { CorporationsComponent } from './corps/corporations.component';
 import { CorporationDetailComponent } from './corps/corporation.detail.component';
 import { CompanyComponent } from './corps/company.component';
+import { AlertListComponent } from './messages/alert.list.component';
+import { MessagesService } from './messages/messages.service';
 
 @Component({
   selector: 'my-app',
   templateUrl: 'app/app.component.html',
-  directives: [ROUTER_DIRECTIVES],
+  directives: [ROUTER_DIRECTIVES, AlertListComponent],
   providers: [
     ROUTER_PROVIDERS,
     HTTP_PROVIDERS,
@@ -27,7 +29,8 @@ import { CompanyComponent } from './corps/company.component';
     RequestService,
     CoreService,
     AccountService,
-    CorporationService
+    CorporationService,
+    MessagesService
   ]
 })
 @RouteConfig([
@@ -64,12 +67,10 @@ export class AppComponent implements OnInit {
   constructor(private _coreService: CoreService, private _router : Router) {}
   ngOnInit() {
 		let loggedin = this._coreService.isLoggedIn;
-		this._coreService.observeLogin(_ => {
-			console.log("isLoggedIn", this._coreService.isLoggedIn);
-			this.onAuthEvent(this._coreService.isLoggedIn);
-		});
+		this._coreService.observeLogin((value) => this.onAuthEvent(value));
   }
 	onAuthEvent(loggedin : boolean) {
+    console.log("isLoggedIn", loggedin);
 		this.isLoggedIn = loggedin;
 		if(!loggedin) {
 			this._router.navigateByUrl('/');

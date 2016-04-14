@@ -1,13 +1,16 @@
-<div class="row" *ngIf="messages?.length > 0">
-	<div class="col-sm-12">
-	  <div class="alert alert-dismissible"
-	    role="alert"
-	    *ngFor="#m of messages; #idx = index"
-	    [ngClass]="{'alert-success': m.class == 'flash_success','alert-danger': m.class == 'flash_error'}">
-	    <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="removeMessage(idx)">
-	      <span aria-hidden="true">&times;</span>
-	    </button>
-	    {{m.msg}}
-	  </div>
-	</div>
+<div class="alert alert-danger alert-dismissible"
+  role="alert"
+  *ngFor="#m of errorMessages; #idx = index">
+  <button type="button" class="close" aria-label="Close" (click)="removeErrorMessage(idx)">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  {{m.msg}}
+</div>
+<div class="alert alert-dismissible alert-success" role="alert"
+	*ngIf="successCounter > 0">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close" (click)="removeSuccesMessages()">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  <p *ngFor="#m of successMessages">{{m}}</p>
+  <p>Total: {{successCounter}}</p>
 </div>

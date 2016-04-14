@@ -38,7 +38,6 @@ System.register(['angular2/core', 'angular2/router', '../storage/storage.service
                 }
                 AccountComponent.prototype.ngOnInit = function () {
                     this.remember = true;
-                    this.errorMessage = "";
                     var user = this._storageService.loadData('user');
                     if (!!user) {
                         this.accountSaved = true;
@@ -57,14 +56,9 @@ System.register(['angular2/core', 'angular2/router', '../storage/storage.service
                 };
                 AccountComponent.prototype.login = function () {
                     var _this = this;
-                    this.errorMessage = "";
                     if (!!this.user.username)
                         this._accountService.login(this.user)
                             .subscribe(function (res) {
-                            if (res.error != 0)
-                                _this.errorMessage = res.message;
-                            else
-                                _this.errorMessage = "";
                             if (_this.remember) {
                                 _this._storageService.saveData("user", _this.user);
                                 var userData = {
@@ -73,7 +67,7 @@ System.register(['angular2/core', 'angular2/router', '../storage/storage.service
                                 };
                                 _this._storageService.saveData("acc", userData);
                             }
-                            if (!_this.errorMessage)
+                            if (res.error == 0)
                                 _this._router.navigateByUrl('/corps');
                         });
                 };

@@ -11,7 +11,6 @@ import { CoreService } from '../core/core.service';
 import { Dictionary, map } from '../core/dictionary';
 import { ResultMessage } from '../request/response';
 import { SupplyListComponent } from './storage/supply.list.component';
-import { AlertListComponent } from '../messages/alert.list.component';
 import { CompaniesListComponent } from './companies.list.component';
 import { CorporationStorageComponent } from './storage/corporation.storage.component';
 import { CompanyItem } from './models';
@@ -19,7 +18,7 @@ import { CompanyItem } from './models';
 @Component({
   selector: 'ap-corp-detail',
   templateUrl : 'app/corps/corporation.detail.component.html',
-	directives: [SupplyListComponent, AlertListComponent, CompaniesListComponent, CorporationStorageComponent]
+	directives: [SupplyListComponent, CompaniesListComponent, CorporationStorageComponent]
 })
 export class CorporationDetailComponent implements OnInit {
   private corpId : number;
@@ -29,7 +28,6 @@ export class CorporationDetailComponent implements OnInit {
   private progressValue: number;
   private maxProgress: number;
   private iProgress: number;
-  private messages: Array<ResultMessage>;
   private companiesDetails: map<CompanyDetail>;
   private companiesList : CompanyItem[];
   private investList: InvestTransaction[];
@@ -45,7 +43,6 @@ export class CorporationDetailComponent implements OnInit {
     this.progressValue = 0;
     this.maxProgress = 0;
     this.iProgress = 0;
-		this.messages = [];
     this.resetLists();
     this._storages = new map<StorageItem[]>();
   }
@@ -174,11 +171,7 @@ export class CorporationDetailComponent implements OnInit {
   */
   refresh() {
     this.resetLists();
-    this.clearMessages();
     this.loadCorpInfo();
-  }
-  clearMessages() {
-    this.messages = [];
   }
   resetLists() {
     this.tradeList = [];

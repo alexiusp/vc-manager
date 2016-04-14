@@ -1,4 +1,4 @@
-System.register(['angular2/core', 'angular2/router', './storage/models', './storage/transactions', './corporation.service', '../core/core.service', '../core/dictionary', './storage/supply.list.component', '../messages/alert.list.component', './companies.list.component', './storage/corporation.storage.component', './models'], function(exports_1, context_1) {
+System.register(['angular2/core', 'angular2/router', './storage/models', './storage/transactions', './corporation.service', '../core/core.service', '../core/dictionary', './storage/supply.list.component', './companies.list.component', './storage/corporation.storage.component', './models'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, router_1, models_1, transactions_1, corporation_service_1, core_service_1, dictionary_1, supply_list_component_1, alert_list_component_1, companies_list_component_1, corporation_storage_component_1, models_2;
+    var core_1, router_1, models_1, transactions_1, corporation_service_1, core_service_1, dictionary_1, supply_list_component_1, companies_list_component_1, corporation_storage_component_1, models_2;
     var CorporationDetailComponent;
     return {
         setters:[
@@ -38,9 +38,6 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
             function (supply_list_component_1_1) {
                 supply_list_component_1 = supply_list_component_1_1;
             },
-            function (alert_list_component_1_1) {
-                alert_list_component_1 = alert_list_component_1_1;
-            },
             function (companies_list_component_1_1) {
                 companies_list_component_1 = companies_list_component_1_1;
             },
@@ -61,7 +58,6 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this.progressValue = 0;
                     this.maxProgress = 0;
                     this.iProgress = 0;
-                    this.messages = [];
                     this.resetLists();
                     this._storages = new dictionary_1.map();
                 }
@@ -206,11 +202,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                 */
                 CorporationDetailComponent.prototype.refresh = function () {
                     this.resetLists();
-                    this.clearMessages();
                     this.loadCorpInfo();
-                };
-                CorporationDetailComponent.prototype.clearMessages = function () {
-                    this.messages = [];
                 };
                 CorporationDetailComponent.prototype.resetLists = function () {
                     this.tradeList = [];
@@ -545,7 +537,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     core_1.Component({
                         selector: 'ap-corp-detail',
                         templateUrl: 'app/corps/corporation.detail.component.html',
-                        directives: [supply_list_component_1.SupplyListComponent, alert_list_component_1.AlertListComponent, companies_list_component_1.CompaniesListComponent, corporation_storage_component_1.CorporationStorageComponent]
+                        directives: [supply_list_component_1.SupplyListComponent, companies_list_component_1.CompaniesListComponent, corporation_storage_component_1.CorporationStorageComponent]
                     }), 
                     __metadata('design:paramtypes', [core_service_1.CoreService, router_1.Router, corporation_service_1.CorporationService, router_1.RouteParams])
                 ], CorporationDetailComponent);

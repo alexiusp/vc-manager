@@ -21,7 +21,9 @@ System.register(['angular2/core'], function(exports_1, context_1) {
             CoreService = (function () {
                 function CoreService() {
                     this._isLoggedIn = false;
-                    this._observers = [];
+                    this._loginObservers = [];
+                    this._loadingCounter = 0;
+                    this._loadingObservers = [];
                 }
                 Object.defineProperty(CoreService.prototype, "isLoggedIn", {
                     get: function () {
@@ -29,16 +31,45 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                     },
                     set: function (val) {
                         if (!!val != this._isLoggedIn) {
-                            console.info("isLoggedIn changed to", val);
+                            //console.info("isLoggedIn changed to", val);
                             this._isLoggedIn = !!val;
-                            this._observers.forEach(function (callback) { return callback(); });
+                            for (var _i = 0, _a = this._loginObservers; _i < _a.length; _i++) {
+                                var callback = _a[_i];
+                                callback(this._isLoggedIn);
+                            }
                         }
                     },
                     enumerable: true,
                     configurable: true
                 });
                 CoreService.prototype.observeLogin = function (callback) {
-                    this._observers.push(callback);
+                    if (!!callback && typeof callback === "function")
+                        this._loginObservers.push(callback);
+                };
+                Object.defineProperty(CoreService.prototype, "isLoading", {
+                    get: function () {
+                        return !!this._loading;
+                    },
+                    set: function (val) {
+                        if (!!val)
+                            this._loadingCounter++;
+                        else
+                            this._loadingCounter--;
+                        console.info("loading counter:", this._loadingCounter);
+                        this._loading = this._loadingCounter > 0;
+                        for (var _i = 0, _a = this._loadingObservers; _i < _a.length; _i++) {
+                            var callback = _a[_i];
+                            callback(this.isLoading);
+                        }
+                        if (this._loadingCounter < 0)
+                            this._loadingCounter = 0;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                CoreService.prototype.observeLoading = function (callback) {
+                    if (!!callback && typeof callback === "function")
+                        this._loadingObservers.push(callback);
                 };
                 CoreService = __decorate([
                     core_1.Injectable(), 

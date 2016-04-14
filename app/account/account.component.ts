@@ -15,7 +15,6 @@ import {Credentials} from './credentials';
 })
 export class AccountComponent implements OnInit {
   user : Credentials;
-  errorMessage : string;
   constructor(
     private _router : Router,
     private _accountService: AccountService,
@@ -26,7 +25,6 @@ export class AccountComponent implements OnInit {
 	private account : any;
   ngOnInit() {
 		this.remember = true;
-    this.errorMessage = "";
     let user : Credentials = this._storageService.loadData('user');
     if(!!user) {
       this.accountSaved = true;
@@ -44,11 +42,8 @@ export class AccountComponent implements OnInit {
 	}
 	private remember;
   login() {
-    this.errorMessage = "";
     if(!!this.user.username) this._accountService.login(this.user)
 		.subscribe((res : ResponseWrapper<Account>) => {
-			if(res.error != 0) this.errorMessage = res.message;
-			else this.errorMessage = "";
 			if(this.remember) {
 				this._storageService.saveData("user", this.user);
 				let userData = {
@@ -57,7 +52,7 @@ export class AccountComponent implements OnInit {
 				};
 				this._storageService.saveData("acc", userData);
 			}
-      if(!this.errorMessage) this._router.navigateByUrl('/corps');
+      if(res.error == 0) this._router.navigateByUrl('/corps');
     });
   }
 }

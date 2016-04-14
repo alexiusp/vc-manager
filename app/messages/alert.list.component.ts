@@ -1,44 +1,55 @@
-import {Component, Input, EventEmitter, Output} from 'angular2/core';
-
+import { Component, OnInit } from 'angular2/core';
+import { MessagesService } from './messages.service';
 import { ResultMessage } from '../request/response';
 
 @Component({
   selector: 'alert-list',
 	templateUrl: 'app/messages/alert.list.component.html'
 })
-export class AlertListComponent {
-	private _messages : ResultMessage[];
-	private messageCleanTimeout: any;
-	constructor() {
-		this._messages = [];
-	}
-	@Input()
-	set messages(msgArr : ResultMessage[]) {
-		console.log("messages setter", JSON.stringify(msgArr));
-		if(msgArr.length > 0) for(let m of msgArr) {
-			this.addMessage(m);
-		};
-	}
-	get messages() { return this._messages; }
+export class AlertListComponent implements OnInit {
+	private successMessages : string[];
+  private successIndexes  : number[];
+  private successCounter  : number;
+  private errorMessages   : ResultMessage[];
+  private errorIndexes    : number[];
 
-  @Output('on-empty') onEmpty = new EventEmitter();
-
-	removeMessage(idx : number) {
-		this._messages.splice(idx, 1);
+	constructor(private _messageService : MessagesService) {
 	}
-	addMessage(message : ResultMessage) {
-    this._messages.push(message);
-		let timeout = (message.class == 'flash_error')? 5000 : 1000;
-    this.messageCleanTimeout = setTimeout(()=>{this.cleanMessage()}, timeout);
+
+  ngOnInit() {
+    this._messageService.listen((messages : ResultMessage[]) => {
+      //console.log("listen callback");
+      let s = [];
+      let si = [];
+      let e = [];
+      let ei = [];
+      let counter = 0;
+      for(let i in messages) {
+        if(messages[i].class == "flash_success" || messages[i].class == "success") {
+          let idx = s.indexOf(messages[i].msg);
+          if(idx == -1) s.push(messages[i].msg);
+          si.push(+i);
+          counter++;
+        }
+        else {
+          e.push(messages[i]);
+          ei.push(+i);
+        }
+      }
+      this.successMessages = s;
+      this.successIndexes = si;
+      this.successCounter = counter;
+      this.errorMessages = e;
+      this.errorIndexes = ei;
+    });
   }
-	cleanMessage() {
-		clearTimeout(this.messageCleanTimeout);
-		if(this._messages.length > 0) {
-			this.removeMessage(0);
-			this.messageCleanTimeout = setTimeout(()=>{this.cleanMessage()}, 2000);
-		}
-    if(this._messages.length == 0) {
-      if(!!this.onEmpty) this.onEmpty.emit(true);
-    }
+
+	removeErrorMessage(idx : number) {
+    //console.log("removeErrorMessage",idx);
+		this._messageService.removeMessage(this.errorIndexes[idx]);
 	}
+  removeSuccesMessages() {
+    //console.log("removeSuccesMessages");
+    this._messageService.removeMessages(this.successIndexes);
+  }
 }

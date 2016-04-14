@@ -4,6 +4,7 @@ import {Observable}     from 'rxjs/Observable';
 // services
 import { RequestService } from '../request/request.service';
 import { CoreService } from '../core/core.service';
+import { MessagesService } from '../messages/messages.service';
 
 // models
 import { ResponseWrapper } from '../request/response';
@@ -14,16 +15,16 @@ import { Account } from './account';
 export class AccountService {
   constructor (
     private _core : CoreService,
-    private _requestService : RequestService
+    private _requestService : RequestService,
+    private _messages : MessagesService
   ) {}
   private _user : Account;
-  private _errorMessage:string;
-  getError() {return this._errorMessage}
   get User() {
     return this._user;
   }
   login(user : Credentials) {
-		console.log("user login:", user);
+    this._messages.clearMessages();
+		//console.log("user login:", user);
 		return this._requestService.login(user)
 		.do((res : ResponseWrapper<Account>) => {
 			this.onLogin(user, res);
@@ -38,8 +39,8 @@ export class AccountService {
     }
   }
   onError(error: string) {
-    this._errorMessage = error.toString();
     console.error(error);
+    this._messages.addMessage("error", error);
   }
 	handleError(error: Response) {
 		let errString = error.json().message || 'Server error';

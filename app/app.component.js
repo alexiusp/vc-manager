@@ -1,4 +1,4 @@
-System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.hack', './storage/storage.service', './request/request.service', './account/account.service', './account/account.component', './account/profile.component', './core/core.service', './corps/corporation.service', './corps/corporations.component', './corps/corporation.detail.component', './corps/company.component'], function(exports_1, context_1) {
+System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.hack', './storage/storage.service', './request/request.service', './account/account.service', './account/account.component', './account/profile.component', './core/core.service', './corps/corporation.service', './corps/corporations.component', './corps/corporation.detail.component', './corps/company.component', './messages/alert.list.component', './messages/messages.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.ha
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, router_1, http_1, http_hack_1, storage_service_1, request_service_1, account_service_1, account_component_1, profile_component_1, core_service_1, corporation_service_1, corporations_component_1, corporation_detail_component_1, company_component_1;
+    var core_1, router_1, http_1, http_hack_1, storage_service_1, request_service_1, account_service_1, account_component_1, profile_component_1, core_service_1, corporation_service_1, corporations_component_1, corporation_detail_component_1, company_component_1, alert_list_component_1, messages_service_1;
     var AppComponent;
     return {
         setters:[
@@ -55,6 +55,12 @@ System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.ha
             },
             function (company_component_1_1) {
                 company_component_1 = company_component_1_1;
+            },
+            function (alert_list_component_1_1) {
+                alert_list_component_1 = alert_list_component_1_1;
+            },
+            function (messages_service_1_1) {
+                messages_service_1 = messages_service_1_1;
             }],
         execute: function() {
             AppComponent = (function () {
@@ -67,12 +73,10 @@ System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.ha
                 AppComponent.prototype.ngOnInit = function () {
                     var _this = this;
                     var loggedin = this._coreService.isLoggedIn;
-                    this._coreService.observeLogin(function (_) {
-                        console.log("isLoggedIn", _this._coreService.isLoggedIn);
-                        _this.onAuthEvent(_this._coreService.isLoggedIn);
-                    });
+                    this._coreService.observeLogin(function (value) { return _this.onAuthEvent(value); });
                 };
                 AppComponent.prototype.onAuthEvent = function (loggedin) {
+                    console.log("isLoggedIn", loggedin);
                     this.isLoggedIn = loggedin;
                     if (!loggedin) {
                         this._router.navigateByUrl('/');
@@ -90,7 +94,7 @@ System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.ha
                     core_1.Component({
                         selector: 'my-app',
                         templateUrl: 'app/app.component.html',
-                        directives: [router_1.ROUTER_DIRECTIVES],
+                        directives: [router_1.ROUTER_DIRECTIVES, alert_list_component_1.AlertListComponent],
                         providers: [
                             router_1.ROUTER_PROVIDERS,
                             http_1.HTTP_PROVIDERS,
@@ -99,7 +103,8 @@ System.register(['angular2/core', 'angular2/router', 'angular2/http', './http.ha
                             request_service_1.RequestService,
                             core_service_1.CoreService,
                             account_service_1.AccountService,
-                            corporation_service_1.CorporationService
+                            corporation_service_1.CorporationService,
+                            messages_service_1.MessagesService
                         ]
                     }),
                     router_1.RouteConfig([

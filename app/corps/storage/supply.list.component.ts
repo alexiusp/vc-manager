@@ -1,8 +1,10 @@
 import {Component, Input, EventEmitter, Output} from 'angular2/core';
 
+import { CoreService } from '../../core/core.service';
+import { MessagesService } from '../../messages/messages.service';
 import {BaseStorageElement} from './contracts';
 import {BaseBusiness, Company} from '../contracts';
-import {BaseTransaction, InvestTransaction, SellItemTransaction, TransferItemTransaction, TransactionObject, itemTransactionEqual} from './transactions';
+import {BaseTransaction, BaseItemTransaction, InvestTransaction, SellItemTransaction, TransferItemTransaction, TransactionObject, itemTransactionEqual, isInvestTransaction} from './transactions';
 import {StorageItemComponent} from './storage.item.component';
 import {Dictionary} from '../../core/dictionary';
 import { CorporationService } from '../corporation.service';
@@ -19,7 +21,9 @@ export class SupplyListComponent {
   private maxProgress: number;
   private iProgress: number;
 
-	constructor(private _corporationService: CorporationService) {
+	constructor(private _corporationService: CorporationService,
+    private _coreService : CoreService,
+    private _messages : MessagesService) {
 		this._transactionList = new Dictionary<BaseTransaction[]>();
     this._init();
 	}
@@ -208,8 +212,12 @@ export class SupplyListComponent {
     // transfer items to companies.
     if((corpList.length > 0) && !!this.companies) {
       for(let c of this.companies) {
+        this._coreService.isLoading = true;
         this._corporationService.moveItemsToCompany(c.id, corpList)
           .subscribe((res:ResultMessage[]) => {
+            this._coreService.isLoading = false;
+            //this.parseErrors(t, res); TODO!!!
+            this._messages.addMessages(res);
             console.log("transfer items to company result:",res);
             this.incrementProgress();
           });
@@ -217,15 +225,23 @@ export class SupplyListComponent {
     }
     // transfer items to corporation
     if(compList.length > 0) {
-      for(let t of compList) this._corporationService.moveItemToCorporation(t.source.id, t.item.ItemType.id, t.amount)
+      for(let t of compList) {
+        this._coreService.isLoading = true;
+        this._corporationService.moveItemToCorporation(t.source.id, t.item.ItemType.id, t.amount)
         .subscribe((res:ResultMessage[]) => {
+          this._coreService.isLoading = false;
+          this.parseErrors(t, res);
           console.log("transfer items to corporation result:",res);
           this.incrementProgress();
         });
+      }
     }
     // invest money in companies
     if(!!this.investments) for(let t of this.investments) {
+      this._coreService.isLoading = true;
       this._corporationService.addFundsToCompany(t.target.id, t.price).subscribe((res:ResultMessage[]) => {
+        this._coreService.isLoading = false;
+        this.parseErrors(t, res);
         console.log("invest money in companies result", res);
         this.incrementProgress();
       });
@@ -233,12 +249,33 @@ export class SupplyListComponent {
     // sell goods
     if(!!this.trade) for(let t of this.trade) {
       let func;
+      this._coreService.isLoading = true;
       if(t.owner == TransactionObject.Company) func = this._corporationService.sellItemFromCompany(t.source.id, t.item.ItemType.id, t.amount, t.price);
       if(t.owner == TransactionObject.Corp) func = this._corporationService.sellItemFromCorporation(t.source.id, t.item.ItemType.id, t.amount, t.price);
       func.subscribe((res:ResultMessage[]) => {
-        console.log(res);
+        this._coreService.isLoading = false;
+        this.parseErrors(t, res);
+        console.log("trade result",res);
         this.incrementProgress();
       });
+    }
+  }
+
+  printTransactionInfo(t: BaseTransaction) {
+    let start = " in transaction: "
+    let item = (!!(<BaseItemTransaction>t).item)? " an item " + (<BaseItemTransaction>t).item.ItemType.name : "";
+    let source = (!!(<BaseItemTransaction>t).source)? " from " + (<BaseItemTransaction>t).source.name : "";
+    let isInvest = (isInvestTransaction(t))? "investment of " + t.price + " to " + t.target.name : "";
+    return start + isInvest + item + source;
+  }
+  parseErrors(t : BaseTransaction, mArr : ResultMessage[]) {
+    if(!!mArr) {
+      let res = [];
+      for(let m of mArr) {
+        if(m.class == "flash_error") m.msg += this.printTransactionInfo(t);
+        res.push(m);
+      }
+      this._messages.addMessages(res);
     }
   }
   /*

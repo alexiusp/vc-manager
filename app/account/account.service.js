@@ -1,4 +1,4 @@
-System.register(['angular2/core', 'rxjs/Observable', '../request/request.service', '../core/core.service'], function(exports_1, context_1) {
+System.register(['angular2/core', 'rxjs/Observable', '../request/request.service', '../core/core.service', '../messages/messages.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', 'rxjs/Observable', '../request/request.service
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, Observable_1, request_service_1, core_service_1;
+    var core_1, Observable_1, request_service_1, core_service_1, messages_service_1;
     var AccountService;
     return {
         setters:[
@@ -25,14 +25,17 @@ System.register(['angular2/core', 'rxjs/Observable', '../request/request.service
             },
             function (core_service_1_1) {
                 core_service_1 = core_service_1_1;
+            },
+            function (messages_service_1_1) {
+                messages_service_1 = messages_service_1_1;
             }],
         execute: function() {
             AccountService = (function () {
-                function AccountService(_core, _requestService) {
+                function AccountService(_core, _requestService, _messages) {
                     this._core = _core;
                     this._requestService = _requestService;
+                    this._messages = _messages;
                 }
-                AccountService.prototype.getError = function () { return this._errorMessage; };
                 Object.defineProperty(AccountService.prototype, "User", {
                     get: function () {
                         return this._user;
@@ -42,7 +45,8 @@ System.register(['angular2/core', 'rxjs/Observable', '../request/request.service
                 });
                 AccountService.prototype.login = function (user) {
                     var _this = this;
-                    console.log("user login:", user);
+                    this._messages.clearMessages();
+                    //console.log("user login:", user);
                     return this._requestService.login(user)
                         .do(function (res) {
                         _this.onLogin(user, res);
@@ -58,8 +62,8 @@ System.register(['angular2/core', 'rxjs/Observable', '../request/request.service
                     }
                 };
                 AccountService.prototype.onError = function (error) {
-                    this._errorMessage = error.toString();
                     console.error(error);
+                    this._messages.addMessage("error", error);
                 };
                 AccountService.prototype.handleError = function (error) {
                     var errString = error.json().message || 'Server error';
@@ -68,7 +72,7 @@ System.register(['angular2/core', 'rxjs/Observable', '../request/request.service
                 };
                 AccountService = __decorate([
                     core_1.Injectable(), 
-                    __metadata('design:paramtypes', [core_service_1.CoreService, request_service_1.RequestService])
+                    __metadata('design:paramtypes', [core_service_1.CoreService, request_service_1.RequestService, messages_service_1.MessagesService])
                 ], AccountService);
                 return AccountService;
             }());

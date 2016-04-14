@@ -48,3 +48,6 @@ export interface SellItemTransaction extends BaseItemTransaction, MoneyTransacti
 export interface InvestTransaction extends BaseTransaction, MoneyTransaction {
   target?: BaseBusiness;
 }
+export function isInvestTransaction(t : InvestTransaction | any) : t is InvestTransaction {
+  return (!!(<InvestTransaction>t).target && !(<BaseItemTransaction>t).item);
+}

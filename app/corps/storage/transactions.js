@@ -16,6 +16,10 @@ System.register([], function(exports_1, context_1) {
         return (checkSource && checkItem && checkOwner); // && checkAction
     }
     exports_1("itemTransactionEqual", itemTransactionEqual);
+    function isInvestTransaction(t) {
+        return (!!t.target && !t.item);
+    }
+    exports_1("isInvestTransaction", isInvestTransaction);
     return {
         setters:[],
         execute: function() {
