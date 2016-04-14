@@ -1,2 +1,2 @@
-exports.version = "1.5";
+exports.version = "1.6";
 exports.url = "http://localhost:3000";
