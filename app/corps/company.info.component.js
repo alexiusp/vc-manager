@@ -1,4 +1,4 @@
-System.register(['angular2/core', './models'], function(exports_1, context_1) {
+System.register(['angular2/core', './models', '../vmoney.pipe'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', './models'], function(exports_1, context_1) {
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, models_1;
+    var core_1, models_1, vmoney_pipe_1;
     var CompanyInfoComponent;
     return {
         setters:[
@@ -19,6 +19,9 @@ System.register(['angular2/core', './models'], function(exports_1, context_1) {
             },
             function (models_1_1) {
                 models_1 = models_1_1;
+            },
+            function (vmoney_pipe_1_1) {
+                vmoney_pipe_1 = vmoney_pipe_1_1;
             }],
         execute: function() {
             CompanyInfoComponent = (function () {
@@ -46,10 +49,15 @@ System.register(['angular2/core', './models'], function(exports_1, context_1) {
                     core_1.Input('company-info'), 
                     __metadata('design:type', models_1.CompanyItem)
                 ], CompanyInfoComponent.prototype, "company", void 0);
+                __decorate([
+                    core_1.Input('detail'), 
+                    __metadata('design:type', Object)
+                ], CompanyInfoComponent.prototype, "detail", void 0);
                 CompanyInfoComponent = __decorate([
                     core_1.Component({
                         selector: '[company-info]',
                         templateUrl: 'app/corps/company.info.component.html',
+                        pipes: [vmoney_pipe_1.VMoneyPipe]
                     }), 
                     __metadata('design:paramtypes', [])
                 ], CompanyInfoComponent);

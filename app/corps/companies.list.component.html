@@ -62,6 +62,7 @@
   <template ngFor #c [ngForOf]="companies" *ngIf="isListOpen">
     <div class="list-group" [ngClass]="{'selected-company': c.isSelected}"
       [company-info]="c"
+      [detail]="details[c.item.id]"
       (on-select)="selectOne(c)"
       (on-open)="openOne(c)">
     </div>

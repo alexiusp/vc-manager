@@ -5,7 +5,7 @@ var config = require('./config.js');
 var http_request = require('./http-request.js');
 
 exports.login = function(user, callback) {
-  console.log("login:", JSON.stringify(user));
+  //console.log("login:", JSON.stringify(user));
   var userData = {
     data : {
       User : user

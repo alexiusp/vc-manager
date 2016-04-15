@@ -7,7 +7,7 @@
 	<span class="label" [ngClass]="{'label-success': company.item.current_production.currently_producing, 'label-danger': !company.item.current_production.currently_producing}">
     <i class="glyphicon" [ngClass]="{'glyphicon-thumbs-up': company.item.current_production.currently_producing, 'glyphicon-thumbs-down': !company.item.current_production.currently_producing}"></i>
   </span>
-  <span>&nbsp;{{company.item.name}}</span>
+  <span>&nbsp;{{company.item.name}}</span> <span class="label label-success">{{ detail?.vd_balance | vMoney }}</span>
   <button type="button" class="btn btn-xs pull-right"
     [ngClass]="{'btn-default': !company.isSelected, 'btn-primary' : company.isSelected}"
     (click)="openCompany()">

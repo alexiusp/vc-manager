@@ -1,10 +1,13 @@
 import {Component, Input, EventEmitter, Output} from 'angular2/core';
 
 import { CompanyItem } from './models';
+import { VMoneyPipe } from '../vmoney.pipe';
+import { CompanyDetail } from './contracts';
 
 @Component({
   selector: '[company-info]',
 	templateUrl: 'app/corps/company.info.component.html',
+  pipes : [VMoneyPipe]
 })
 export class CompanyInfoComponent {
   constructor() {
@@ -22,5 +25,8 @@ export class CompanyInfoComponent {
 
   @Input('company-info')
   company : CompanyItem;
+
+  @Input('detail')
+  detail : CompanyDetail;
 
 }
