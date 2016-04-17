@@ -40,6 +40,11 @@ var _request = function(type, path, body, cookies, callback) {
   });
   req.on('error', (e) => {
     console.log(`problem with request: ${e.message}`);
+    result.data = {
+      error   : 100,
+      message : e.message
+    };
+    result.statusCode = 400;
   });
   if(body !== undefined) {
     req.write(body);

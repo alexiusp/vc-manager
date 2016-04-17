@@ -159,21 +159,16 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     else
                         console.error("wrong transfer item", item);
                 };
-                SupplyListComponent.prototype.removeCompany = function (c) {
+                SupplyListComponent.prototype.removeCompany = function (d) {
                     //console.log("remove company", c);
-                    var sIdx = -1;
-                    for (var i in this._companies) {
-                        if ((this._companies[i].id == c.id))
-                            sIdx = +i;
+                    var newArr = [];
+                    for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
+                        var c = _a[_i];
+                        if (c.id != d.id)
+                            newArr.push(c);
                     }
-                    if (sIdx > -1) {
-                        this._companies.splice(sIdx, 1);
-                        this.checkEmptiness();
-                        if (!!this.onRemoveCompany)
-                            this.onRemoveCompany.emit(this._companies);
-                    }
-                    else
-                        console.error("wrong company", c);
+                    if (!!this.onRemoveCompany)
+                        this.onRemoveCompany.emit(newArr);
                 };
                 Object.defineProperty(SupplyListComponent.prototype, "investments", {
                     get: function () { return this._investments; },

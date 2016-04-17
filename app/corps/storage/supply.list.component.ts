@@ -3,7 +3,7 @@ import {Component, Input, EventEmitter, Output} from 'angular2/core';
 import { CoreService } from '../../core/core.service';
 import { MessagesService } from '../../messages/messages.service';
 import {BaseStorageElement} from './contracts';
-import {BaseBusiness, Company} from '../contracts';
+import {BaseBusiness, Company, CompanyDetail } from '../contracts';
 import {BaseTransaction, BaseItemTransaction, InvestTransaction, SellItemTransaction, TransferItemTransaction, TransactionObject, itemTransactionEqual, isInvestTransaction} from './transactions';
 import {StorageItemComponent} from './storage.item.component';
 import {Dictionary} from '../../core/dictionary';
@@ -84,9 +84,9 @@ export class SupplyListComponent {
 
 
   // transfer transactions
-  private _companies : Company[];
+  private _companies : CompanyDetail[];
   @Input()
-  set companies(cArr : Company[]) {
+  set companies(cArr : CompanyDetail[]) {
     //console.log("set companies", cArr);
     this._companies = cArr;
     this.parseTransfer();
@@ -127,17 +127,13 @@ export class SupplyListComponent {
     } else console.error("wrong transfer item", item);
   }
   @Output('on-remove-company') onRemoveCompany = new EventEmitter();
-  removeCompany(c : Company) {
+  removeCompany(d : CompanyDetail) {
     //console.log("remove company", c);
-    let sIdx = -1;
-    for(let i in this._companies) {
-      if((this._companies[i].id == c.id)) sIdx = +i;
+    let newArr = [];
+    for(let c of this.companies) {
+      if(c.id != d.id) newArr.push(c);
     }
-    if(sIdx > -1) {
-      this._companies.splice(sIdx, 1);
-      this.checkEmptiness();
-      if(!!this.onRemoveCompany) this.onRemoveCompany.emit(this._companies);
-    } else console.error("wrong company", c);
+    if(!!this.onRemoveCompany) this.onRemoveCompany.emit(newArr);
   }
 
   private hasInvestments  : boolean;

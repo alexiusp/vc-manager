@@ -1,10 +1,10 @@
 <div class="panel panel-default">
   <div class="panel-heading">
     <h3 class="panel-title">
-      <button type="button" class="btn btn-default btn-xs pull-left" (click)="selectAll();">
+      <button type="button" class="btn btn-default btn-xs pull-left" (click)="selectAll();" [ngClass]="{'disabled': loading}">
         <i class="glyphicon"  [ngClass]="{'glyphicon-check': !allSelected, 'glyphicon-unchecked': allSelected}"></i>
       </button>&nbsp;
-      Companies&nbsp;({{companies?.length}})
+      Companies&nbsp;({{companies?.length}})&nbsp;<i class="fa fa-spinner fa-pulse" *ngIf="loading"></i>
       <button type="button" class="btn btn-default btn-xs pull-right" (click)="openList()">
         <i class="fa" [ngClass]="{'fa-minus': isListOpen, 'fa-plus': !isListOpen}"></i>
       </button>
@@ -18,7 +18,10 @@
       <div class="row">
         <div class="col-sm-12 col-md-3">
           <div class="dropdown" [ngClass]="{'open': !!filterDropdownOpen}">
-            <button type="button" class="btn btn-default btn-sm btn-block dropdown-toggle" (click)="toggleFilter()">
+            <button type="button"
+              class="btn btn-default btn-sm btn-block dropdown-toggle"
+              [ngClass]="{'disabled': loading}"
+              (click)="toggleFilter()">
               {{filterTitle}}&nbsp;
               <span class="caret"></span>
               <span class="sr-only">Toggle Dropdown</span>
@@ -35,12 +38,18 @@
         <div class="col-sm-12 col-md-5">
 					<div class="btn-group btn-group-sm btn-group-justified" role="group">
 						<div class="btn-group" role="group">
-		          <button type="button" class="btn btn-primary" (click)="putAllProductionToStorage()">
+		          <button type="button"
+                class="btn btn-primary"
+                [ngClass]="{'disabled': loading}"
+                (click)="putAllProductionToStorage()">
 		            <i class="fa fa-truck"></i>&nbsp;Unload
 		          </button>
 						</div>
 						<div class="btn-group" role="group">
-							<button type="button" class="btn btn-default" (click)="putAllStorageToCorp()">
+							<button type="button"
+                class="btn btn-default"
+                [ngClass]="{'disabled': loading}"
+                (click)="putAllStorageToCorp()">
 		            <i class="glyphicon glyphicon-download-alt"></i>&nbsp;Empty
 		          </button>
 						</div>
@@ -50,7 +59,10 @@
           <div class="input-group input-group-sm">
             <input type="text" class="form-control" placeholder="Investment" #addFundAmount (keyup)="0"/>
             <span class="input-group-btn">
-              <button class="btn btn-success" type="button" (click)="addFundsToAll(+addFundAmount.value);addFundAmount.value = ''">
+              <button class="btn btn-success"
+                type="button"
+                [ngClass]="{'disabled': loading}"
+                (click)="addFundsToAll(+addFundAmount.value);addFundAmount.value = ''">
                 <i class="glyphicon glyphicon-usd"></i>&nbsp;Invest
               </button>
             </span>
@@ -60,6 +72,15 @@
     </li>
   </ul>
   <template ngFor #c [ngForOf]="companies" *ngIf="isListOpen">
+    <div class="list-group" [ngClass]="{'selected-company': details[c.id].isSelected}"
+      [company-panel]="details[c.id]"
+      [company]="c"
+      (on-change)="companyStorageChange(c.id, $event)"
+      (on-invest)="invest(c, $event)"
+      (on-unload)="unload(c, $event)"
+      (on-select)="selectOne(details[c.id])">
+    </div>
+    <!--
     <div class="list-group" [ngClass]="{'selected-company': c.isSelected}"
       [company-info]="c"
       [detail]="details[c.item.id]"
@@ -79,6 +100,7 @@
       (on-change)="companyStorageChange(c.item.id, $event)"
       class="list-group" [ngClass]="{'selected-company': c.isSelected}">
     </div>
+  -->
   </template>
   <div class="panel-footer" *ngIf="isListOpen">
     <button (click)="scroll()" type="button" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-triangle-top"></i> To top</button>

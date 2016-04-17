@@ -13,7 +13,7 @@ import { ResultMessage } from '../request/response';
 import { SupplyListComponent } from './storage/supply.list.component';
 import { CompaniesListComponent } from './companies.list.component';
 import { CorporationStorageComponent } from './storage/corporation.storage.component';
-import { CompanyItem } from './models';
+import { CompanyDetailItem } from './models';
 
 @Component({
   selector: 'ap-corp-detail',
@@ -24,13 +24,12 @@ export class CorporationDetailComponent implements OnInit {
   private corpId : number;
   private corpInfo : CorpInfo; // corporation structure received from backend
   private corpStorage: StorageItem[];// corporation storage
-  private _storages: map<StorageItem[]>;// company storage
   private progressValue: number;
   private maxProgress: number;
   private iProgress: number;
-  private companiesDetails: map<CompanyDetail>;
-  private companiesList : CompanyItem[];
   private investList: InvestTransaction[];
+  // new version of companies list handling
+  private details : map<CompanyDetailItem>;
 
   private allSelected: boolean;
   constructor(
@@ -39,12 +38,10 @@ export class CorporationDetailComponent implements OnInit {
     private _corporationService: CorporationService,
     private _routeParams: RouteParams
   ) {
-    this.companiesDetails = new map<CompanyDetail>();
     this.progressValue = 0;
     this.maxProgress = 0;
     this.iProgress = 0;
     this.resetLists();
-    this._storages = new map<StorageItem[]>();
   }
   ngOnInit() {
     if(!this._coreService.isLoggedIn) this._router.navigateByUrl('/');
@@ -55,6 +52,7 @@ export class CorporationDetailComponent implements OnInit {
     }
   }
   loadCorpStorage() {
+    this._coreService.isLoading = true;
     this._corporationService.getCorpStorage(this.corpId)
       .subscribe((res : BaseStorageElement[]) => {
         // transform incoming contracted data
@@ -66,35 +64,39 @@ export class CorporationDetailComponent implements OnInit {
         }
         //console.log("storage:", list);
         this.corpStorage = list;
+        this._coreService.isLoading = false;
       });
   }
-  get storages() { return this._storages; }
-
 
   loadCompanyDetail(id : number) {
+    this._coreService.isLoading = true;
     if(this.corpInfo.is_manager) this._corporationService
       .getCompanyDetail(id)
       .subscribe((res) => {
         //console.log("company detail:", res);
-        this.companiesDetails[id] = res;
+        this.details[id].item = res;
+        this._coreService.isLoading = false;
       })
   }
 	loadCorpDetail(callback?: any) {
+    this._coreService.isLoading = true;
 		this._corporationService
 			.getCorpDetail(this.corpId)
 			.subscribe((res : CorpInfo) => {
+        this.details = new map<CompanyDetailItem>();
 				this.corpInfo = res;
+        this._coreService.isLoading = false;
 				if(!!callback) callback();
 			});
 	}
   loadCorpInfo() {
 		this.loadCorpDetail(() => {
 			this.loadCorpStorage();
-      this.companiesList = [];
 			if(!!this.corpInfo.is_manager) {
         for(let c of this.corpInfo.companies) {
-          this.companiesList.push(new CompanyItem(c));
+          this.details[c.id] = new CompanyDetailItem();
   				this.loadCompanyDetail(c.id);
+          this._coreService.isLoading = true;
           this._corporationService.getCompanyStorage(c.id)
             .subscribe((res : BaseStorageElement[]) => {
               // transform incoming contracted data
@@ -105,7 +107,8 @@ export class CorporationDetailComponent implements OnInit {
                 list.push(t);
               }
               //console.log("company storage:", list);
-              this._storages[c.id] = list;
+              this.details[c.id].storage = list;
+              this._coreService.isLoading = false;
             });
 			  }
       }
@@ -133,11 +136,13 @@ export class CorporationDetailComponent implements OnInit {
   investToCorp(amount : number) {
     console.log("investToCorp", amount);
 		if(this.corpInfo.is_manager) {
+      this._coreService.isLoading = true;
 			this._corporationService.addFundsToCorporation(this.corpId, amount)
 				.subscribe((res:ResultMessage[]) => {
           //console.log("result:",res);
 					//this.messages = res;
 					this.loadCorpDetail();
+          this._coreService.isLoading = false;
         });
 		}
   }
@@ -303,12 +308,12 @@ export class CorporationDetailComponent implements OnInit {
   }
   parseCompaniesTransactions(list : BaseItemTransaction[]) {
     //console.log("parseCompaniesTransactions", list);
-    for(let c of this.companiesList) {
-      for(let s of this.storages[c.item.id]) {
+    for(let c of this.corpInfo.companies) {
+      for(let s of this.details[c.id].storage) {
         if(s.isTransfer && (this.findItemTransaction(s, list) == -1)) s.isTransfer = false;
         if(s.isSell && (this.findItemTransaction(s, list) == -1)) s.isSell = false;
       }
-      this.companyStorageChange({ cId : c.item.id, list : this.storages[c.item.id] });
+      this.companyStorageChange({ cId : c.id, list : this.details[c.id].storage });
     }
   }
   transferChange(list : TransferItemTransaction[]) {
@@ -334,39 +339,35 @@ export class CorporationDetailComponent implements OnInit {
     this.parseCompaniesTransactions(compList);
   }
   // companies list
-  private selectedCompanies: Company[]; // selected companies
+  private selectedCompanies: CompanyDetail[]; // selected companies
   parseSelectedCompanies() {
-    let cArr : Company[] = [];
-    for(let c of this.companiesList) {
-      if(c.isSelected) cArr.push(c.item);
+    let cArr : CompanyDetail[] = [];
+    for(let c of this.corpInfo.companies) {
+      if(this.details[c.id].isSelected) cArr.push(this.details[c.id].item);
     }
     this.selectedCompanies = cArr;
   }
-  selectCompany(c : CompanyItem) {
-    for(let i in this.companiesList) {
-      if(c.item.id == this.companiesList[i].item.id) this.companiesList[i].isSelected = c.isSelected;
-    }
+  selectCompany(d : CompanyDetailItem) {
+    this.details[d.item.id].isSelected = d.isSelected;
     this.parseSelectedCompanies();
   }
-  companiesChange(list : Company[]) {
+  companiesChange(list : CompanyDetail[]) {
     //console.log("companies change", list);
-    let cList = [];
+    let dList = new map<CompanyDetailItem>();
     for(let c of this.corpInfo.companies) {
-      let ci = new CompanyItem(c);
+      let d = this.details[c.id];
+      d.isSelected = false;
       for(let i of list) {
-        if(i.id == c.id) ci.isSelected = true;
+        if(i.id == c.id) d.isSelected = true;
       }
-      for(let oc of this.companiesList) {
-        if(oc.item.id == c.id) ci.isOpen = oc.isOpen;
-      }
-      cList.push(ci);
+      dList[c.id] = d;
     }
-    this.companiesList = cList;
+    this.details = dList;
     this.parseSelectedCompanies();
   }
   companyStorageChange(changeEvent : {cId : number, list : StorageItem[]}) {
     //console.log("companyStorageChange", changeEvent);
-    let company = this.companiesDetails[changeEvent.cId];
+    let company = this.details[changeEvent.cId].item;
     let corp = this._corporationService.getCorporation(this.corpId);
     //console.log("company", company);
     let sList = [];
@@ -430,7 +431,7 @@ export class CorporationDetailComponent implements OnInit {
       let t : InvestTransaction = {
         owner : TransactionObject.Company,
         price: +investEvent.amount,
-        target: this.companiesDetails[investEvent.cId]
+        target: this.details[investEvent.cId].item
       }
 			//console.log("new invest transaction", t);
       list.push(t);

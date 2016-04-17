@@ -1,4 +1,4 @@
-System.register(['angular2/core', 'angular2/router', './storage/models', './corporation.service', '../core/core.service', './storage/company.storage.component'], function(exports_1, context_1) {
+System.register(['angular2/core', 'angular2/router', './storage/models', './corporation.service', '../core/core.service', './storage/storage.item.component'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './corp
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, router_1, models_1, corporation_service_1, core_service_1, company_storage_component_1;
+    var core_1, router_1, models_1, corporation_service_1, core_service_1, storage_item_component_1;
     var CompanyComponent;
     return {
         setters:[
@@ -29,8 +29,8 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './corp
             function (core_service_1_1) {
                 core_service_1 = core_service_1_1;
             },
-            function (company_storage_component_1_1) {
-                company_storage_component_1 = company_storage_component_1_1;
+            function (storage_item_component_1_1) {
+                storage_item_component_1 = storage_item_component_1_1;
             }],
         execute: function() {
             CompanyComponent = (function () {
@@ -112,7 +112,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './corp
                     core_1.Component({
                         selector: 'ap-company',
                         templateUrl: 'app/corps/company.component.html',
-                        directives: [company_storage_component_1.CompanyStorageComponent]
+                        directives: [storage_item_component_1.StorageItemComponent]
                     }), 
                     __metadata('design:paramtypes', [core_service_1.CoreService, router_1.Router, corporation_service_1.CorporationService, router_1.RouteParams, router_1.Location])
                 ], CompanyComponent);

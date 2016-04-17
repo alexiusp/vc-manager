@@ -6,12 +6,12 @@ import { CorporationStorageElement, CompanyStorageElement, BaseStorageElement, C
 import { StorageItem } from './storage/models';
 import { CorporationService } from './corporation.service';
 import { CoreService } from '../core/core.service';
-import { CompanyStorageComponent } from './storage/company.storage.component';
+import { StorageItemComponent } from './storage/storage.item.component';
 
 @Component({
   selector: 'ap-company',
   templateUrl : 'app/corps/company.component.html',
-	directives: [CompanyStorageComponent]
+	directives: [StorageItemComponent]
 })
 export class CompanyComponent implements OnInit {
 	private cId : number;

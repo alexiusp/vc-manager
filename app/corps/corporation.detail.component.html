@@ -64,26 +64,13 @@
       (on-refresh)="refresh()"
       >
     </supply-list>
-    <!--
-    <div class="progress" *ngIf="progressValue > 0">
-      <div class="progress-bar progress-bar-striped active"
-        role="progressbar"
-        [attr.aria-valuenow]="progressValue"
-        aria-valuemin="0"
-        aria-valuemax="100"
-        [style.width.%]="progressValue">
-        <span class="sr-only">{{progressValue}}% Complete</span>
-      </div>
-    </div>
-  -->
   </div>
 </div>
 <div class="row" *ngIf="!!corpInfo">
   <div class="col-sm-6">
     <companies-list
-      [companies]="companiesList"
-      [storages]="storages"
-      [details]="companiesDetails"
+      [companies]="corpInfo.companies"
+      [details]="details"
       [is-manager]="corpInfo.is_manager"
       (on-select)="selectCompany($event)"
       (on-change)="companyStorageChange($event)"

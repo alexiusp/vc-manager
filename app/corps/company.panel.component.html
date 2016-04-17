@@ -1,0 +1,83 @@
+<div class="list-group-item" [ngClass]="{'active': detail.isSelected}">
+  <button type="button" class="btn btn-xs"
+    [ngClass]="{'btn-default': !detail.isSelected, 'btn-primary' : detail.isSelected, 'disabled' : detail.isLoading}"
+    (click)="selectCompany()">
+    <i class="glyphicon" [ngClass]="{'glyphicon-check': detail.isSelected, 'glyphicon-unchecked': !detail.isSelected}"></i>
+  </button>
+	<span class="label" [ngClass]="{'label-success': company.current_production.currently_producing, 'label-danger': !company.current_production.currently_producing}">
+    <i class="glyphicon" [ngClass]="{'glyphicon-thumbs-up': company.current_production.currently_producing, 'glyphicon-thumbs-down': !company.current_production.currently_producing}"></i>
+  </span>
+  <span>&nbsp;{{company.name}}</span>&nbsp;
+  <span *ngIf="detail.isLoading"><i class="fa fa-spinner fa-pulse"></i>Loading...</span>
+  <span *ngIf="!detail.isLoading" class="label label-success">{{ detail?.item.vd_balance | vMoney }}</span>
+  <button  *ngIf="!detail.isLoading" type="button" class="btn btn-xs pull-right"
+    [ngClass]="{'btn-default': !detail.isSelected, 'btn-primary' : detail.isSelected}"
+    (click)="openCompany()">
+    <i class="glyphicon" [ngClass]="{'glyphicon-menu-down': detail.isOpen, 'glyphicon-menu-right': !detail.isOpen}"></i>
+    <span class="sr-only">Open details</span>
+  </button>
+</div>
+<div class="list-group-item" *ngIf="detail.isOpen">
+  <div class="row">
+    <div class="col-xs-4">
+      <div class="input-group input-group-sm">
+        <span class="input-group-addon" id="sizing-addon3">
+          <img class="pull-left" width="16" height="16" alt="vDollars" src="/img/icons/icon-vdollar.png"/>&nbsp;
+          {{detail.item.vd_balance}}&nbsp;vD
+        </span>
+      </div>
+    </div>
+    <div class="col-xs-8">
+      <div class="input-group input-group-sm">
+        <span class="input-group-btn">
+          <button class="btn btn-warning" type="button" (click)="removeFunds(+fundsAmount.value)">
+            <i class="glyphicon glyphicon-minus"></i>&nbsp;Take
+          </button>
+        </span>
+        <input type="number" class="form-control" placeholder="vDollars" #fundsAmount (keyup)="0"/>
+        <span class="input-group-btn">
+          <button class="btn btn-success" type="button" (click)="addFunds(+fundsAmount.value)">
+            <i class="glyphicon glyphicon-plus"></i>&nbsp;Invest
+          </button>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="list-group-item" *ngIf="detail.isOpen">
+	<div class="btn-group btn-group-xs btn-group-justified" role="group">
+		<div class="btn-group" role="group">
+			<button type="button"
+				class="btn btn-default"
+				(click)="openProduction()">
+	  		<i class="fa fa-building-o"></i>&nbsp;Open
+	  	</button>
+		</div>
+		<div class="btn-group" role="group">
+			<button type="button" class="btn btn-primary" (click)="unloadProduction()">
+				<i class="fa fa-truck"></i>&nbsp;Unload
+			</button>
+		</div>
+		<div class="btn-group" role="group">
+			<button type="button" class="btn btn-default" (click)="unloadStorage()">
+				<i class="glyphicon glyphicon-download-alt"></i>&nbsp;Empty
+			</button>
+		</div>
+	</div>
+</div>
+<div class="list-group-item" *ngIf="detail.isOpen">
+  <span><img width="20" height="20" [src]="detail.item.current_production.img" align="left"/>{{detail.item.current_production.name}}</span>
+  <span class="label" [ngClass]="{'label-success': detail.item.current_production.currently_producing, 'label-danger': !detail.item.current_production.currently_producing}">
+    <i class="glyphicon" [ngClass]="{'glyphicon-thumbs-up': detail.item.current_production.currently_producing, 'glyphicon-thumbs-down': !detail.item.current_production.currently_producing}"></i>
+  </span>
+  <span class="label label-info">{{detail.item.current_production.quantity}}</span>
+</div>
+<template [ngIf]="detail.isOpen">
+  <div class="list-group-item"
+    *ngFor="#item of detail.storage"
+    [storage-item]="item"
+    (on-change)="change($event)"
+    [class.active]="item.isSelected">
+    <i class="fa fa-spinner fa-pulse"></i>Loading...
+  </div>
+</template>

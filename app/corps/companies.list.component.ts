@@ -1,40 +1,38 @@
 import {Component, Input, EventEmitter, Output} from 'angular2/core';
 
 import { Company, CompanyDetail } from './contracts';
-import { CompanyDetailComponent, CompanyOptions } from './company.detail.component';
-import { CompanyInfoComponent } from './company.info.component';
-import { CompanyStorageComponent } from './storage/company.storage.component';
 import { CorporationService } from './corporation.service';
 import { Dictionary, map } from '../core/dictionary';
 import { CompanyStorageElement, BaseStorageElement } from './storage/contracts';
 import { StorageItem } from './storage/models';
-import { CompanyItem } from './models';
+import { CompanyItem, CompanyDetailItem } from './models';
+import { CompanyPanelComponent } from './company.panel.component';
+import { CoreService } from '../core/core.service';
 
 @Component({
   selector: 'companies-list',
 	templateUrl: 'app/corps/companies.list.component.html',
-	directives: [CompanyDetailComponent, CompanyInfoComponent, CompanyStorageComponent]
+	directives: [CompanyPanelComponent]
 })
 export class CompaniesListComponent {
 
-  private _storages: map<StorageItem[]>;
-  constructor(private _corporationService : CorporationService) {
+  private loading : boolean;
+
+  constructor(private _corporationService : CorporationService, private _coreService : CoreService) {
     this.isListOpen = true;
     this.allSelected = false;
-    this._storages = new map<StorageItem[]>();
-    this._details = new map<CompanyDetail>();
+    this._details = new map<CompanyDetailItem>();
     this.filterDropdownOpen = false;
     this.currentFilter = "all";
     this.filterTitle = "Filter";
+    this.loading = true;
+    this._coreService.observeLoading((value) => {
+      this.loading = !!value;
+    })
 	}
 
-  @Input()
-  get storages() { return this._storages; }
-  set storages(list : map<StorageItem[]>) {
-    this._storages = list;
-  }
   companyStorageChange(cId : number, list : StorageItem[]) {
-    if(!!this._storages) this._storages[cId] = list;
+    if(!!this.details[cId]) this.details[cId].storage = list;
     /*
     let selected = false;
     for(let i of list) {
@@ -46,16 +44,13 @@ export class CompaniesListComponent {
   }
   @Output('on-change') onChange = new EventEmitter();
 
-  private _companies : CompanyItem[];
+  private _companies : Company[];
   @Input('companies')
-	set companies(cArr : CompanyItem[]) {
+	set companies(cArr : Company[]) {
     let types = [];
-    let isAllSelected = true;
     for(let c of cArr) {
-      if(types.indexOf(c.item.type) == -1) types.push(c.item.type);
-      if(!c.isSelected) isAllSelected = false;
+      if(types.indexOf(c.type) == -1) types.push(c.type);
     }
-    this.allSelected = isAllSelected;
 		//console.log("types:", types);
     types.unshift("all");
     this.types = types;
@@ -65,7 +60,7 @@ export class CompaniesListComponent {
     if(this.currentFilter != "all") {
       let cArr = [];
       for(let c of this._companies)
-        if(c.item.type == this.currentFilter) cArr.push(c);
+        if(c.type == this.currentFilter) cArr.push(c);
       return cArr;
     } else return this._companies
   }
@@ -75,7 +70,7 @@ export class CompaniesListComponent {
   private currentFilter : string;
   private filterTitle : string;
   toggleFilter() {
-    this.filterDropdownOpen = !this.filterDropdownOpen;
+    if(!this.loading) this.filterDropdownOpen = !this.filterDropdownOpen;
   }
   filterList(type : string) {
     //console.log("filter:", type);
@@ -83,12 +78,19 @@ export class CompaniesListComponent {
     this.filterTitle = (type == "all")? "Filter" : type;
     this.toggleFilter();
   }
-
-  private _details : map<CompanyDetail>;
+  checkAllSelected() {
+    let isAllSelected = true;
+    for(let c of this.companies) {
+      if(!this.details[c.id].isSelected) isAllSelected = false;
+    }
+    this.allSelected = isAllSelected;
+  }
+  private _details : map<CompanyDetailItem>;
   @Input()
-  set details(d: map<CompanyDetail>) {
+  set details(d: map<CompanyDetailItem>) {
     //console.log("companies details list setter", d);
     this._details = d;
+    this.checkAllSelected();
   }
   get details() {return this._details}
 
@@ -99,43 +101,41 @@ export class CompaniesListComponent {
   private allSelected : boolean;
   selectAll() {
     let s = !this.allSelected;
-    for(let c of this.companies) {
-      if(c.isSelected != s) {
-        this.selectOne(c);
+    if(!this.loading) for(let c of this.companies) {
+      let d = this.details[c.id];
+      if(d.isSelected != s) {
+        this.selectOne(d);
       }
     }
   }
-  selectOne(c : CompanyItem) {
-    let s = !c.isSelected;
-    c.isSelected = s;
-    let isAllSelected = true;
-    for(let ci of this.companies) if(!ci.isSelected) isAllSelected = false;
-    this.allSelected = isAllSelected;
-    if(!!this.onSelect) this.onSelect.emit(c);
+  selectOne(c : CompanyDetailItem) {
+    if(!this.loading) {
+      let s = !c.isSelected;
+      c.isSelected = s;
+      this.checkAllSelected();
+      if(!!this.onSelect) this.onSelect.emit(c);
+    }
   }
 
   private isListOpen : boolean;
   openList() {
     this.isListOpen = !this.isListOpen;
   }
-  openOne(c : CompanyItem) {
-    c.isOpen = !c.isOpen;
-  }
 
   @Output('on-invest') onInvest = new EventEmitter();
 
-  invest(c : CompanyItem, amount : number) {
+  invest(c : Company, amount : number) {
 		//console.log("invest to selected", +amount);
-    if(!!this.onInvest) this.onInvest.emit({cId : c.item.id, amount: +amount});
+    if(!!this.onInvest) this.onInvest.emit({cId : c.id, amount: +amount});
   }
 	unload(c : Company, unloadAll : boolean) {
 		if(unloadAll) this.putCompStorageToCorp(c);
 		else this.unloadProduction(c);
 	}
   unloadProduction(c : Company) {
-    let current = (!!this.details[c.id])? this.details[c.id].current_production : c.current_production;
+    let current = (!this.details[c.id].isLoading)? this.details[c.id].item.current_production : c.current_production;
     let current2 = c.current_production;
-    let cStorage = this.storages[c.id];
+    let cStorage = this.details[c.id].storage;
     //console.log("unloadProduction", current, cStorage);
     if(current.quantity > 0) {
       // look for production item in storage
@@ -161,11 +161,11 @@ export class CompaniesListComponent {
     }
   }
   putAllProductionToStorage() {
-    for(let c of this.companies) if(c.isSelected) this.unloadProduction(c.item);
+    if(!this.loading) for(let c of this.companies) if(this.details[c.id].isSelected) this.unloadProduction(c);
   }
 	putCompStorageToCorp(c : Company) {
 		let sList : StorageItem[] = [];
-		let cStorage = this.storages[c.id];
+		let cStorage = this.details[c.id].storage;
 		for(let item of cStorage) {
 			item.isTransfer = true;
 			sList.push(item);
@@ -173,11 +173,11 @@ export class CompaniesListComponent {
 		this.companyStorageChange(c.id, sList);
 	}
 	putAllStorageToCorp() {
-		for(let c of this.companies) if(c.isSelected) this.putCompStorageToCorp(c.item);
+		if(!this.loading) for(let c of this.companies) if(this.details[c.id].isSelected) this.putCompStorageToCorp(c);
 	}
   addFundsToAll(amount : number) {
 		//console.log("addFundsToAll", amount);
-    for(let c of this.companies) if(c.isSelected) this.invest(c, +amount);
+    if(!this.loading) for(let c of this.companies) if(this.details[c.id].isSelected) this.invest(c, +amount);
   }
   @Output('on-scroll') onScroll = new EventEmitter();
   scroll() {

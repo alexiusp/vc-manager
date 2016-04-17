@@ -33,7 +33,7 @@ export class CoreService {
   set isLoading(val : boolean) {
     if(!!val) this._loadingCounter++;
     else this._loadingCounter--;
-    console.info("loading counter:", this._loadingCounter);
+    //console.info("loading counter:", this._loadingCounter);
     this._loading = this._loadingCounter > 0;
     for(let callback of this._loadingObservers) callback(this.isLoading);
     if(this._loadingCounter < 0) this._loadingCounter = 0;

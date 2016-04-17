@@ -54,12 +54,10 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this._router = _router;
                     this._corporationService = _corporationService;
                     this._routeParams = _routeParams;
-                    this.companiesDetails = new dictionary_1.map();
                     this.progressValue = 0;
                     this.maxProgress = 0;
                     this.iProgress = 0;
                     this.resetLists();
-                    this._storages = new dictionary_1.map();
                 }
                 CorporationDetailComponent.prototype.ngOnInit = function () {
                     if (!this._coreService.isLoggedIn)
@@ -71,6 +69,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                 };
                 CorporationDetailComponent.prototype.loadCorpStorage = function () {
                     var _this = this;
+                    this._coreService.isLoading = true;
                     this._corporationService.getCorpStorage(this.corpId)
                         .subscribe(function (res) {
                         // transform incoming contracted data
@@ -83,29 +82,30 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         }
                         //console.log("storage:", list);
                         _this.corpStorage = list;
+                        _this._coreService.isLoading = false;
                     });
                 };
-                Object.defineProperty(CorporationDetailComponent.prototype, "storages", {
-                    get: function () { return this._storages; },
-                    enumerable: true,
-                    configurable: true
-                });
                 CorporationDetailComponent.prototype.loadCompanyDetail = function (id) {
                     var _this = this;
+                    this._coreService.isLoading = true;
                     if (this.corpInfo.is_manager)
                         this._corporationService
                             .getCompanyDetail(id)
                             .subscribe(function (res) {
                             //console.log("company detail:", res);
-                            _this.companiesDetails[id] = res;
+                            _this.details[id].item = res;
+                            _this._coreService.isLoading = false;
                         });
                 };
                 CorporationDetailComponent.prototype.loadCorpDetail = function (callback) {
                     var _this = this;
+                    this._coreService.isLoading = true;
                     this._corporationService
                         .getCorpDetail(this.corpId)
                         .subscribe(function (res) {
+                        _this.details = new dictionary_1.map();
                         _this.corpInfo = res;
+                        _this._coreService.isLoading = false;
                         if (!!callback)
                             callback();
                     });
@@ -114,11 +114,11 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     var _this = this;
                     this.loadCorpDetail(function () {
                         _this.loadCorpStorage();
-                        _this.companiesList = [];
                         if (!!_this.corpInfo.is_manager) {
                             var _loop_1 = function(c) {
-                                _this.companiesList.push(new models_2.CompanyItem(c));
+                                _this.details[c.id] = new models_2.CompanyDetailItem();
                                 _this.loadCompanyDetail(c.id);
+                                _this._coreService.isLoading = true;
                                 _this._corporationService.getCompanyStorage(c.id)
                                     .subscribe(function (res) {
                                     // transform incoming contracted data
@@ -131,7 +131,8 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                                             list.push(t);
                                         }
                                     //console.log("company storage:", list);
-                                    _this._storages[c.id] = list;
+                                    _this.details[c.id].storage = list;
+                                    _this._coreService.isLoading = false;
                                 });
                             };
                             for (var _i = 0, _a = _this.corpInfo.companies; _i < _a.length; _i++) {
@@ -165,11 +166,13 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     var _this = this;
                     console.log("investToCorp", amount);
                     if (this.corpInfo.is_manager) {
+                        this._coreService.isLoading = true;
                         this._corporationService.addFundsToCorporation(this.corpId, amount)
                             .subscribe(function (res) {
                             //console.log("result:",res);
                             //this.messages = res;
                             _this.loadCorpDetail();
+                            _this._coreService.isLoading = false;
                         });
                     }
                 };
@@ -347,16 +350,16 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                 };
                 CorporationDetailComponent.prototype.parseCompaniesTransactions = function (list) {
                     //console.log("parseCompaniesTransactions", list);
-                    for (var _i = 0, _a = this.companiesList; _i < _a.length; _i++) {
+                    for (var _i = 0, _a = this.corpInfo.companies; _i < _a.length; _i++) {
                         var c = _a[_i];
-                        for (var _b = 0, _c = this.storages[c.item.id]; _b < _c.length; _b++) {
+                        for (var _b = 0, _c = this.details[c.id].storage; _b < _c.length; _b++) {
                             var s = _c[_b];
                             if (s.isTransfer && (this.findItemTransaction(s, list) == -1))
                                 s.isTransfer = false;
                             if (s.isSell && (this.findItemTransaction(s, list) == -1))
                                 s.isSell = false;
                         }
-                        this.companyStorageChange({ cId: c.item.id, list: this.storages[c.item.id] });
+                        this.companyStorageChange({ cId: c.id, list: this.details[c.id].storage });
                     }
                 };
                 CorporationDetailComponent.prototype.transferChange = function (list) {
@@ -387,44 +390,37 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                 };
                 CorporationDetailComponent.prototype.parseSelectedCompanies = function () {
                     var cArr = [];
-                    for (var _i = 0, _a = this.companiesList; _i < _a.length; _i++) {
+                    for (var _i = 0, _a = this.corpInfo.companies; _i < _a.length; _i++) {
                         var c = _a[_i];
-                        if (c.isSelected)
-                            cArr.push(c.item);
+                        if (this.details[c.id].isSelected)
+                            cArr.push(this.details[c.id].item);
                     }
                     this.selectedCompanies = cArr;
                 };
-                CorporationDetailComponent.prototype.selectCompany = function (c) {
-                    for (var i in this.companiesList) {
-                        if (c.item.id == this.companiesList[i].item.id)
-                            this.companiesList[i].isSelected = c.isSelected;
-                    }
+                CorporationDetailComponent.prototype.selectCompany = function (d) {
+                    this.details[d.item.id].isSelected = d.isSelected;
                     this.parseSelectedCompanies();
                 };
                 CorporationDetailComponent.prototype.companiesChange = function (list) {
                     //console.log("companies change", list);
-                    var cList = [];
+                    var dList = new dictionary_1.map();
                     for (var _i = 0, _a = this.corpInfo.companies; _i < _a.length; _i++) {
                         var c = _a[_i];
-                        var ci = new models_2.CompanyItem(c);
+                        var d = this.details[c.id];
+                        d.isSelected = false;
                         for (var _b = 0, list_3 = list; _b < list_3.length; _b++) {
                             var i = list_3[_b];
                             if (i.id == c.id)
-                                ci.isSelected = true;
+                                d.isSelected = true;
                         }
-                        for (var _c = 0, _d = this.companiesList; _c < _d.length; _c++) {
-                            var oc = _d[_c];
-                            if (oc.item.id == c.id)
-                                ci.isOpen = oc.isOpen;
-                        }
-                        cList.push(ci);
+                        dList[c.id] = d;
                     }
-                    this.companiesList = cList;
+                    this.details = dList;
                     this.parseSelectedCompanies();
                 };
                 CorporationDetailComponent.prototype.companyStorageChange = function (changeEvent) {
                     //console.log("companyStorageChange", changeEvent);
-                    var company = this.companiesDetails[changeEvent.cId];
+                    var company = this.details[changeEvent.cId].item;
                     var corp = this._corporationService.getCorporation(this.corpId);
                     //console.log("company", company);
                     var sList = [];
@@ -502,7 +498,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         var t = {
                             owner: transactions_1.TransactionObject.Company,
                             price: +investEvent.amount,
-                            target: this.companiesDetails[investEvent.cId]
+                            target: this.details[investEvent.cId].item
                         };
                         //console.log("new invest transaction", t);
                         list.push(t);

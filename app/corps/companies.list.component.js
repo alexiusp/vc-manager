@@ -1,4 +1,4 @@
-System.register(['angular2/core', './company.detail.component', './company.info.component', './storage/company.storage.component', './corporation.service', '../core/dictionary'], function(exports_1, context_1) {
+System.register(['angular2/core', './corporation.service', '../core/dictionary', './company.panel.component', '../core/core.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,55 +10,49 @@ System.register(['angular2/core', './company.detail.component', './company.info.
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, company_detail_component_1, company_info_component_1, company_storage_component_1, corporation_service_1, dictionary_1;
+    var core_1, corporation_service_1, dictionary_1, company_panel_component_1, core_service_1;
     var CompaniesListComponent;
     return {
         setters:[
             function (core_1_1) {
                 core_1 = core_1_1;
             },
-            function (company_detail_component_1_1) {
-                company_detail_component_1 = company_detail_component_1_1;
-            },
-            function (company_info_component_1_1) {
-                company_info_component_1 = company_info_component_1_1;
-            },
-            function (company_storage_component_1_1) {
-                company_storage_component_1 = company_storage_component_1_1;
-            },
             function (corporation_service_1_1) {
                 corporation_service_1 = corporation_service_1_1;
             },
             function (dictionary_1_1) {
                 dictionary_1 = dictionary_1_1;
+            },
+            function (company_panel_component_1_1) {
+                company_panel_component_1 = company_panel_component_1_1;
+            },
+            function (core_service_1_1) {
+                core_service_1 = core_service_1_1;
             }],
         execute: function() {
             CompaniesListComponent = (function () {
-                function CompaniesListComponent(_corporationService) {
+                function CompaniesListComponent(_corporationService, _coreService) {
+                    var _this = this;
                     this._corporationService = _corporationService;
+                    this._coreService = _coreService;
                     this.onChange = new core_1.EventEmitter();
                     this.onSelect = new core_1.EventEmitter();
                     this.onInvest = new core_1.EventEmitter();
                     this.onScroll = new core_1.EventEmitter();
                     this.isListOpen = true;
                     this.allSelected = false;
-                    this._storages = new dictionary_1.map();
                     this._details = new dictionary_1.map();
                     this.filterDropdownOpen = false;
                     this.currentFilter = "all";
                     this.filterTitle = "Filter";
+                    this.loading = true;
+                    this._coreService.observeLoading(function (value) {
+                        _this.loading = !!value;
+                    });
                 }
-                Object.defineProperty(CompaniesListComponent.prototype, "storages", {
-                    get: function () { return this._storages; },
-                    set: function (list) {
-                        this._storages = list;
-                    },
-                    enumerable: true,
-                    configurable: true
-                });
                 CompaniesListComponent.prototype.companyStorageChange = function (cId, list) {
-                    if (!!this._storages)
-                        this._storages[cId] = list;
+                    if (!!this.details[cId])
+                        this.details[cId].storage = list;
                     /*
                     let selected = false;
                     for(let i of list) {
@@ -75,7 +69,7 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                             var cArr = [];
                             for (var _i = 0, _a = this._companies; _i < _a.length; _i++) {
                                 var c = _a[_i];
-                                if (c.item.type == this.currentFilter)
+                                if (c.type == this.currentFilter)
                                     cArr.push(c);
                             }
                             return cArr;
@@ -85,15 +79,11 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     },
                     set: function (cArr) {
                         var types = [];
-                        var isAllSelected = true;
                         for (var _i = 0, cArr_1 = cArr; _i < cArr_1.length; _i++) {
                             var c = cArr_1[_i];
-                            if (types.indexOf(c.item.type) == -1)
-                                types.push(c.item.type);
-                            if (!c.isSelected)
-                                isAllSelected = false;
+                            if (types.indexOf(c.type) == -1)
+                                types.push(c.type);
                         }
-                        this.allSelected = isAllSelected;
                         //console.log("types:", types);
                         types.unshift("all");
                         this.types = types;
@@ -103,7 +93,8 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     configurable: true
                 });
                 CompaniesListComponent.prototype.toggleFilter = function () {
-                    this.filterDropdownOpen = !this.filterDropdownOpen;
+                    if (!this.loading)
+                        this.filterDropdownOpen = !this.filterDropdownOpen;
                 };
                 CompaniesListComponent.prototype.filterList = function (type) {
                     //console.log("filter:", type);
@@ -111,47 +102,52 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     this.filterTitle = (type == "all") ? "Filter" : type;
                     this.toggleFilter();
                 };
+                CompaniesListComponent.prototype.checkAllSelected = function () {
+                    var isAllSelected = true;
+                    for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
+                        var c = _a[_i];
+                        if (!this.details[c.id].isSelected)
+                            isAllSelected = false;
+                    }
+                    this.allSelected = isAllSelected;
+                };
                 Object.defineProperty(CompaniesListComponent.prototype, "details", {
                     get: function () { return this._details; },
                     set: function (d) {
                         //console.log("companies details list setter", d);
                         this._details = d;
+                        this.checkAllSelected();
                     },
                     enumerable: true,
                     configurable: true
                 });
                 CompaniesListComponent.prototype.selectAll = function () {
                     var s = !this.allSelected;
-                    for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
-                        var c = _a[_i];
-                        if (c.isSelected != s) {
-                            this.selectOne(c);
+                    if (!this.loading)
+                        for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
+                            var c = _a[_i];
+                            var d = this.details[c.id];
+                            if (d.isSelected != s) {
+                                this.selectOne(d);
+                            }
                         }
-                    }
                 };
                 CompaniesListComponent.prototype.selectOne = function (c) {
-                    var s = !c.isSelected;
-                    c.isSelected = s;
-                    var isAllSelected = true;
-                    for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
-                        var ci = _a[_i];
-                        if (!ci.isSelected)
-                            isAllSelected = false;
+                    if (!this.loading) {
+                        var s = !c.isSelected;
+                        c.isSelected = s;
+                        this.checkAllSelected();
+                        if (!!this.onSelect)
+                            this.onSelect.emit(c);
                     }
-                    this.allSelected = isAllSelected;
-                    if (!!this.onSelect)
-                        this.onSelect.emit(c);
                 };
                 CompaniesListComponent.prototype.openList = function () {
                     this.isListOpen = !this.isListOpen;
                 };
-                CompaniesListComponent.prototype.openOne = function (c) {
-                    c.isOpen = !c.isOpen;
-                };
                 CompaniesListComponent.prototype.invest = function (c, amount) {
                     //console.log("invest to selected", +amount);
                     if (!!this.onInvest)
-                        this.onInvest.emit({ cId: c.item.id, amount: +amount });
+                        this.onInvest.emit({ cId: c.id, amount: +amount });
                 };
                 CompaniesListComponent.prototype.unload = function (c, unloadAll) {
                     if (unloadAll)
@@ -160,9 +156,9 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                         this.unloadProduction(c);
                 };
                 CompaniesListComponent.prototype.unloadProduction = function (c) {
-                    var current = (!!this.details[c.id]) ? this.details[c.id].current_production : c.current_production;
+                    var current = (!this.details[c.id].isLoading) ? this.details[c.id].item.current_production : c.current_production;
                     var current2 = c.current_production;
-                    var cStorage = this.storages[c.id];
+                    var cStorage = this.details[c.id].storage;
                     //console.log("unloadProduction", current, cStorage);
                     if (current.quantity > 0) {
                         // look for production item in storage
@@ -196,15 +192,16 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     }
                 };
                 CompaniesListComponent.prototype.putAllProductionToStorage = function () {
-                    for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
-                        var c = _a[_i];
-                        if (c.isSelected)
-                            this.unloadProduction(c.item);
-                    }
+                    if (!this.loading)
+                        for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
+                            var c = _a[_i];
+                            if (this.details[c.id].isSelected)
+                                this.unloadProduction(c);
+                        }
                 };
                 CompaniesListComponent.prototype.putCompStorageToCorp = function (c) {
                     var sList = [];
-                    var cStorage = this.storages[c.id];
+                    var cStorage = this.details[c.id].storage;
                     for (var _i = 0, cStorage_3 = cStorage; _i < cStorage_3.length; _i++) {
                         var item = cStorage_3[_i];
                         item.isTransfer = true;
@@ -213,28 +210,26 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     this.companyStorageChange(c.id, sList);
                 };
                 CompaniesListComponent.prototype.putAllStorageToCorp = function () {
-                    for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
-                        var c = _a[_i];
-                        if (c.isSelected)
-                            this.putCompStorageToCorp(c.item);
-                    }
+                    if (!this.loading)
+                        for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
+                            var c = _a[_i];
+                            if (this.details[c.id].isSelected)
+                                this.putCompStorageToCorp(c);
+                        }
                 };
                 CompaniesListComponent.prototype.addFundsToAll = function (amount) {
                     //console.log("addFundsToAll", amount);
-                    for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
-                        var c = _a[_i];
-                        if (c.isSelected)
-                            this.invest(c, +amount);
-                    }
+                    if (!this.loading)
+                        for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
+                            var c = _a[_i];
+                            if (this.details[c.id].isSelected)
+                                this.invest(c, +amount);
+                        }
                 };
                 CompaniesListComponent.prototype.scroll = function () {
                     if (!!this.onScroll)
                         this.onScroll.emit(null);
                 };
-                __decorate([
-                    core_1.Input(), 
-                    __metadata('design:type', Object)
-                ], CompaniesListComponent.prototype, "storages", null);
                 __decorate([
                     core_1.Output('on-change'), 
                     __metadata('design:type', Object)
@@ -269,9 +264,9 @@ System.register(['angular2/core', './company.detail.component', './company.info.
                     core_1.Component({
                         selector: 'companies-list',
                         templateUrl: 'app/corps/companies.list.component.html',
-                        directives: [company_detail_component_1.CompanyDetailComponent, company_info_component_1.CompanyInfoComponent, company_storage_component_1.CompanyStorageComponent]
+                        directives: [company_panel_component_1.CompanyPanelComponent]
                     }), 
-                    __metadata('design:paramtypes', [corporation_service_1.CorporationService])
+                    __metadata('design:paramtypes', [corporation_service_1.CorporationService, core_service_1.CoreService])
                 ], CompaniesListComponent);
                 return CompaniesListComponent;
             }());

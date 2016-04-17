@@ -55,7 +55,7 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                             this._loadingCounter++;
                         else
                             this._loadingCounter--;
-                        console.info("loading counter:", this._loadingCounter);
+                        //console.info("loading counter:", this._loadingCounter);
                         this._loading = this._loadingCounter > 0;
                         for (var _i = 0, _a = this._loadingObservers; _i < _a.length; _i++) {
                             var callback = _a[_i];

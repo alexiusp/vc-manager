@@ -20,6 +20,7 @@ export interface Company extends BaseBusiness {
   current_production:ProductionItem
 }
 export interface ProductionItem {
+  itemId?:number,
   name:string,
   img:string,
   quantity:number,

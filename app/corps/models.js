@@ -7,7 +7,7 @@ System.register(['../core/classes'], function(exports_1, context_1) {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
     var classes_1;
-    var CompanyItem;
+    var CompanyItem, CompanyDetailItem;
     return {
         setters:[
             function (classes_1_1) {
@@ -44,6 +44,57 @@ System.register(['../core/classes'], function(exports_1, context_1) {
                 return CompanyItem;
             }(classes_1.SelectableItem));
             exports_1("CompanyItem", CompanyItem);
+            CompanyDetailItem = (function (_super) {
+                __extends(CompanyDetailItem, _super);
+                function CompanyDetailItem(i) {
+                    _super.call(this);
+                    if (!!i) {
+                        this._item = i;
+                        this.checkLoading();
+                    }
+                    this.isOpen = false;
+                }
+                CompanyDetailItem.prototype.checkLoading = function () {
+                    if (!!this._item && !!this._storage)
+                        this.isLoading = false;
+                    else
+                        this.isLoading = true;
+                };
+                Object.defineProperty(CompanyDetailItem.prototype, "item", {
+                    get: function () {
+                        return this._item;
+                    },
+                    set: function (i) {
+                        this._item = i;
+                        this.checkLoading();
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(CompanyDetailItem.prototype, "storage", {
+                    get: function () {
+                        return this._storage;
+                    },
+                    set: function (list) {
+                        this._storage = list;
+                        this.checkLoading();
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                Object.defineProperty(CompanyDetailItem.prototype, "isOpen", {
+                    get: function () {
+                        return !!this._isOpen;
+                    },
+                    set: function (val) {
+                        this._isOpen = val;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
+                return CompanyDetailItem;
+            }(classes_1.LoadableItem));
+            exports_1("CompanyDetailItem", CompanyDetailItem);
         }
     }
 });
