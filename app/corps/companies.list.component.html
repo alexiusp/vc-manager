@@ -4,7 +4,7 @@
       <button type="button" class="btn btn-default btn-xs pull-left" (click)="selectAll();" [ngClass]="{'disabled': loading}">
         <i class="glyphicon"  [ngClass]="{'glyphicon-check': !allSelected, 'glyphicon-unchecked': allSelected}"></i>
       </button>&nbsp;
-      Companies&nbsp;({{companies?.length}})&nbsp;<i class="fa fa-spinner fa-pulse" *ngIf="loading"></i>
+      Companies&nbsp;({{companies?.length}})&nbsp;<i class="fa fa-spinner fa-pulse" *ngIf="!!loading"></i>
       <button type="button" class="btn btn-default btn-xs pull-right" (click)="openList()">
         <i class="fa" [ngClass]="{'fa-minus': isListOpen, 'fa-plus': !isListOpen}"></i>
       </button>
@@ -16,7 +16,7 @@
     </li>
     <li class="list-group-item" *ngIf="is_manager">
       <div class="row">
-        <div class="col-sm-12 col-md-3">
+        <div class="col-sm-12 col-md-2">
           <div class="dropdown" [ngClass]="{'open': !!filterDropdownOpen}">
             <button type="button"
               class="btn btn-default btn-sm btn-block dropdown-toggle"
@@ -55,15 +55,23 @@
 						</div>
 					</div>
         </div>
-        <div class="col-sm-12 col-md-4">
+        <div class="col-sm-12 col-md-5">
           <div class="input-group input-group-sm">
+            <span class="input-group-btn">
+              <button class="btn btn-warning"
+                type="button"
+                [ngClass]="{'disabled': loading}"
+                (click)="addFundsToAll(-addFundAmount.value);addFundAmount.value = ''">
+                <i class="glyphicon glyphicon-minus"></i>&nbsp;Take
+              </button>
+            </span>
             <input type="text" class="form-control" placeholder="Investment" #addFundAmount (keyup)="0"/>
             <span class="input-group-btn">
               <button class="btn btn-success"
                 type="button"
                 [ngClass]="{'disabled': loading}"
                 (click)="addFundsToAll(+addFundAmount.value);addFundAmount.value = ''">
-                <i class="glyphicon glyphicon-usd"></i>&nbsp;Invest
+                <i class="glyphicon glyphicon-plus"></i>&nbsp;Invest
               </button>
             </span>
           </div>

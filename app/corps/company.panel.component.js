@@ -47,11 +47,11 @@ System.register(['angular2/core', 'angular2/router', './models', '../vmoney.pipe
                         this.detail.isOpen = !this.detail.isOpen;
                 };
                 CompanyPanelComponent.prototype.addFunds = function (amount) {
-                    if (!!this.onInvest)
+                    if (!!this.onInvest && !!amount)
                         this.onInvest.emit(amount);
                 };
                 CompanyPanelComponent.prototype.removeFunds = function (amount) {
-                    if (!!this.onInvest)
+                    if (!!this.onInvest && !!amount)
                         this.onInvest.emit(-amount);
                 };
                 CompanyPanelComponent.prototype.openProduction = function () {

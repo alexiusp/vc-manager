@@ -21,7 +21,7 @@
   <div class="row">
     <div class="col-xs-4">
       <div class="input-group input-group-sm">
-        <span class="input-group-addon" id="sizing-addon3">
+        <span class="input-group-addon">
           <img class="pull-left" width="16" height="16" alt="vDollars" src="/img/icons/icon-vdollar.png"/>&nbsp;
           {{detail.item.vd_balance}}&nbsp;vD
         </span>
@@ -30,13 +30,13 @@
     <div class="col-xs-8">
       <div class="input-group input-group-sm">
         <span class="input-group-btn">
-          <button class="btn btn-warning" type="button" (click)="removeFunds(+fundsAmount.value)">
+          <button class="btn btn-warning" type="button" (click)="removeFunds(+fundsAmount.value);fundsAmount.value=''">
             <i class="glyphicon glyphicon-minus"></i>&nbsp;Take
           </button>
         </span>
         <input type="number" class="form-control" placeholder="vDollars" #fundsAmount (keyup)="0"/>
         <span class="input-group-btn">
-          <button class="btn btn-success" type="button" (click)="addFunds(+fundsAmount.value)">
+          <button class="btn btn-success" type="button" (click)="addFunds(+fundsAmount.value);fundsAmount.value=''">
             <i class="glyphicon glyphicon-plus"></i>&nbsp;Invest
           </button>
         </span>

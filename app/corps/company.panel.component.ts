@@ -34,10 +34,10 @@ export class CompanyPanelComponent {
 
   @Output('on-invest') onInvest = new EventEmitter();
   addFunds(amount : number) {
-    if(!!this.onInvest) this.onInvest.emit(amount);
+    if(!!this.onInvest && !!amount) this.onInvest.emit(amount);
   }
   removeFunds(amount : number) {
-    if(!!this.onInvest) this.onInvest.emit(-amount);
+    if(!!this.onInvest && !!amount) this.onInvest.emit(-amount);
   }
 
   openProduction() {
