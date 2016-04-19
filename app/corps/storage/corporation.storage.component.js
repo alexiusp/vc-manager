@@ -1,4 +1,4 @@
-System.register(['angular2/core', '../corporation.service', './storage.item.component'], function(exports_1, context_1) {
+System.register(['angular2/core', '../corporation.service', './storage.item.component', '../../storage/storage.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', '../corporation.service', './storage.item.comp
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, corporation_service_1, storage_item_component_1;
+    var core_1, corporation_service_1, storage_item_component_1, storage_service_1;
     var CorporationStorageComponent;
     return {
         setters:[
@@ -22,19 +22,30 @@ System.register(['angular2/core', '../corporation.service', './storage.item.comp
             },
             function (storage_item_component_1_1) {
                 storage_item_component_1 = storage_item_component_1_1;
+            },
+            function (storage_service_1_1) {
+                storage_service_1 = storage_service_1_1;
             }],
         execute: function() {
             CorporationStorageComponent = (function () {
-                function CorporationStorageComponent(_corporationService) {
+                function CorporationStorageComponent(_corporationService, _storageService) {
                     this._corporationService = _corporationService;
+                    this._storageService = _storageService;
                     this.onChange = new core_1.EventEmitter();
                     this.onScroll = new core_1.EventEmitter();
                     this.isListOpen = true;
                 }
                 CorporationStorageComponent.prototype.ngOnInit = function () {
                     this.filterDropdownOpen = false;
-                    this.currentFilter = "all";
-                    this.filterTitle = "Filter";
+                    var f = this._storageService.loadData("s_filter");
+                    if (!!f) {
+                        this.currentFilter = f;
+                        this.filterTitle = (f == "all") ? "Filter" : f;
+                    }
+                    else {
+                        this.currentFilter = "all";
+                        this.filterTitle = "Filter";
+                    }
                 };
                 Object.defineProperty(CorporationStorageComponent.prototype, "items", {
                     get: function () {
@@ -80,6 +91,7 @@ System.register(['angular2/core', '../corporation.service', './storage.item.comp
                 CorporationStorageComponent.prototype.filterList = function (type) {
                     //console.log("filter:", type);
                     this.currentFilter = type;
+                    this._storageService.saveData("s_filter", type);
                     this.filterTitle = (type == "all") ? "Filter" : type;
                     this.toggleFilter();
                 };
@@ -115,7 +127,7 @@ System.register(['angular2/core', '../corporation.service', './storage.item.comp
                         templateUrl: 'app/corps/storage/corporation.storage.component.html',
                         directives: [storage_item_component_1.StorageItemComponent]
                     }), 
-                    __metadata('design:paramtypes', [corporation_service_1.CorporationService])
+                    __metadata('design:paramtypes', [corporation_service_1.CorporationService, storage_service_1.StorageService])
                 ], CorporationStorageComponent);
                 return CorporationStorageComponent;
             }());

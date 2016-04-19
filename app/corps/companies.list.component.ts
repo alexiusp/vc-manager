@@ -8,6 +8,7 @@ import { StorageItem } from './storage/models';
 import { CompanyItem, CompanyDetailItem } from './models';
 import { CompanyPanelComponent } from './company.panel.component';
 import { CoreService } from '../core/core.service';
+import { StorageService } from '../storage/storage.service';
 
 @Component({
   selector: 'companies-list',
@@ -18,17 +19,25 @@ export class CompaniesListComponent {
 
   private loading : boolean;
 
-  constructor(private _corporationService : CorporationService, private _coreService : CoreService) {
+  constructor(private _corporationService : CorporationService,
+    private _coreService : CoreService,
+    private _storageService : StorageService) {
     this.isListOpen = true;
     this.allSelected = false;
     this._details = new map<CompanyDetailItem>();
     this.filterDropdownOpen = false;
-    this.currentFilter = "all";
-    this.filterTitle = "Filter";
     this.loading = true;
     this._coreService.observeLoading((value) => {
       this.loading = !!value;
-    })
+    });
+    let f = this._storageService.loadData("c_filter");
+    if(!!f) {
+      this.currentFilter = f;
+      this.filterTitle = (f == "all")? "Filter" : f;
+    } else {
+      this.currentFilter = "all";
+      this.filterTitle = "Filter";
+    }
 	}
 
   companyStorageChange(cId : number, list : StorageItem[]) {
@@ -75,6 +84,7 @@ export class CompaniesListComponent {
   filterList(type : string) {
     //console.log("filter:", type);
     this.currentFilter = type;
+    this._storageService.saveData("c_filter", type);
     this.filterTitle = (type == "all")? "Filter" : type;
     this.toggleFilter();
   }

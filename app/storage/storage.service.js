@@ -28,15 +28,6 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                 StorageService.prototype.saveData = function (key, data) {
                     this._ls.setItem(key, JSON.stringify(data));
                 };
-                StorageService.prototype.getHeroes = function () {
-                    //return Promise.resolve(HEROES);
-                };
-                StorageService.prototype.getHero = function (id) {
-                    /*
-                    return Promise.resolve(HEROES).then(
-                      heroes => heroes.filter(hero => hero.id === id)[0]
-                    );*/
-                };
                 StorageService = __decorate([
                     core_1.Injectable(), 
                     __metadata('design:paramtypes', [])

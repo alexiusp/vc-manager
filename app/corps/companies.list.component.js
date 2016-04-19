@@ -1,4 +1,4 @@
-System.register(['angular2/core', './corporation.service', '../core/dictionary', './company.panel.component', '../core/core.service'], function(exports_1, context_1) {
+System.register(['angular2/core', './corporation.service', '../core/dictionary', './company.panel.component', '../core/core.service', '../storage/storage.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, corporation_service_1, dictionary_1, company_panel_component_1, core_service_1;
+    var core_1, corporation_service_1, dictionary_1, company_panel_component_1, core_service_1, storage_service_1;
     var CompaniesListComponent;
     return {
         setters:[
@@ -28,13 +28,17 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
             },
             function (core_service_1_1) {
                 core_service_1 = core_service_1_1;
+            },
+            function (storage_service_1_1) {
+                storage_service_1 = storage_service_1_1;
             }],
         execute: function() {
             CompaniesListComponent = (function () {
-                function CompaniesListComponent(_corporationService, _coreService) {
+                function CompaniesListComponent(_corporationService, _coreService, _storageService) {
                     var _this = this;
                     this._corporationService = _corporationService;
                     this._coreService = _coreService;
+                    this._storageService = _storageService;
                     this.onChange = new core_1.EventEmitter();
                     this.onSelect = new core_1.EventEmitter();
                     this.onInvest = new core_1.EventEmitter();
@@ -43,12 +47,19 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                     this.allSelected = false;
                     this._details = new dictionary_1.map();
                     this.filterDropdownOpen = false;
-                    this.currentFilter = "all";
-                    this.filterTitle = "Filter";
                     this.loading = true;
                     this._coreService.observeLoading(function (value) {
                         _this.loading = !!value;
                     });
+                    var f = this._storageService.loadData("c_filter");
+                    if (!!f) {
+                        this.currentFilter = f;
+                        this.filterTitle = (f == "all") ? "Filter" : f;
+                    }
+                    else {
+                        this.currentFilter = "all";
+                        this.filterTitle = "Filter";
+                    }
                 }
                 CompaniesListComponent.prototype.companyStorageChange = function (cId, list) {
                     if (!!this.details[cId])
@@ -99,6 +110,7 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                 CompaniesListComponent.prototype.filterList = function (type) {
                     //console.log("filter:", type);
                     this.currentFilter = type;
+                    this._storageService.saveData("c_filter", type);
                     this.filterTitle = (type == "all") ? "Filter" : type;
                     this.toggleFilter();
                 };
@@ -266,7 +278,7 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                         templateUrl: 'app/corps/companies.list.component.html',
                         directives: [company_panel_component_1.CompanyPanelComponent]
                     }), 
-                    __metadata('design:paramtypes', [corporation_service_1.CorporationService, core_service_1.CoreService])
+                    __metadata('design:paramtypes', [corporation_service_1.CorporationService, core_service_1.CoreService, storage_service_1.StorageService])
                 ], CompaniesListComponent);
                 return CompaniesListComponent;
             }());

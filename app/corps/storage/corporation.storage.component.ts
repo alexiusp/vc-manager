@@ -3,6 +3,8 @@ import {Component, Input, EventEmitter, Output, OnInit} from 'angular2/core';
 import { StorageItem } from './models';
 import { CorporationService } from '../corporation.service';
 import { StorageItemComponent } from './storage.item.component';
+import { StorageService } from '../../storage/storage.service';
+
 @Component({
   selector: 'corporation-storage',
 	templateUrl: 'app/corps/storage/corporation.storage.component.html',
@@ -10,13 +12,20 @@ import { StorageItemComponent } from './storage.item.component';
 })
 export class CorporationStorageComponent implements OnInit {
 
-  constructor(private _corporationService: CorporationService){
+  constructor( private _corporationService: CorporationService,
+    private _storageService : StorageService ){
     this.isListOpen = true;
   }
   ngOnInit() {
     this.filterDropdownOpen = false;
-    this.currentFilter = "all";
-    this.filterTitle = "Filter";
+    let f = this._storageService.loadData("s_filter");
+    if(!!f) {
+      this.currentFilter = f;
+      this.filterTitle = (f == "all")? "Filter" : f;
+    } else {
+      this.currentFilter = "all";
+      this.filterTitle = "Filter";
+    }
   }
 
   private _items : StorageItem[];
@@ -57,6 +66,7 @@ export class CorporationStorageComponent implements OnInit {
   filterList(type : string) {
     //console.log("filter:", type);
     this.currentFilter = type;
+    this._storageService.saveData("s_filter", type);
     this.filterTitle = (type == "all")? "Filter" : type;
     this.toggleFilter();
   }
