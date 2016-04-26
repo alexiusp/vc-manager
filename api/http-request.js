@@ -1,12 +1,18 @@
 'use strict';
 var http = require('http');
+
 const requestType = {
   GET: "GET",
   POST: "POST"
 };
 var _request = function(type, path, body, cookies, callback) {
   let headers = {
-    'Content-Type': 'application/x-www-form-urlencoded'
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Encoding': 'deflate',
+    'Accept-Language': 'ru,en-US;q=0.8,en;q=0.4',
+    'Referer': 'http://api.vircities.com/app/index.html',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'
   };
   if(!!body && body.length > 0) headers['Content-Length'] = body.length;
   //console.log("_request cookies:", JSON.stringify(cookies));
@@ -29,11 +35,13 @@ var _request = function(type, path, body, cookies, callback) {
       result.data += chunk;
     });
     res.on('end', () => {
+      let dataString = result.data;
       try {
-        result.data = JSON.parse(result.data);
+        result.data = JSON.parse(dataString);
       } catch (e) {
         result.data = `problem with request: ${e.message}`;
-        result.statusCode = 2;
+        result.debug = dataString;
+        result.statusCode = 8;
       }
       callback(result);
     })

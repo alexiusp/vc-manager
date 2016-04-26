@@ -2,9 +2,11 @@
 
 const fs = require('fs');
 var http = require('http');
+var config = require('./config.js');
 
 exports.init = function(xpress) {
   let app = xpress;
+  //app.set('trust proxy', 1);
   app.get('/', function(req, res) {
   	res.redirect('/app');
   })
@@ -16,7 +18,9 @@ exports.init = function(xpress) {
     res.json({data:"battlecruiser operational"});
   });
   app.post('/api/login', function (req, res) {
-    //console.log('login request', req.body);
+    console.log("request ip:", req.connection.remoteAddress);
+    console.log('login request', req.headers);
+    console.log('sess', req.session);
     var user = req.body;
     var api = require('./login');
     api.login(user, (result) => {
@@ -57,9 +61,9 @@ exports.init = function(xpress) {
         })
       } else {
         res.json({
-          error:result.data.error,
-          message:result.data.setFlash[0].msg,
-          data:result.data
+          error:result.statusCode,
+          message:result.data,
+          data:JSON.stringify(result)
         });
       }
     });
