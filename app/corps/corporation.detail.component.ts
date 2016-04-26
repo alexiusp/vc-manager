@@ -14,6 +14,7 @@ import { SupplyListComponent } from './storage/supply.list.component';
 import { CompaniesListComponent } from './companies.list.component';
 import { CorporationStorageComponent } from './storage/corporation.storage.component';
 import { CompanyDetailItem } from './models';
+import { StorageService } from '../storage/storage.service';
 
 @Component({
   selector: 'ap-corp-detail',
@@ -36,7 +37,8 @@ export class CorporationDetailComponent implements OnInit {
     private _coreService: CoreService,
     private _router : Router,
     private _corporationService: CorporationService,
-    private _routeParams: RouteParams
+    private _routeParams: RouteParams,
+		private _storageService: StorageService
   ) {
     this.progressValue = 0;
     this.maxProgress = 0;
@@ -47,6 +49,12 @@ export class CorporationDetailComponent implements OnInit {
     if(!this._coreService.isLoggedIn) this._router.navigateByUrl('/');
     else {
       this.corpId = +this._routeParams.get('id');
+			let f = this._storageService.loadData("c_filter");
+			if(!!f) {
+				this.companyFilter = f;
+			} else {
+				this.companyFilter = "all";
+			}
       this.loadCorpInfo();
       //this.loadCorpStorage();
     }
@@ -83,10 +91,29 @@ export class CorporationDetailComponent implements OnInit {
 		this._corporationService
 			.getCorpDetail(this.corpId)
 			.subscribe((res : CorpInfo) => {
-        this.details = new map<CompanyDetailItem>();
+        if(!this.details) this.details = new map<CompanyDetailItem>();
 				this.corpInfo = res;
         this._coreService.isLoading = false;
 				if(!!callback) callback();
+			});
+	}
+	loadCompanyInfo(c : Company) {
+		console.log("loadCompanyInfo ", c.name);
+		this.details[c.id] = new CompanyDetailItem();
+		this.loadCompanyDetail(c.id);
+		this._coreService.isLoading = true;
+		this._corporationService.getCompanyStorage(c.id)
+			.subscribe((res : BaseStorageElement[]) => {
+				// transform incoming contracted data
+				// to view presenter class
+				let list : StorageItem[] = [];
+				if(!!res) for(let i of res) {
+					let t = new StorageItem(i);
+					list.push(t);
+				}
+				//console.log("company storage:", list);
+				this.details[c.id].storage = list;
+				this._coreService.isLoading = false;
 			});
 	}
   loadCorpInfo() {
@@ -94,33 +121,25 @@ export class CorporationDetailComponent implements OnInit {
 			this.loadCorpStorage();
 			if(!!this.corpInfo.is_manager) {
         for(let c of this.corpInfo.companies) {
-          this.details[c.id] = new CompanyDetailItem();
-  				this.loadCompanyDetail(c.id);
-          this._coreService.isLoading = true;
-          this._corporationService.getCompanyStorage(c.id)
-            .subscribe((res : BaseStorageElement[]) => {
-              // transform incoming contracted data
-              // to view presenter class
-              let list : StorageItem[] = [];
-              if(!!res) for(let i of res) {
-                let t = new StorageItem(i);
-                list.push(t);
-              }
-              //console.log("company storage:", list);
-              this.details[c.id].storage = list;
-              this._coreService.isLoading = false;
-            });
+					// load company info always for the first time
+					if(!this.details[c.id]) this.loadCompanyInfo(c);
+					else {
+						// check if the filter is set
+						let f = this.companyFilter || "all";
+						//console.log("companies load:", c, f);
+						if(f == "all" || c.type == f) this.loadCompanyInfo(c);
+					}
 			  }
       }
 		});
   }
   initProgress(maxNum : number) {
+		console.log("corp detail initProgress");
     this.maxProgress = maxNum;
     this.iProgress = 0;
     this.progressValue = 10;
   }
   incrementProgress() {
-    //console.log("incrementProgress")
     this.iProgress++;
     if (this.iProgress >= this.maxProgress) {
       this.progressValue = 0;
@@ -134,7 +153,7 @@ export class CorporationDetailComponent implements OnInit {
   backend operations functions
   */
   investToCorp(amount : number) {
-    console.log("investToCorp", amount);
+    //console.log("investToCorp", amount);
 		if(this.corpInfo.is_manager) {
       this._coreService.isLoading = true;
 			this._corporationService.addFundsToCorporation(this.corpId, amount)
@@ -146,34 +165,11 @@ export class CorporationDetailComponent implements OnInit {
         });
 		}
   }
-
-  /*
-	putItemsToCompanies(list : TransferItem[]) {
-		console.log("putItemsToCompanies", list);
-		if(this.corpInfo.is_manager) {
-			let cNum = this.corpInfo.companies.length;
-			this.initProgress(cNum);
-			let counter = 0;
-			for(let c of this.corpInfo.companies) {
-				if(this.selectedCompanies[c.id]) {
-					counter++;
-					let compId = c.id;
-					this._corporationService.moveItemsToCompany(compId, list)
-						.subscribe((res:ResultMessage[]) => {
-							console.log("result:",res);
-							this.messages = res;
-							this.loadCompanyDetail(compId);
-							this.incrementProgress();
-							this.supplyList = [];
-						})
-				} else this.incrementProgress();
-			}
-			if(!counter) {
-				this.messages = [new ResultMessage("flash_error","No companies selected!")];
-			}
-		}
+	private companyFilter : string;
+	setFilter(filter : string) {
+		console.log("setFilter:", filter);
+		this.companyFilter = filter;
 	}
-  */
   refresh() {
     this.resetLists();
     this.loadCorpInfo();

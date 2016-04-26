@@ -40,7 +40,9 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                     this._coreService = _coreService;
                     this._storageService = _storageService;
                     this.onChange = new core_1.EventEmitter();
+                    this.onFilter = new core_1.EventEmitter();
                     this.onSelect = new core_1.EventEmitter();
+                    this.onOpen = new core_1.EventEmitter();
                     this.onInvest = new core_1.EventEmitter();
                     this.onScroll = new core_1.EventEmitter();
                     this.isListOpen = true;
@@ -113,6 +115,8 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                     this._storageService.saveData("c_filter", type);
                     this.filterTitle = (type == "all") ? "Filter" : type;
                     this.toggleFilter();
+                    if (!!this.onFilter)
+                        this.onFilter.emit(type);
                 };
                 CompaniesListComponent.prototype.checkAllSelected = function () {
                     var isAllSelected = true;
@@ -155,6 +159,8 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                 };
                 CompaniesListComponent.prototype.openList = function () {
                     this.isListOpen = !this.isListOpen;
+                    if (!!this.onOpen)
+                        this.onOpen.emit(this.isListOpen);
                 };
                 CompaniesListComponent.prototype.invest = function (c, amount) {
                     //console.log("invest to selected", +amount);
@@ -252,6 +258,10 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                     __metadata('design:paramtypes', [Array])
                 ], CompaniesListComponent.prototype, "companies", null);
                 __decorate([
+                    core_1.Output('on-filter'), 
+                    __metadata('design:type', Object)
+                ], CompaniesListComponent.prototype, "onFilter", void 0);
+                __decorate([
                     core_1.Input(), 
                     __metadata('design:type', dictionary_1.map), 
                     __metadata('design:paramtypes', [dictionary_1.map])
@@ -264,6 +274,10 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                     core_1.Output('on-select'), 
                     __metadata('design:type', Object)
                 ], CompaniesListComponent.prototype, "onSelect", void 0);
+                __decorate([
+                    core_1.Output('on-open'), 
+                    __metadata('design:type', Object)
+                ], CompaniesListComponent.prototype, "onOpen", void 0);
                 __decorate([
                     core_1.Output('on-invest'), 
                     __metadata('design:type', Object)

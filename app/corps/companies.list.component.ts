@@ -81,12 +81,14 @@ export class CompaniesListComponent {
   toggleFilter() {
     if(!this.loading) this.filterDropdownOpen = !this.filterDropdownOpen;
   }
+	@Output('on-filter') onFilter = new EventEmitter();
   filterList(type : string) {
     //console.log("filter:", type);
     this.currentFilter = type;
     this._storageService.saveData("c_filter", type);
     this.filterTitle = (type == "all")? "Filter" : type;
     this.toggleFilter();
+		if(!!this.onFilter) this.onFilter.emit(type);
   }
   checkAllSelected() {
     let isAllSelected = true;
@@ -128,8 +130,10 @@ export class CompaniesListComponent {
   }
 
   private isListOpen : boolean;
+	@Output('on-open') onOpen = new EventEmitter();
   openList() {
     this.isListOpen = !this.isListOpen;
+		if(!!this.onOpen) this.onOpen.emit(this.isListOpen);
   }
 
   @Output('on-invest') onInvest = new EventEmitter();

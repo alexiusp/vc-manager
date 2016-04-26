@@ -1,4 +1,4 @@
-System.register(['angular2/core', 'angular2/router', './storage/models', './storage/transactions', './corporation.service', '../core/core.service', '../core/dictionary', './storage/supply.list.component', './companies.list.component', './storage/corporation.storage.component', './models'], function(exports_1, context_1) {
+System.register(['angular2/core', 'angular2/router', './storage/models', './storage/transactions', './corporation.service', '../core/core.service', '../core/dictionary', './storage/supply.list.component', './companies.list.component', './storage/corporation.storage.component', './models', '../storage/storage.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, router_1, models_1, transactions_1, corporation_service_1, core_service_1, dictionary_1, supply_list_component_1, companies_list_component_1, corporation_storage_component_1, models_2;
+    var core_1, router_1, models_1, transactions_1, corporation_service_1, core_service_1, dictionary_1, supply_list_component_1, companies_list_component_1, corporation_storage_component_1, models_2, storage_service_1;
     var CorporationDetailComponent;
     return {
         setters:[
@@ -46,14 +46,18 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
             },
             function (models_2_1) {
                 models_2 = models_2_1;
+            },
+            function (storage_service_1_1) {
+                storage_service_1 = storage_service_1_1;
             }],
         execute: function() {
             CorporationDetailComponent = (function () {
-                function CorporationDetailComponent(_coreService, _router, _corporationService, _routeParams) {
+                function CorporationDetailComponent(_coreService, _router, _corporationService, _routeParams, _storageService) {
                     this._coreService = _coreService;
                     this._router = _router;
                     this._corporationService = _corporationService;
                     this._routeParams = _routeParams;
+                    this._storageService = _storageService;
                     this.progressValue = 0;
                     this.maxProgress = 0;
                     this.iProgress = 0;
@@ -64,6 +68,13 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         this._router.navigateByUrl('/');
                     else {
                         this.corpId = +this._routeParams.get('id');
+                        var f = this._storageService.loadData("c_filter");
+                        if (!!f) {
+                            this.companyFilter = f;
+                        }
+                        else {
+                            this.companyFilter = "all";
+                        }
                         this.loadCorpInfo();
                     }
                 };
@@ -103,11 +114,34 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this._corporationService
                         .getCorpDetail(this.corpId)
                         .subscribe(function (res) {
-                        _this.details = new dictionary_1.map();
+                        if (!_this.details)
+                            _this.details = new dictionary_1.map();
                         _this.corpInfo = res;
                         _this._coreService.isLoading = false;
                         if (!!callback)
                             callback();
+                    });
+                };
+                CorporationDetailComponent.prototype.loadCompanyInfo = function (c) {
+                    var _this = this;
+                    console.log("loadCompanyInfo ", c.name);
+                    this.details[c.id] = new models_2.CompanyDetailItem();
+                    this.loadCompanyDetail(c.id);
+                    this._coreService.isLoading = true;
+                    this._corporationService.getCompanyStorage(c.id)
+                        .subscribe(function (res) {
+                        // transform incoming contracted data
+                        // to view presenter class
+                        var list = [];
+                        if (!!res)
+                            for (var _i = 0, res_2 = res; _i < res_2.length; _i++) {
+                                var i = res_2[_i];
+                                var t = new models_1.StorageItem(i);
+                                list.push(t);
+                            }
+                        //console.log("company storage:", list);
+                        _this.details[c.id].storage = list;
+                        _this._coreService.isLoading = false;
                     });
                 };
                 CorporationDetailComponent.prototype.loadCorpInfo = function () {
@@ -115,40 +149,29 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this.loadCorpDetail(function () {
                         _this.loadCorpStorage();
                         if (!!_this.corpInfo.is_manager) {
-                            var _loop_1 = function(c) {
-                                _this.details[c.id] = new models_2.CompanyDetailItem();
-                                _this.loadCompanyDetail(c.id);
-                                _this._coreService.isLoading = true;
-                                _this._corporationService.getCompanyStorage(c.id)
-                                    .subscribe(function (res) {
-                                    // transform incoming contracted data
-                                    // to view presenter class
-                                    var list = [];
-                                    if (!!res)
-                                        for (var _i = 0, res_2 = res; _i < res_2.length; _i++) {
-                                            var i = res_2[_i];
-                                            var t = new models_1.StorageItem(i);
-                                            list.push(t);
-                                        }
-                                    //console.log("company storage:", list);
-                                    _this.details[c.id].storage = list;
-                                    _this._coreService.isLoading = false;
-                                });
-                            };
                             for (var _i = 0, _a = _this.corpInfo.companies; _i < _a.length; _i++) {
                                 var c = _a[_i];
-                                _loop_1(c);
+                                // load company info always for the first time
+                                if (!_this.details[c.id])
+                                    _this.loadCompanyInfo(c);
+                                else {
+                                    // check if the filter is set
+                                    var f = _this.companyFilter || "all";
+                                    //console.log("companies load:", c, f);
+                                    if (f == "all" || c.type == f)
+                                        _this.loadCompanyInfo(c);
+                                }
                             }
                         }
                     });
                 };
                 CorporationDetailComponent.prototype.initProgress = function (maxNum) {
+                    console.log("corp detail initProgress");
                     this.maxProgress = maxNum;
                     this.iProgress = 0;
                     this.progressValue = 10;
                 };
                 CorporationDetailComponent.prototype.incrementProgress = function () {
-                    //console.log("incrementProgress")
                     this.iProgress++;
                     if (this.iProgress >= this.maxProgress) {
                         this.progressValue = 0;
@@ -164,7 +187,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                 */
                 CorporationDetailComponent.prototype.investToCorp = function (amount) {
                     var _this = this;
-                    console.log("investToCorp", amount);
+                    //console.log("investToCorp", amount);
                     if (this.corpInfo.is_manager) {
                         this._coreService.isLoading = true;
                         this._corporationService.addFundsToCorporation(this.corpId, amount)
@@ -176,33 +199,10 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         });
                     }
                 };
-                /*
-                  putItemsToCompanies(list : TransferItem[]) {
-                      console.log("putItemsToCompanies", list);
-                      if(this.corpInfo.is_manager) {
-                          let cNum = this.corpInfo.companies.length;
-                          this.initProgress(cNum);
-                          let counter = 0;
-                          for(let c of this.corpInfo.companies) {
-                              if(this.selectedCompanies[c.id]) {
-                                  counter++;
-                                  let compId = c.id;
-                                  this._corporationService.moveItemsToCompany(compId, list)
-                                      .subscribe((res:ResultMessage[]) => {
-                                          console.log("result:",res);
-                                          this.messages = res;
-                                          this.loadCompanyDetail(compId);
-                                          this.incrementProgress();
-                                          this.supplyList = [];
-                                      })
-                              } else this.incrementProgress();
-                          }
-                          if(!counter) {
-                              this.messages = [new ResultMessage("flash_error","No companies selected!")];
-                          }
-                      }
-                  }
-                */
+                CorporationDetailComponent.prototype.setFilter = function (filter) {
+                    console.log("setFilter:", filter);
+                    this.companyFilter = filter;
+                };
                 CorporationDetailComponent.prototype.refresh = function () {
                     this.resetLists();
                     this.loadCorpInfo();
@@ -535,7 +535,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         templateUrl: 'app/corps/corporation.detail.component.html',
                         directives: [supply_list_component_1.SupplyListComponent, companies_list_component_1.CompaniesListComponent, corporation_storage_component_1.CorporationStorageComponent]
                     }), 
-                    __metadata('design:paramtypes', [core_service_1.CoreService, router_1.Router, corporation_service_1.CorporationService, router_1.RouteParams])
+                    __metadata('design:paramtypes', [core_service_1.CoreService, router_1.Router, corporation_service_1.CorporationService, router_1.RouteParams, storage_service_1.StorageService])
                 ], CorporationDetailComponent);
                 return CorporationDetailComponent;
             }());
