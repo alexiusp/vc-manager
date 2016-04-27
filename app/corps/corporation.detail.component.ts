@@ -5,7 +5,7 @@ import { CorpInfo, Company, CompanyDetail } from './contracts';
 import { CorporationStorageElement, CompanyStorageElement, BaseStorageElement } from './storage/contracts';
 import { StorageItem } from './storage/models';
 
-import { TransactionObject, SellItemTransaction, TransferItemTransaction, BaseItemTransaction, itemTransactionEqual, InvestTransaction } from './storage/transactions';
+import { BaseTransaction, TransactionObject, SellItemTransaction, TransferItemTransaction, BaseItemTransaction, itemTransactionEqual, InvestTransaction } from './storage/transactions';
 import { CorporationService } from './corporation.service';
 import { CoreService } from '../core/core.service';
 import { Dictionary, map } from '../core/dictionary';
@@ -170,7 +170,7 @@ export class CorporationDetailComponent implements OnInit {
 		console.log("setFilter:", filter);
 		this.companyFilter = filter;
 	}
-  refresh() {
+  refresh(tList? : BaseTransaction[]) {
     this.resetLists();
     this.loadCorpInfo();
   }

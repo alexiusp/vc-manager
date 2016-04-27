@@ -203,7 +203,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     console.log("setFilter:", filter);
                     this.companyFilter = filter;
                 };
-                CorporationDetailComponent.prototype.refresh = function () {
+                CorporationDetailComponent.prototype.refresh = function (tList) {
                     this.resetLists();
                     this.loadCorpInfo();
                 };
