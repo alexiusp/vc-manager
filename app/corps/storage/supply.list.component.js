@@ -233,8 +233,20 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     if (!!this.onChangeInvestments)
                         this.onChangeInvestments.emit([]);
                 };
+                SupplyListComponent.prototype.addBusiness = function (b) {
+                    if (!this.businessesToRefresh)
+                        this.businessesToRefresh = [];
+                    for (var _i = 0, _a = this.businessesToRefresh; _i < _a.length; _i++) {
+                        var c = _a[_i];
+                        if (b.id == c.id)
+                            return;
+                    }
+                    this.businessesToRefresh.push(b);
+                };
                 SupplyListComponent.prototype.go = function () {
                     var _this = this;
+                    this.businessesToRefresh = [];
+                    // calculate the number of operations for progress bar
                     var tNum = 0;
                     if (!!this.investments)
                         tNum += this.investments.length;
@@ -265,6 +277,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     // transfer items to companies.
                     if ((corpList.length > 0) && !!this.companies) {
                         var _loop_1 = function(c) {
+                            this_1.addBusiness(c);
                             this_1._coreService.isLoading = true;
                             this_1._corporationService.moveItemsToCompany(c.id, corpList)
                                 .subscribe(function (res) {
@@ -294,6 +307,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     if (compList.length > 0) {
                         var _loop_2 = function(t) {
                             this_2._coreService.isLoading = true;
+                            this_2.addBusiness(t.business);
                             this_2._corporationService.moveItemToCorporation(t.business.id, t.item.ItemType.id, t.amount)
                                 .subscribe(function (res) {
                                 _this._coreService.isLoading = false;
@@ -312,6 +326,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     if (!!this.investments)
                         var _loop_3 = function(t) {
                             // TODO: implement corporation investment
+                            this_3.addBusiness(t.business);
                             this_3._coreService.isLoading = true;
                             this_3._corporationService.addFundsToCompany(t.business.id, t.money).subscribe(function (res) {
                                 _this._coreService.isLoading = false;
@@ -329,6 +344,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     if (!!this.trade)
                         var _loop_4 = function(t) {
                             var func = void 0;
+                            this_4.addBusiness(t.business);
                             this_4._coreService.isLoading = true;
                             if (t.direction === transactions_1.TransactionDirection.FromCompany)
                                 func = this_4._corporationService.sellItemFromCompany(t.business.id, t.item.ItemType.id, t.amount, t.money);
@@ -391,7 +407,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                 SupplyListComponent.prototype.endProgress = function () {
                     this.progressValue = 0;
                     if (!!this.onRefresh)
-                        this.onRefresh.emit(null);
+                        this.onRefresh.emit(this.businessesToRefresh);
                 };
                 __decorate([
                     core_1.Input('trade'), 

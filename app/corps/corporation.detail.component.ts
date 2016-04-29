@@ -1,7 +1,7 @@
 import { Component, OnInit } from 'angular2/core';
 import { RouteParams, Router } from 'angular2/router';
 
-import { CorpInfo, Company, CompanyDetail } from './contracts';
+import { BaseBusiness, CorpInfo, Company, CompanyDetail } from './contracts';
 import { CorporationStorageElement, CompanyStorageElement, BaseStorageElement } from './storage/contracts';
 import { StorageItem } from './storage/models';
 
@@ -182,17 +182,18 @@ export class CorporationDetailComponent implements OnInit {
   }
 	private companyFilter : string;
 	setFilter(filter : string) {
-		console.log("setFilter:", filter);
+		//console.log("setFilter:", filter);
 		this.companyFilter = filter;
 	}
-  refresh(tList? : BaseTransaction[]) {
+  refresh(tList? : BaseBusiness[]) {
+    console.log("refresh:", tList);
+    this.resetLists();
 		if(!!tList) {
-			let cList : Company[] = [];
-			for(let t of tList) {
-				//if(t.owner == TransactionObject.Company)
-			}
+      this.loadCorpInfo();
+      for(let b of tList) {
+        //
+      }
 		} else {
-			this.resetLists();
 	    this.loadCorpInfo();
 		}
   }

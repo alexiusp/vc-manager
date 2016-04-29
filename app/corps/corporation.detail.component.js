@@ -215,18 +215,19 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     }
                 };
                 CorporationDetailComponent.prototype.setFilter = function (filter) {
-                    console.log("setFilter:", filter);
+                    //console.log("setFilter:", filter);
                     this.companyFilter = filter;
                 };
                 CorporationDetailComponent.prototype.refresh = function (tList) {
+                    console.log("refresh:", tList);
+                    this.resetLists();
                     if (!!tList) {
-                        var cList = [];
+                        this.loadCorpInfo();
                         for (var _i = 0, tList_1 = tList; _i < tList_1.length; _i++) {
-                            var t = tList_1[_i];
+                            var b = tList_1[_i];
                         }
                     }
                     else {
-                        this.resetLists();
                         this.loadCorpInfo();
                     }
                 };

@@ -201,7 +201,15 @@ export class SupplyListComponent implements OnInit {
     if(!!this.onRemoveTrade) this.onRemoveTrade.emit([]);
     if(!!this.onChangeInvestments) this.onChangeInvestments.emit([]);
   }
+	private businessesToRefresh : BaseBusiness[];
+	addBusiness(b : BaseBusiness) {
+		if(!this.businessesToRefresh) this.businessesToRefresh = [];
+		for(let c of this.businessesToRefresh) if(b.id == c.id) return;
+		this.businessesToRefresh.push(b);
+	}
   go() {
+		this.businessesToRefresh = [];
+		// calculate the number of operations for progress bar
     let tNum = 0;
     if(!!this.investments) tNum += this.investments.length;
     if(!!this.trade) tNum += this.trade.length;
@@ -226,6 +234,7 @@ export class SupplyListComponent implements OnInit {
     // transfer items to companies.
     if((corpList.length > 0) && !!this.companies) {
       for(let c of this.companies) {
+				this.addBusiness(c);
         this._coreService.isLoading = true;
         this._corporationService.moveItemsToCompany(c.id, corpList)
           .subscribe((res:ResultMessage[]) => {
@@ -250,6 +259,7 @@ export class SupplyListComponent implements OnInit {
     if(compList.length > 0) {
       for(let t of compList) {
         this._coreService.isLoading = true;
+				this.addBusiness(t.business);
         this._corporationService.moveItemToCorporation(t.business.id, t.item.ItemType.id, t.amount)
         .subscribe((res:ResultMessage[]) => {
           this._coreService.isLoading = false;
@@ -262,6 +272,7 @@ export class SupplyListComponent implements OnInit {
     // invest money in companies
     if(!!this.investments) for(let t of this.investments) {
 			// TODO: implement corporation investment
+			this.addBusiness(t.business);
       this._coreService.isLoading = true;
       this._corporationService.addFundsToCompany(t.business.id, t.money).subscribe((res:ResultMessage[]) => {
         this._coreService.isLoading = false;
@@ -273,6 +284,7 @@ export class SupplyListComponent implements OnInit {
     // sell goods
     if(!!this.trade) for(let t of this.trade) {
       let func;
+			this.addBusiness(t.business);
       this._coreService.isLoading = true;
       if(t.direction === TransactionDirection.FromCompany) func = this._corporationService.sellItemFromCompany(t.business.id, t.item.ItemType.id, t.amount, t.money);
       if(t.direction == TransactionDirection.FromCorporation) func = this._corporationService.sellItemFromCorporation(t.business.id, t.item.ItemType.id, t.amount, t.money);
@@ -324,6 +336,6 @@ export class SupplyListComponent implements OnInit {
   }
   endProgress() {
     this.progressValue = 0;
-    if(!!this.onRefresh) this.onRefresh.emit(null);
+    if(!!this.onRefresh) this.onRefresh.emit(this.businessesToRefresh);
   }
 }
