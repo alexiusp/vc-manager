@@ -1,39 +1,107 @@
 System.register([], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
-    var TransactionObject, TransactionAction;
-    /*
-    export interface MassItemTransaction extends BaseTransaction {
-      action  : TransactionAction;// if it is a multy item transaction
-    }
-    */
-    /* comparison function */
-    function itemTransactionEqual(a, b) {
-        var checkSource = (a.source.id == b.source.id);
-        var checkItem = (!!a.item && !!b.item) ? (a.item.ItemType.id == b.item.ItemType.id) : true;
-        //let checkAction = (!!a.action && !!b.action) ? (a.action == b.action) : true;
-        var checkOwner = (a.owner == b.owner);
-        return (checkSource && checkItem && checkOwner); // && checkAction
-    }
-    exports_1("itemTransactionEqual", itemTransactionEqual);
-    function isInvestTransaction(t) {
-        return (!!t.target && !t.item);
-    }
-    exports_1("isInvestTransaction", isInvestTransaction);
+    var __extends = (this && this.__extends) || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+    var TransactionType, TransactionDirection, BaseTransaction, TransferItemsTransaction, InvestTransaction, ClearStorageTransaction, SellItemTransaction;
     return {
         setters:[],
         execute: function() {
-            /* Direction from/to Corporation/Company */
-            (function (TransactionObject) {
-                TransactionObject[TransactionObject["Company"] = 0] = "Company";
-                TransactionObject[TransactionObject["Corp"] = 1] = "Corp"; //=1
-            })(TransactionObject || (TransactionObject = {}));
-            exports_1("TransactionObject", TransactionObject);
-            (function (TransactionAction) {
-                TransactionAction[TransactionAction["moveProduction"] = 0] = "moveProduction";
-                TransactionAction[TransactionAction["clearStorage"] = 1] = "clearStorage";
-            })(TransactionAction || (TransactionAction = {}));
-            exports_1("TransactionAction", TransactionAction);
+            (function (TransactionType) {
+                TransactionType[TransactionType["Trade"] = 0] = "Trade";
+                TransactionType[TransactionType["Transfer"] = 1] = "Transfer";
+                TransactionType[TransactionType["Invest"] = 2] = "Invest";
+                TransactionType[TransactionType["ClearStorage"] = 3] = "ClearStorage";
+            })(TransactionType || (TransactionType = {}));
+            exports_1("TransactionType", TransactionType);
+            (function (TransactionDirection) {
+                TransactionDirection[TransactionDirection["FromCompany"] = 0] = "FromCompany";
+                TransactionDirection[TransactionDirection["FromCorporation"] = 1] = "FromCorporation";
+                TransactionDirection[TransactionDirection["ToCompany"] = 2] = "ToCompany";
+                TransactionDirection[TransactionDirection["ToCorporation"] = 3] = "ToCorporation";
+            })(TransactionDirection || (TransactionDirection = {}));
+            exports_1("TransactionDirection", TransactionDirection);
+            BaseTransaction = (function () {
+                function BaseTransaction(type, direction, business) {
+                    this.type = type;
+                    this.direction = direction;
+                    this.business = business;
+                }
+                BaseTransaction.prototype.isEqual = function (target) {
+                    if (this.type !== target.type)
+                        return false;
+                    if (this.direction !== target.direction)
+                        return false;
+                    if (this.business.id !== target.business.id)
+                        return false;
+                    return true;
+                };
+                return BaseTransaction;
+            }());
+            exports_1("BaseTransaction", BaseTransaction);
+            TransferItemsTransaction = (function (_super) {
+                __extends(TransferItemsTransaction, _super);
+                function TransferItemsTransaction(amount, item, direction, business) {
+                    _super.call(this, TransactionType.Transfer, direction, business);
+                    this.amount = amount;
+                    this.item = item;
+                }
+                TransferItemsTransaction.prototype.isEqual = function (target) {
+                    if (!_super.prototype.isEqual.call(this, target))
+                        return false;
+                    if (target instanceof TransferItemsTransaction) {
+                        if (this.item.ItemType.id !== target.item.ItemType.id)
+                            return false;
+                        return true;
+                    }
+                    else
+                        return false;
+                };
+                return TransferItemsTransaction;
+            }(BaseTransaction));
+            exports_1("TransferItemsTransaction", TransferItemsTransaction);
+            InvestTransaction = (function (_super) {
+                __extends(InvestTransaction, _super);
+                function InvestTransaction(money, direction, business) {
+                    _super.call(this, TransactionType.Invest, direction, business);
+                    this.money = money;
+                }
+                return InvestTransaction;
+            }(BaseTransaction));
+            exports_1("InvestTransaction", InvestTransaction);
+            ClearStorageTransaction = (function (_super) {
+                __extends(ClearStorageTransaction, _super);
+                function ClearStorageTransaction(direction, business) {
+                    _super.call(this, TransactionType.ClearStorage, direction, business);
+                }
+                return ClearStorageTransaction;
+            }(BaseTransaction));
+            exports_1("ClearStorageTransaction", ClearStorageTransaction);
+            SellItemTransaction = (function (_super) {
+                __extends(SellItemTransaction, _super);
+                function SellItemTransaction(amount, item, money, direction, business) {
+                    _super.call(this, TransactionType.Trade, direction, business);
+                    this.amount = amount;
+                    this.item = item;
+                    this.money = money;
+                }
+                SellItemTransaction.prototype.isEqual = function (target) {
+                    if (!_super.prototype.isEqual.call(this, target))
+                        return false;
+                    if (target instanceof SellItemTransaction) {
+                        if (this.item.ItemType.id !== target.item.ItemType.id)
+                            return false;
+                        return true;
+                    }
+                    else
+                        return false;
+                };
+                return SellItemTransaction;
+            }(BaseTransaction));
+            exports_1("SellItemTransaction", SellItemTransaction);
         }
     }
 });

@@ -204,8 +204,16 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this.companyFilter = filter;
                 };
                 CorporationDetailComponent.prototype.refresh = function (tList) {
-                    this.resetLists();
-                    this.loadCorpInfo();
+                    if (!!tList) {
+                        var cList = [];
+                        for (var _i = 0, tList_1 = tList; _i < tList_1.length; _i++) {
+                            var t = tList_1[_i];
+                        }
+                    }
+                    else {
+                        this.resetLists();
+                        this.loadCorpInfo();
+                    }
                 };
                 CorporationDetailComponent.prototype.resetLists = function () {
                     this.tradeList = [];
@@ -233,36 +241,24 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         for (var _i = 0, _a = this.corpStorage; _i < _a.length; _i++) {
                             var i = _a[_i];
                             if (i.isSell) {
-                                var s = {
-                                    owner: transactions_1.TransactionObject.Corp,
-                                    amount: i.item[0].total_quantity,
-                                    item: i.item,
-                                    price: 0,
-                                    source: corp
-                                };
+                                var s = new transactions_1.SellItemTransaction(i.item[0].total_quantity, i.item, 0, transactions_1.TransactionDirection.FromCorporation, corp);
                                 if (!!this.tradeList)
                                     for (var _b = 0, _c = this.tradeList; _b < _c.length; _b++) {
                                         var t = _c[_b];
-                                        if (transactions_1.itemTransactionEqual(t, s)) {
-                                            s.price = t.price;
+                                        if (s.isEqual(t)) {
+                                            s.money = t.money;
                                             s.amount = t.amount;
                                         }
                                     }
                                 sList.push(s);
                             }
                             if (i.isTransfer) {
-                                var s = {
-                                    owner: transactions_1.TransactionObject.Corp,
-                                    amount: i.item[0].total_quantity,
-                                    item: i.item,
-                                    source: corp
-                                };
+                                var s = new transactions_1.TransferItemsTransaction(i.item[0].total_quantity, i.item, transactions_1.TransactionDirection.FromCorporation, corp);
                                 if (!!this.transferList)
                                     for (var _d = 0, _e = this.transferList; _d < _e.length; _d++) {
                                         var t = _e[_d];
-                                        if (transactions_1.itemTransactionEqual(t, s)) {
+                                        if (s.isEqual(t)) {
                                             s.amount = t.amount;
-                                            s.target = t.target;
                                         }
                                     }
                                 tList.push(s);
@@ -272,13 +268,13 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         if (!!this.tradeList)
                             for (var _f = 0, _g = this.tradeList; _f < _g.length; _f++) {
                                 var t = _g[_f];
-                                if (t.owner == transactions_1.TransactionObject.Company)
+                                if (t.direction == transactions_1.TransactionDirection.FromCompany)
                                     sList.push(t);
                             }
                         if (!!this.transferList)
                             for (var _h = 0, _j = this.transferList; _h < _j.length; _h++) {
                                 var t = _j[_h];
-                                if (t.owner == transactions_1.TransactionObject.Company)
+                                if (t.direction == transactions_1.TransactionDirection.FromCompany)
                                     tList.push(t);
                             }
                         this.tradeList = sList;
@@ -300,12 +296,11 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                 };
                 // trade list change
                 CorporationDetailComponent.prototype.findItemTransaction = function (item, list) {
-                    var find = -1;
                     for (var i in list) {
                         if (list[i].item.ItemType.id == item.item.ItemType.id)
                             return +i;
                     }
-                    return find;
+                    return -1;
                 };
                 CorporationDetailComponent.prototype.tradeChange = function (list) {
                     //console.log("tradeChange", list)
@@ -314,7 +309,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     var compList = [];
                     for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
                         var sell = list_1[_i];
-                        if (sell.owner == transactions_1.TransactionObject.Corp) {
+                        if (sell.direction === transactions_1.TransactionDirection.FromCorporation) {
                             corpList.push(sell);
                         }
                         else {
@@ -324,7 +319,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     // join with transfer
                     for (var _a = 0, _b = this.transferList; _a < _b.length; _a++) {
                         var i = _b[_a];
-                        if (i.owner == transactions_1.TransactionObject.Corp) {
+                        if (i.direction == transactions_1.TransactionDirection.FromCorporation) {
                             corpList.push(i);
                         }
                         else {
@@ -368,7 +363,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     var compList = [];
                     for (var _i = 0, list_2 = list; _i < list_2.length; _i++) {
                         var sell = list_2[_i];
-                        if (sell.owner == transactions_1.TransactionObject.Corp) {
+                        if (sell.direction === transactions_1.TransactionDirection.FromCorporation) {
                             corpList.push(sell);
                         }
                         else {
@@ -378,7 +373,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     // join with trade
                     for (var _a = 0, _b = this.tradeList; _a < _b.length; _a++) {
                         var i = _b[_a];
-                        if (i.owner == transactions_1.TransactionObject.Corp) {
+                        if (i.direction == transactions_1.TransactionDirection.FromCorporation) {
                             corpList.push(i);
                         }
                         else {
@@ -427,53 +422,48 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     var tList = [];
                     for (var _i = 0, _a = changeEvent.list; _i < _a.length; _i++) {
                         var i = _a[_i];
-                        var b = {
-                            owner: transactions_1.TransactionObject.Company,
-                            amount: i.item[0].total_quantity,
-                            item: i.item,
-                            source: company
-                        };
+                        var direction = transactions_1.TransactionDirection.FromCompany;
+                        var amount = i.item[0].total_quantity;
+                        var item = i.item;
                         if (i.isSell) {
-                            var s = b;
-                            s.price = 0;
+                            var s = new transactions_1.SellItemTransaction(amount, item, 0, direction, company);
                             if (!!this.tradeList)
                                 for (var _b = 0, _c = this.tradeList; _b < _c.length; _b++) {
                                     var t = _c[_b];
-                                    if (transactions_1.itemTransactionEqual(t, s)) {
-                                        s.price = t.price;
+                                    if (s.isEqual(t)) {
+                                        s.money = t.money;
                                         s.amount = t.amount;
                                     }
                                 }
                             sList.push(s);
                         }
                         if (i.isTransfer) {
-                            var s = b;
-                            s.target = corp;
+                            var s = new transactions_1.TransferItemsTransaction(amount, item, direction, company);
                             if (!!this.transferList)
                                 for (var _d = 0, _e = this.transferList; _d < _e.length; _d++) {
                                     var t = _e[_d];
-                                    if (transactions_1.itemTransactionEqual(t, s)) {
+                                    if (s.isEqual(t)) {
                                         s.amount = t.amount;
                                     }
                                 }
                             tList.push(s);
                         }
                     }
-                    // copy all corporation storage items and company storage from other companies
+                    // copy all corporation storage items and company storage items from other companies
                     if (!!this.tradeList)
                         for (var _f = 0, _g = this.tradeList; _f < _g.length; _f++) {
                             var t = _g[_f];
-                            if (t.owner == transactions_1.TransactionObject.Corp)
+                            if (t.owner == TransactionObject.Corp)
                                 sList.push(t);
-                            if ((t.owner == transactions_1.TransactionObject.Company) && (t.source.id != changeEvent.cId))
+                            if ((t.owner == TransactionObject.Company) && (t.source.id != changeEvent.cId))
                                 sList.push(t);
                         }
                     if (!!this.transferList)
                         for (var _h = 0, _j = this.transferList; _h < _j.length; _h++) {
                             var t = _j[_h];
-                            if (t.owner == transactions_1.TransactionObject.Corp)
+                            if (t.owner == TransactionObject.Corp)
                                 tList.push(t);
-                            if ((t.owner == transactions_1.TransactionObject.Company) && (t.source.id != changeEvent.cId))
+                            if ((t.owner == TransactionObject.Company) && (t.source.id != changeEvent.cId))
                                 tList.push(t);
                         }
                     this.tradeList = sList;
@@ -496,7 +486,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         }
                     if (!present) {
                         var t = {
-                            owner: transactions_1.TransactionObject.Company,
+                            owner: TransactionObject.Company,
                             price: +investEvent.amount,
                             target: this.details[investEvent.cId].item
                         };

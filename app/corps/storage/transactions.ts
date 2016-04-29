@@ -1,53 +1,83 @@
 import { BaseStorageElement } from './contracts';
 import { BaseBusiness } from '../contracts';
 
-/* Direction from/to Corporation/Company */
-export enum TransactionObject {
-  Company,//=0
-  Corp//=1
+export enum TransactionType {
+	Trade,
+	Transfer,
+	Invest,
+	ClearStorage
 }
-export enum TransactionAction {
-  moveProduction,
-  clearStorage
+export enum TransactionDirection {
+	FromCompany,
+	FromCorporation,
+	ToCompany,
+	ToCorporation
 }
-interface CountableItems {
-  amount	: number;
+/* abstract base interface */
+export interface IBaseTransaction {
+	type			: TransactionType;
+	direction	: TransactionDirection;
+	business	: BaseBusiness;
 }
-interface MoneyTransaction {
-  price?: number;
+export interface ICountableTransaction {
+	amount	: number;
 }
-/* abstract base class */
-export interface BaseTransaction {
-  owner  : TransactionObject;
+export interface IMoneyTransaction {
+	money	: number;
 }
-export interface BaseItemTransaction extends BaseTransaction, CountableItems {
-  item    : BaseStorageElement;// a transaction is about one item
-  source  : BaseBusiness;// cource company
+
+export class BaseTransaction implements IBaseTransaction {
+	constructor(public type			: TransactionType,
+		public direction	: TransactionDirection,
+		public business	: BaseBusiness) {}
+	public isEqual(target : BaseTransaction) : boolean {
+		if(this.type !== target.type) return false;
+		if(this.direction !== target.direction) return false;
+		if(this.business.id !== target.business.id) return false;
+		return true;
+	}
 }
-/*
-export interface MassItemTransaction extends BaseTransaction {
-  action  : TransactionAction;// if it is a multy item transaction
+export class TransferItemsTransaction extends BaseTransaction implements ICountableTransaction {
+	constructor(public amount	: number,
+		public item    : BaseStorageElement,
+		direction	: TransactionDirection,
+		business	: BaseBusiness) {
+		super(TransactionType.Transfer, direction, business);
+	}
+	public isEqual(target : BaseTransaction) : boolean {
+		if(!super.isEqual(target)) return false;
+		if(target instanceof TransferItemsTransaction) {
+			if(this.item.ItemType.id !== target.item.ItemType.id) return false;
+			return true;
+		} else return false;
+	}
 }
-*/
-/* comparison function */
-export function itemTransactionEqual(a : BaseItemTransaction, b : BaseItemTransaction) {
-  let checkSource = (a.source.id == b.source.id);
-  let checkItem = (!!a.item && !!b.item)? (a.item.ItemType.id == b.item.ItemType.id) : true;
-  //let checkAction = (!!a.action && !!b.action) ? (a.action == b.action) : true;
-  let checkOwner = (a.owner == b.owner);
-  return (checkSource && checkItem && checkOwner);// && checkAction
+export class InvestTransaction extends BaseTransaction implements IMoneyTransaction {
+	constructor(public money	: number,
+		direction	: TransactionDirection,
+		business	: BaseBusiness) {
+		super(TransactionType.Invest, direction, business);
+	}
 }
-/* Point to point item transfer transaction */
-export interface TransferItemTransaction extends BaseItemTransaction {
-  target?: BaseBusiness;
+export class ClearStorageTransaction extends BaseTransaction {
+	constructor(direction	: TransactionDirection,
+		business	: BaseBusiness) {
+		super(TransactionType.ClearStorage, direction, business);
+	}
 }
-/* selling transaction */
-export interface SellItemTransaction extends BaseItemTransaction, MoneyTransaction {
-}
-/* investment transaction */
-export interface InvestTransaction extends BaseTransaction, MoneyTransaction {
-  target?: BaseBusiness;
-}
-export function isInvestTransaction(t : InvestTransaction | any) : t is InvestTransaction {
-  return (!!(<InvestTransaction>t).target && !(<BaseItemTransaction>t).item);
+export class SellItemTransaction extends BaseTransaction implements IMoneyTransaction, ICountableTransaction {
+	constructor(public amount	: number,
+		public item    : BaseStorageElement,
+		public money	: number,
+		direction	: TransactionDirection,
+		business	: BaseBusiness) {
+			super(TransactionType.Trade, direction, business);
+		}
+		public isEqual(target : BaseTransaction) : boolean {
+			if(!super.isEqual(target)) return false;
+			if(target instanceof SellItemTransaction) {
+				if(this.item.ItemType.id !== target.item.ItemType.id) return false;
+				return true;
+			} else return false;
+		}
 }

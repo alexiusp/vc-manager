@@ -4,7 +4,14 @@ import { CoreService } from '../../core/core.service';
 import { MessagesService } from '../../messages/messages.service';
 import {BaseStorageElement} from './contracts';
 import {BaseBusiness, Company, CompanyDetail } from '../contracts';
-import {BaseTransaction, BaseItemTransaction, InvestTransaction, SellItemTransaction, TransferItemTransaction, TransactionObject, itemTransactionEqual, isInvestTransaction} from './transactions';
+import {
+	BaseTransaction,
+	InvestTransaction,
+	SellItemTransaction,
+	TransferItemsTransaction,
+	TransactionDirection,
+	TransactionType
+} from './transactions';
 import {StorageItemComponent} from './storage.item.component';
 import {Dictionary} from '../../core/dictionary';
 import { CorporationService } from '../corporation.service';
@@ -49,7 +56,7 @@ export class SupplyListComponent {
   checkTransfer() {
     let empty = true;
     if(!!this._items) for(let i of this._items) {
-      if(i.owner == TransactionObject.Company) empty = false;
+      if(i.direction === TransactionDirection.FromCompany) empty = false;
       else {
         if((!!this.companies && this.companies.length > 0)) empty = false;
       }
@@ -73,7 +80,7 @@ export class SupplyListComponent {
     //console.log("remove sell", sellItem);
     let sIdx = -1;
     for(let i in this._trade) {
-      if(itemTransactionEqual(this._trade[i], sellItem)) sIdx = +i;
+			if(sellItem.isEqual(this._trade[i])) sIdx = +i;
     }
     if(sIdx > -1) {
       this._trade.splice(sIdx, 1);
@@ -92,32 +99,32 @@ export class SupplyListComponent {
     this.parseTransfer();
   }
   get companies() { return this._companies; }
-  private _items : TransferItemTransaction[];
+  private _items : TransferItemsTransaction[];
 	@Input('items')
-	set items(itemArr : TransferItemTransaction[]) {
+	set items(itemArr : TransferItemsTransaction[]) {
 		//console.log("set items", itemArr);
     this._items = itemArr;
     this.parseTransfer();
 	}
 	get items() { return this._items; }
-  private toCompTransfer : TransferItemTransaction[];
-  private toCorpTransfer : TransferItemTransaction[];
+  private toCompTransfer : TransferItemsTransaction[];
+  private toCorpTransfer : TransferItemsTransaction[];
   parseTransfer() {
     this.toCompTransfer = [];
     this.toCorpTransfer = [];
     for(let i of this._items) {
-      if(i.owner == TransactionObject.Corp) {
+      if(i.direction === TransactionDirection.FromCorporation) {
         if((!!this.companies) && this.companies.length > 0) this.toCompTransfer.push(i);
       } else this.toCorpTransfer.push(i);
     }
     this.checkEmptiness();
   };
   @Output('on-remove-item') onRemoveItem = new EventEmitter();
-  removeTransfer(item : TransferItemTransaction) {
+  removeTransfer(item : TransferItemsTransaction) {
     //console.log("remove item", item);
     let sIdx = -1;
     for(let i in this._items) {
-      if(itemTransactionEqual(this._items[i], item)) sIdx = +i;
+			if(item.isEqual(this._items[i])) sIdx = +i;
     }
     if(sIdx > -1) {
       this._items.splice(sIdx, 1);
@@ -149,7 +156,7 @@ export class SupplyListComponent {
   removeInvestment(i : InvestTransaction) {
     let list = [];
     for(let item of this.investments) {
-      if(item.target.id != i.target.id) list.push(item);
+      if(item.business.id != i.business.id) list.push(item);
     }
     this.investments = list;
     if(!!this.onChangeInvestments) this.onChangeInvestments.emit(list);
@@ -190,15 +197,17 @@ export class SupplyListComponent {
     if(!!this.investments) tNum += this.investments.length;
     if(!!this.trade) tNum += this.trade.length;
     let corpList = [];
-    let compList : TransferItemTransaction[] = [];
+		let corpTransList : TransferItemsTransaction[] = [];
+    let compList : TransferItemsTransaction[] = [];
     if(!!this.items) {
       // split transfer list by owner
       for(let i of this.items) {
-        if(i.owner == TransactionObject.Corp) {
+        if(i.direction === TransactionDirection.FromCorporation) {
           corpList.push({
             id      : i.item.ItemType.id,
             amount  : i.amount
           });
+					corpTransList.push(i);
         } else compList.push(i);
       }
     }
@@ -212,9 +221,18 @@ export class SupplyListComponent {
         this._corporationService.moveItemsToCompany(c.id, corpList)
           .subscribe((res:ResultMessage[]) => {
             this._coreService.isLoading = false;
-            //this.parseErrors(t, res); TODO!!!
-            this._messages.addMessages(res);
-            console.log("transfer items to company result:",res);
+						let mArr : ResultMessage[] = [];
+						for(let i in res) {
+							let m = res[i];
+							if(m.class !== "flash_success") {
+								let t = corpTransList[i];
+								t.business = c;
+								m.msg += this.printTransactionInfo(t);
+							}
+							mArr.push(m);
+						}
+            this._messages.addMessages(mArr);
+            console.log("transfer items to company result:", mArr);
             this.incrementProgress();
           });
       }
@@ -223,7 +241,7 @@ export class SupplyListComponent {
     if(compList.length > 0) {
       for(let t of compList) {
         this._coreService.isLoading = true;
-        this._corporationService.moveItemToCorporation(t.source.id, t.item.ItemType.id, t.amount)
+        this._corporationService.moveItemToCorporation(t.business.id, t.item.ItemType.id, t.amount)
         .subscribe((res:ResultMessage[]) => {
           this._coreService.isLoading = false;
           this.parseErrors(t, res);
@@ -234,8 +252,9 @@ export class SupplyListComponent {
     }
     // invest money in companies
     if(!!this.investments) for(let t of this.investments) {
+			// TODO: implement corporation investment
       this._coreService.isLoading = true;
-      this._corporationService.addFundsToCompany(t.target.id, t.price).subscribe((res:ResultMessage[]) => {
+      this._corporationService.addFundsToCompany(t.business.id, t.money).subscribe((res:ResultMessage[]) => {
         this._coreService.isLoading = false;
         this.parseErrors(t, res);
         console.log("invest money in companies result", res);
@@ -246,8 +265,8 @@ export class SupplyListComponent {
     if(!!this.trade) for(let t of this.trade) {
       let func;
       this._coreService.isLoading = true;
-      if(t.owner == TransactionObject.Company) func = this._corporationService.sellItemFromCompany(t.source.id, t.item.ItemType.id, t.amount, t.price);
-      if(t.owner == TransactionObject.Corp) func = this._corporationService.sellItemFromCorporation(t.source.id, t.item.ItemType.id, t.amount, t.price);
+      if(t.direction === TransactionDirection.FromCompany) func = this._corporationService.sellItemFromCompany(t.business.id, t.item.ItemType.id, t.amount, t.money);
+      if(t.direction == TransactionDirection.FromCorporation) func = this._corporationService.sellItemFromCorporation(t.business.id, t.item.ItemType.id, t.amount, t.money);
       func.subscribe((res:ResultMessage[]) => {
         this._coreService.isLoading = false;
         this.parseErrors(t, res);
@@ -259,16 +278,21 @@ export class SupplyListComponent {
 
   printTransactionInfo(t: BaseTransaction) {
     let start = " in transaction: "
-    let item = (!!(<BaseItemTransaction>t).item)? " an item " + (<BaseItemTransaction>t).item.ItemType.name : "";
-    let source = (!!(<BaseItemTransaction>t).source)? " from " + (<BaseItemTransaction>t).source.name : "";
-    let isInvest = (isInvestTransaction(t))? "investment of " + t.price + " to " + t.target.name : "";
-    return start + isInvest + item + source;
+		let isInvest = t.type === TransactionType.Invest;
+		let invest = (isInvest && t instanceof InvestTransaction)? "investment of " + t.money + " to " + t.business.name : "";
+    let itemT = (!isInvest && t instanceof TransferItemsTransaction)? "transfer an item " + (<TransferItemsTransaction>t).item.ItemType.name : "";
+		let itemS = (!isInvest && t instanceof SellItemTransaction)? "sell an item " + (<SellItemTransaction>t).item.ItemType.name : "";
+		let business = " to " + t.business.name;
+		if(!isInvest) {
+			business = (t instanceof TransferItemsTransaction && t.direction === TransactionDirection.FromCorporation)? " to " + t.business.name : " from " + t.business.name;
+		}
+    return start + invest + itemS + itemT + business;
   }
   parseErrors(t : BaseTransaction, mArr : ResultMessage[]) {
     if(!!mArr) {
       let res = [];
       for(let m of mArr) {
-        if(m.class == "flash_error") m.msg += this.printTransactionInfo(t);
+        if(m.class !== "flash_success") m.msg += this.printTransactionInfo(t);
         res.push(m);
       }
       this._messages.addMessages(res);
