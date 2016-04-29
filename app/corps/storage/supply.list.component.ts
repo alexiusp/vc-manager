@@ -1,4 +1,4 @@
-import {Component, Input, EventEmitter, Output} from 'angular2/core';
+import {Component, Input, EventEmitter, Output, OnInit} from 'angular2/core';
 
 import { CoreService } from '../../core/core.service';
 import { MessagesService } from '../../messages/messages.service';
@@ -22,17 +22,21 @@ import { ResultMessage } from '../../request/response';
 	templateUrl: 'app/corps/storage/supply.list.component.html',
 	directives: [StorageItemComponent]
 })
-export class SupplyListComponent {
+export class SupplyListComponent implements OnInit {
   private _transactionList : Dictionary<BaseTransaction[]>;
   private progressValue: number;
   private maxProgress: number;
   private iProgress: number;
+	private corpName: string;
 
 	constructor(private _corporationService: CorporationService,
     private _coreService : CoreService,
     private _messages : MessagesService) {
 		this._transactionList = new Dictionary<BaseTransaction[]>();
-    this._init();
+		this._init();
+	}
+	ngOnInit() {
+		this.corpName = "Corporation";
 	}
   _init() {
     this._companies = [];
@@ -112,12 +116,17 @@ export class SupplyListComponent {
   parseTransfer() {
     this.toCompTransfer = [];
     this.toCorpTransfer = [];
-    for(let i of this._items) {
-      if(i.direction === TransactionDirection.FromCorporation) {
-        if((!!this.companies) && this.companies.length > 0) this.toCompTransfer.push(i);
-      } else this.toCorpTransfer.push(i);
-    }
-    this.checkEmptiness();
+    if(!!this._items) {
+			for(let i of this._items) {
+				//console.log("transfer item:", i);
+	      if(i.direction === TransactionDirection.FromCorporation) {
+					this.corpName = i.business.name;
+					//console.log("corpName ", this.corpName);
+	        if((!!this.companies) && this.companies.length > 0) this.toCompTransfer.push(i);
+	      } else this.toCorpTransfer.push(i);
+	    }
+		}
+		this.checkEmptiness();
   };
   @Output('on-remove-item') onRemoveItem = new EventEmitter();
   removeTransfer(item : TransferItemsTransaction) {

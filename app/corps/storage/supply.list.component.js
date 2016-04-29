@@ -49,6 +49,9 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     this._transactionList = new dictionary_1.Dictionary();
                     this._init();
                 }
+                SupplyListComponent.prototype.ngOnInit = function () {
+                    this.corpName = "Corporation";
+                };
                 SupplyListComponent.prototype._init = function () {
                     this._companies = [];
                     this._items = [];
@@ -130,14 +133,19 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                 SupplyListComponent.prototype.parseTransfer = function () {
                     this.toCompTransfer = [];
                     this.toCorpTransfer = [];
-                    for (var _i = 0, _a = this._items; _i < _a.length; _i++) {
-                        var i = _a[_i];
-                        if (i.direction === transactions_1.TransactionDirection.FromCorporation) {
-                            if ((!!this.companies) && this.companies.length > 0)
-                                this.toCompTransfer.push(i);
+                    if (!!this._items) {
+                        for (var _i = 0, _a = this._items; _i < _a.length; _i++) {
+                            var i = _a[_i];
+                            //console.log("transfer item:", i);
+                            if (i.direction === transactions_1.TransactionDirection.FromCorporation) {
+                                this.corpName = i.business.name;
+                                //console.log("corpName ", this.corpName);
+                                if ((!!this.companies) && this.companies.length > 0)
+                                    this.toCompTransfer.push(i);
+                            }
+                            else
+                                this.toCorpTransfer.push(i);
                         }
-                        else
-                            this.toCorpTransfer.push(i);
                     }
                     this.checkEmptiness();
                 };

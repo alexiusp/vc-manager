@@ -149,6 +149,21 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this.loadCorpDetail(function () {
                         _this.loadCorpStorage();
                         if (!!_this.corpInfo.is_manager) {
+                            _this._detailsCopied = false;
+                            _this._coreService.observeLoading(function (isLoading) {
+                                //console.log("observing loading:", isLoading);
+                                if (!isLoading && !_this._detailsCopied && !!_this.details) {
+                                    //console.log("copy details");
+                                    var dArr = new dictionary_1.map();
+                                    for (var _i = 0, _a = _this.corpInfo.companies; _i < _a.length; _i++) {
+                                        var c = _a[_i];
+                                        var d = _this.details[c.id];
+                                        dArr[c.id] = d;
+                                    }
+                                    _this.details = dArr;
+                                    _this._detailsCopied = true;
+                                }
+                            });
                             for (var _i = 0, _a = _this.corpInfo.companies; _i < _a.length; _i++) {
                                 var c = _a[_i];
                                 // load company info always for the first time
@@ -453,17 +468,17 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     if (!!this.tradeList)
                         for (var _f = 0, _g = this.tradeList; _f < _g.length; _f++) {
                             var t = _g[_f];
-                            if (t.owner == TransactionObject.Corp)
+                            if (t.direction == transactions_1.TransactionDirection.FromCorporation)
                                 sList.push(t);
-                            if ((t.owner == TransactionObject.Company) && (t.source.id != changeEvent.cId))
+                            if ((t.direction == transactions_1.TransactionDirection.FromCompany) && (t.business.id != changeEvent.cId))
                                 sList.push(t);
                         }
                     if (!!this.transferList)
                         for (var _h = 0, _j = this.transferList; _h < _j.length; _h++) {
                             var t = _j[_h];
-                            if (t.owner == TransactionObject.Corp)
+                            if (t.direction == transactions_1.TransactionDirection.FromCorporation)
                                 tList.push(t);
-                            if ((t.owner == TransactionObject.Company) && (t.source.id != changeEvent.cId))
+                            if ((t.direction == transactions_1.TransactionDirection.FromCompany) && (t.business.id != changeEvent.cId))
                                 tList.push(t);
                         }
                     this.tradeList = sList;
@@ -476,20 +491,16 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     if (!!this.investList)
                         for (var _i = 0, _a = this.investList; _i < _a.length; _i++) {
                             var i = _a[_i];
-                            if (i.target.id !== investEvent.cId)
+                            if (i.business.id !== investEvent.cId)
                                 list.push(i);
                             else {
-                                i.price = +investEvent.amount;
+                                i.money = +investEvent.amount;
                                 present = true;
                                 list.push(i);
                             }
                         }
                     if (!present) {
-                        var t = {
-                            owner: TransactionObject.Company,
-                            price: +investEvent.amount,
-                            target: this.details[investEvent.cId].item
-                        };
+                        var t = new transactions_1.InvestTransaction(+investEvent.amount, transactions_1.TransactionDirection.FromCompany, this.details[investEvent.cId].item);
                         //console.log("new invest transaction", t);
                         list.push(t);
                     }

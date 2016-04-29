@@ -78,7 +78,7 @@
 			<div class="row">
 				<div class="col-sm-8">
 					<span class="pull-left">
-						From <span class="label label-default">{{item.source.name}}</span> to <span class="label label-default">{{item.target?.name}}</span>
+						From <span class="label label-default">{{item.business.name}}</span> to <span class="label label-default">{{corpName}}</span>
 						<span class="label label-info">{{item.amount}}</span>
 						of
 						<span class="label label-info">{{item.item[0].total_quantity}}</span>
@@ -113,9 +113,9 @@
 						<span class="label label-info">{{sell.amount}}</span>
 						of
 						<span class="label label-info">{{sell.item[0].total_quantity}}</span>
-						<span class="label label-default">{{sell.item.ItemType.name}}</span> from <span class="label label-default">{{sell.source.name}}</span>
+						<span class="label label-default">{{sell.item.ItemType.name}}</span> from <span class="label label-default">{{sell.business.name}}</span>
 						for
-						<span class="label label-success">{{sell.price}} <i class="glyphicon glyphicon-usd"></i></span> vD
+						<span class="label label-success">{{sell.money}} <i class="glyphicon glyphicon-usd"></i></span> vD
 					</span>
 				</div>
 				<div class="col-sm-6">
@@ -133,8 +133,8 @@
 								aria-label="Price"
 								[value]="0"
 								#price
-						    (keyup)="sell.price = +price.value"
-						    (blur)="sell.price = +price.value"/>
+						    (keyup)="sell.money = +price.value"
+						    (blur)="sell.money = +price.value"/>
 						</div>
 						<div class="col-xs-4">
 							<button type="button" class="btn btn-block btn-sm btn-danger pull-right" (click)="removeTrade(sell)">
@@ -151,28 +151,28 @@
 		</div>
 		<div class="list-group-item" *ngFor="#invest of investments">
 			<div class="row">
-				<div class="col-sm-8" *ngIf="invest.price > 0">
-					<span class="pull-left">Invest <span class="label label-success">{{invest.price}}</span> vDollars in <span class="label label-default">{{invest.target.name}}</span></span>
+				<div class="col-sm-8" *ngIf="invest.money > 0">
+					<span class="pull-left">Invest <span class="label label-success">{{invest.money}}</span> vDollars in <span class="label label-default">{{invest.business.name}}</span></span>
 				</div>
-				<div class="col-sm-8" *ngIf="invest.price < 0">
-					<span class="pull-left">Take <span class="label label-warning">{{-invest.price}}</span> vDollars from <span class="label label-default">{{invest.target.name}}</span></span>
+				<div class="col-sm-8" *ngIf="invest.money < 0">
+					<span class="pull-left">Take <span class="label label-warning">{{-invest.money}}</span> vDollars from <span class="label label-default">{{invest.business.name}}</span></span>
 				</div>
 				<div class="col-sm-4">
 					<div class="input-group input-group-sm">
-						<input type="number" *ngIf="invest.price > 0"
+						<input type="number" *ngIf="invest.money > 0"
 							class="form-control"
 							aria-label="vDollars to invest"
-							[value]="invest.price"
+							[value]="invest.money"
 							#amount
-							(keyup)="invest.price = (+amount.value != 0)? +amount.value : 1"
-							(blur)="invest.price =  (+amount.value != 0)? +amount.value : 1">
-						<input type="number" *ngIf="invest.price < 0"
+							(keyup)="invest.money = (+amount.value != 0)? +amount.value : 1"
+							(blur)="invest.money =  (+amount.value != 0)? +amount.value : 1">
+						<input type="number" *ngIf="invest.money < 0"
 							class="form-control"
 							aria-label="vDollars to take"
-							[value]="-invest.price"
+							[value]="-invest.money"
 							#amount
-							(keyup)="invest.price = (+amount.value != 0)? 0 - amount.value : -1"
-							(blur)="invest.price = (+amount.value != 0)? 0 - amount.value : -1">
+							(keyup)="invest.money = (+amount.value != 0)? 0 - amount.value : -1"
+							(blur)="invest.money = (+amount.value != 0)? 0 - amount.value : -1">
 						<div class="input-group-btn">
 							<button type="button" class="btn btn-danger" (click)="removeInvestment(invest)">
 								<i class="glyphicon glyphicon-trash"></i>

@@ -113,11 +113,14 @@ export class CompaniesListComponent {
   private allSelected : boolean;
   selectAll() {
     let s = !this.allSelected;
-    if(!this.loading) for(let c of this.companies) {
-      let d = this.details[c.id];
-      if(d.isSelected != s) {
-        this.selectOne(d);
+    if(!this.loading) {
+      for(let c of this.companies) {
+        let d = this.details[c.id];
+        if(d.isSelected != s) {
+          this.selectOne(d);
+        }
       }
+      this.checkAllSelected();
     }
   }
   selectOne(c : CompanyDetailItem) {

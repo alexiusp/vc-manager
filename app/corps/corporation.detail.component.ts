@@ -116,10 +116,25 @@ export class CorporationDetailComponent implements OnInit {
 				this._coreService.isLoading = false;
 			});
 	}
+  private _detailsCopied;
   loadCorpInfo() {
 		this.loadCorpDetail(() => {
 			this.loadCorpStorage();
 			if(!!this.corpInfo.is_manager) {
+        this._detailsCopied = false;
+        this._coreService.observeLoading((isLoading) => {
+          //console.log("observing loading:", isLoading);
+          if(!isLoading && !this._detailsCopied && !!this.details) {
+            //console.log("copy details");
+            let dArr = new map<CompanyDetailItem>();
+            for(let c of this.corpInfo.companies) {
+              let d = this.details[c.id];
+              dArr[c.id] = d;
+            }
+            this.details = dArr;
+            this._detailsCopied = true;
+          }
+        });
         for(let c of this.corpInfo.companies) {
 					// load company info always for the first time
 					if(!this.details[c.id]) this.loadCompanyInfo(c);
@@ -400,12 +415,12 @@ export class CorporationDetailComponent implements OnInit {
     }
     // copy all corporation storage items and company storage items from other companies
     if(!!this.tradeList) for(let t of this.tradeList) {
-      if(t.owner == TransactionObject.Corp) sList.push(t);
-      if((t.owner == TransactionObject.Company) && (t.source.id != changeEvent.cId)) sList.push(t);
+      if(t.direction == TransactionDirection.FromCorporation) sList.push(t);
+      if((t.direction == TransactionDirection.FromCompany) && (t.business.id != changeEvent.cId)) sList.push(t);
     }
     if(!!this.transferList) for(let t of this.transferList) {
-      if(t.owner == TransactionObject.Corp) tList.push(t);
-      if((t.owner == TransactionObject.Company) && (t.source.id != changeEvent.cId)) tList.push(t);
+      if(t.direction == TransactionDirection.FromCorporation) tList.push(t);
+      if((t.direction == TransactionDirection.FromCompany) && (t.business.id != changeEvent.cId)) tList.push(t);
     }
     this.tradeList = sList;
     this.transferList = tList;
@@ -416,23 +431,18 @@ export class CorporationDetailComponent implements OnInit {
     let list = [];
     let present = false;
     if(!!this.investList) for(let i of this.investList) {
-      if(i.target.id !== investEvent.cId) list.push(i);
+      if(i.business.id !== investEvent.cId) list.push(i);
       else {
-        i.price = +investEvent.amount;
+        i.money = +investEvent.amount;
         present = true;
         list.push(i);
       }
     }
     if(!present) {
-      let t : InvestTransaction = {
-        owner : TransactionObject.Company,
-        price: +investEvent.amount,
-        target: this.details[investEvent.cId].item
-      }
+      let t : InvestTransaction = new InvestTransaction(+investEvent.amount, TransactionDirection.FromCompany, this.details[investEvent.cId].item);
 			//console.log("new invest transaction", t);
       list.push(t);
     }
-
     this.investList = list;
   }
   investmentsChange(list : InvestTransaction[]) {

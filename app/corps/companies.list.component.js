@@ -139,7 +139,7 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                 });
                 CompaniesListComponent.prototype.selectAll = function () {
                     var s = !this.allSelected;
-                    if (!this.loading)
+                    if (!this.loading) {
                         for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
                             var c = _a[_i];
                             var d = this.details[c.id];
@@ -147,6 +147,8 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                                 this.selectOne(d);
                             }
                         }
+                        this.checkAllSelected();
+                    }
                 };
                 CompaniesListComponent.prototype.selectOne = function (c) {
                     if (!this.loading) {
