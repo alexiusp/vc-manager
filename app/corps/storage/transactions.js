@@ -6,7 +6,7 @@ System.register([], function(exports_1, context_1) {
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var TransactionType, TransactionDirection, BaseTransaction, TransferItemsTransaction, InvestTransaction, ClearStorageTransaction, SellItemTransaction;
+    var TransactionType, TransactionDirection, BaseTransaction, TransferItemTransaction, InvestTransaction, ClearStorageTransaction, SellItemTransaction;
     return {
         setters:[],
         execute: function() {
@@ -42,17 +42,17 @@ System.register([], function(exports_1, context_1) {
                 return BaseTransaction;
             }());
             exports_1("BaseTransaction", BaseTransaction);
-            TransferItemsTransaction = (function (_super) {
-                __extends(TransferItemsTransaction, _super);
-                function TransferItemsTransaction(amount, item, direction, business) {
+            TransferItemTransaction = (function (_super) {
+                __extends(TransferItemTransaction, _super);
+                function TransferItemTransaction(amount, item, direction, business) {
                     _super.call(this, TransactionType.Transfer, direction, business);
                     this.amount = amount;
                     this.item = item;
                 }
-                TransferItemsTransaction.prototype.isEqual = function (target) {
+                TransferItemTransaction.prototype.isEqual = function (target) {
                     if (!_super.prototype.isEqual.call(this, target))
                         return false;
-                    if (target instanceof TransferItemsTransaction) {
+                    if (target instanceof TransferItemTransaction) {
                         if (this.item.ItemType.id !== target.item.ItemType.id)
                             return false;
                         return true;
@@ -60,9 +60,9 @@ System.register([], function(exports_1, context_1) {
                     else
                         return false;
                 };
-                return TransferItemsTransaction;
+                return TransferItemTransaction;
             }(BaseTransaction));
-            exports_1("TransferItemsTransaction", TransferItemsTransaction);
+            exports_1("TransferItemTransaction", TransferItemTransaction);
             InvestTransaction = (function (_super) {
                 __extends(InvestTransaction, _super);
                 function InvestTransaction(money, direction, business) {

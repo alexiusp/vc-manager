@@ -367,11 +367,11 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     var start = " in transaction: ";
                     var isInvest = t.type === transactions_1.TransactionType.Invest;
                     var invest = (isInvest && t instanceof transactions_1.InvestTransaction) ? "investment of " + t.money + " to " + t.business.name : "";
-                    var itemT = (!isInvest && t instanceof transactions_1.TransferItemsTransaction) ? "transfer an item " + t.item.ItemType.name : "";
+                    var itemT = (!isInvest && t instanceof transactions_1.TransferItemTransaction) ? "transfer an item " + t.item.ItemType.name : "";
                     var itemS = (!isInvest && t instanceof transactions_1.SellItemTransaction) ? "sell an item " + t.item.ItemType.name : "";
                     var business = " to " + t.business.name;
                     if (!isInvest) {
-                        business = (t instanceof transactions_1.TransferItemsTransaction && t.direction === transactions_1.TransactionDirection.FromCorporation) ? " to " + t.business.name : " from " + t.business.name;
+                        business = (t instanceof transactions_1.TransferItemTransaction && t.direction === transactions_1.TransactionDirection.FromCorporation) ? " to " + t.business.name : " from " + t.business.name;
                     }
                     return start + invest + itemS + itemT + business;
                 };

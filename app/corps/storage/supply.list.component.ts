@@ -8,7 +8,7 @@ import {
 	BaseTransaction,
 	InvestTransaction,
 	SellItemTransaction,
-	TransferItemsTransaction,
+	TransferItemTransaction,
 	TransactionDirection,
 	TransactionType
 } from './transactions';
@@ -103,16 +103,16 @@ export class SupplyListComponent implements OnInit {
     this.parseTransfer();
   }
   get companies() { return this._companies; }
-  private _items : TransferItemsTransaction[];
+  private _items : TransferItemTransaction[];
 	@Input('items')
-	set items(itemArr : TransferItemsTransaction[]) {
+	set items(itemArr : TransferItemTransaction[]) {
 		//console.log("set items", itemArr);
     this._items = itemArr;
     this.parseTransfer();
 	}
 	get items() { return this._items; }
-  private toCompTransfer : TransferItemsTransaction[];
-  private toCorpTransfer : TransferItemsTransaction[];
+  private toCompTransfer : TransferItemTransaction[];
+  private toCorpTransfer : TransferItemTransaction[];
   parseTransfer() {
     this.toCompTransfer = [];
     this.toCorpTransfer = [];
@@ -129,7 +129,7 @@ export class SupplyListComponent implements OnInit {
 		this.checkEmptiness();
   };
   @Output('on-remove-item') onRemoveItem = new EventEmitter();
-  removeTransfer(item : TransferItemsTransaction) {
+  removeTransfer(item : TransferItemTransaction) {
     //console.log("remove item", item);
     let sIdx = -1;
     for(let i in this._items) {
@@ -214,8 +214,8 @@ export class SupplyListComponent implements OnInit {
     if(!!this.investments) tNum += this.investments.length;
     if(!!this.trade) tNum += this.trade.length;
     let corpList = [];
-		let corpTransList : TransferItemsTransaction[] = [];
-    let compList : TransferItemsTransaction[] = [];
+		let corpTransList : TransferItemTransaction[] = [];
+    let compList : TransferItemTransaction[] = [];
     if(!!this.items) {
       // split transfer list by owner
       for(let i of this.items) {
@@ -301,11 +301,11 @@ export class SupplyListComponent implements OnInit {
     let start = " in transaction: "
 		let isInvest = t.type === TransactionType.Invest;
 		let invest = (isInvest && t instanceof InvestTransaction)? "investment of " + t.money + " to " + t.business.name : "";
-    let itemT = (!isInvest && t instanceof TransferItemsTransaction)? "transfer an item " + (<TransferItemsTransaction>t).item.ItemType.name : "";
+    let itemT = (!isInvest && t instanceof TransferItemTransaction)? "transfer an item " + (<TransferItemTransaction>t).item.ItemType.name : "";
 		let itemS = (!isInvest && t instanceof SellItemTransaction)? "sell an item " + (<SellItemTransaction>t).item.ItemType.name : "";
 		let business = " to " + t.business.name;
 		if(!isInvest) {
-			business = (t instanceof TransferItemsTransaction && t.direction === TransactionDirection.FromCorporation)? " to " + t.business.name : " from " + t.business.name;
+			business = (t instanceof TransferItemTransaction && t.direction === TransactionDirection.FromCorporation)? " to " + t.business.name : " from " + t.business.name;
 		}
     return start + invest + itemS + itemT + business;
   }

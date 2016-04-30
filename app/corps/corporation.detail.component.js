@@ -269,7 +269,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                                 sList.push(s);
                             }
                             if (i.isTransfer) {
-                                var s = new transactions_1.TransferItemsTransaction(i.item[0].total_quantity, i.item, transactions_1.TransactionDirection.FromCorporation, corp);
+                                var s = new transactions_1.TransferItemTransaction(i.item[0].total_quantity, i.item, transactions_1.TransactionDirection.FromCorporation, corp);
                                 if (!!this.transferList)
                                     for (var _d = 0, _e = this.transferList; _d < _e.length; _d++) {
                                         var t = _e[_d];
@@ -454,7 +454,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                             sList.push(s);
                         }
                         if (i.isTransfer) {
-                            var s = new transactions_1.TransferItemsTransaction(amount, item, direction, company);
+                            var s = new transactions_1.TransferItemTransaction(amount, item, direction, company);
                             if (!!this.transferList)
                                 for (var _d = 0, _e = this.transferList; _d < _e.length; _d++) {
                                     var t = _e[_d];

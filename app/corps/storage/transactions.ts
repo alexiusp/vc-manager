@@ -25,6 +25,9 @@ export interface ICountableTransaction {
 export interface IMoneyTransaction {
 	money	: number;
 }
+export interface IItemTransaction {
+	item : BaseStorageElement
+}
 
 export class BaseTransaction implements IBaseTransaction {
 	constructor(public type			: TransactionType,
@@ -37,7 +40,7 @@ export class BaseTransaction implements IBaseTransaction {
 		return true;
 	}
 }
-export class TransferItemsTransaction extends BaseTransaction implements ICountableTransaction {
+export class TransferItemTransaction extends BaseTransaction implements ICountableTransaction, IItemTransaction {
 	constructor(public amount	: number,
 		public item    : BaseStorageElement,
 		direction	: TransactionDirection,
@@ -46,7 +49,7 @@ export class TransferItemsTransaction extends BaseTransaction implements ICounta
 	}
 	public isEqual(target : BaseTransaction) : boolean {
 		if(!super.isEqual(target)) return false;
-		if(target instanceof TransferItemsTransaction) {
+		if(target instanceof TransferItemTransaction) {
 			if(this.item.ItemType.id !== target.item.ItemType.id) return false;
 			return true;
 		} else return false;
