@@ -82,7 +82,7 @@ System.register([], function(exports_1, context_1) {
                     }
                     this._items = iArr;
                 };
-                ItemsPackageTransaction.prototype.hasItem = function (item) {
+                ItemsPackageTransaction.prototype.hasItemExact = function (item) {
                     for (var _i = 0, _a = this._items; _i < _a.length; _i++) {
                         var i = _a[_i];
                         if ((item.item.ItemType.id === i.item.ItemType.id) && (item.amount === i.amount))
@@ -90,13 +90,27 @@ System.register([], function(exports_1, context_1) {
                     }
                     return false;
                 };
+                ItemsPackageTransaction.prototype.hasItem = function (item) {
+                    for (var _i = 0, _a = this._items; _i < _a.length; _i++) {
+                        var i = _a[_i];
+                        if (item.ItemType.id === i.item.ItemType.id)
+                            return true;
+                    }
+                    return false;
+                };
+                ItemsPackageTransaction.prototype.findItem = function (item) {
+                    for (var i in this._items)
+                        if ((item.ItemType.id === this._items[i].item.ItemType.id))
+                            return +i;
+                    return -1;
+                };
                 ItemsPackageTransaction.prototype.isEqual = function (target) {
                     if (!_super.prototype.isEqual.call(this, target))
                         return false;
                     if (target instanceof ItemsTransaction) {
                         for (var _i = 0, _a = target.items; _i < _a.length; _i++) {
                             var t = _a[_i];
-                            if (!this.hasItem(t))
+                            if (!this.hasItem(t.item))
                                 return false;
                         }
                         return true;
@@ -104,8 +118,13 @@ System.register([], function(exports_1, context_1) {
                     else
                         return false;
                 };
+                // compares only base properties without items
+                ItemsPackageTransaction.prototype.isLike = function (target) {
+                    return _super.prototype.isEqual.call(this, target);
+                };
                 return ItemsPackageTransaction;
             }(BaseTransaction));
+            exports_1("ItemsPackageTransaction", ItemsPackageTransaction);
             // final transaction class to work with transfer of multiple items
             ItemsTransaction = (function (_super) {
                 __extends(ItemsTransaction, _super);
@@ -193,6 +212,11 @@ System.register([], function(exports_1, context_1) {
                 SellItemTransaction.prototype.getTitle = function () {
                     var source = (!!this.business) ? this.business.name : "Corporation";
                     return _super.prototype.getTitle.call(this) + "Sell " + this.amount + " of " + this.item.ItemType.name + " for " + this.money + " vDollars from " + source;
+                };
+                SellItemTransaction.prototype.hasItem = function (item) {
+                    if (item.ItemType.id === this.item.ItemType.id)
+                        return true;
+                    return false;
                 };
                 return SellItemTransaction;
             }(BaseTransaction));

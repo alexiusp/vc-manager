@@ -130,9 +130,10 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     enumerable: true,
                     configurable: true
                 });
+                // parse items transaction array into two arrays
                 SupplyListComponent.prototype.parseTransfer = function () {
-                    this.toCompTransfer = [];
-                    this.toCorpTransfer = [];
+                    this.toCompTransfer = null;
+                    var corpTransfer = [];
                     if (!!this._items) {
                         for (var _i = 0, _a = this._items; _i < _a.length; _i++) {
                             var i = _a[_i];
@@ -141,24 +142,32 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                                 this.corpName = i.business.name;
                                 //console.log("corpName ", this.corpName);
                                 if ((!!this.companies) && this.companies.length > 0)
-                                    this.toCompTransfer.push(i);
+                                    this.toCompTransfer = i;
                             }
                             else
-                                this.toCorpTransfer.push(i);
+                                corpTransfer.push(i);
                         }
                     }
+                    this.toCorpTransfer = corpTransfer;
                     this.checkEmptiness();
                 };
                 ;
-                SupplyListComponent.prototype.removeTransfer = function (item) {
+                SupplyListComponent.prototype.removeTransfer = function (item, transaction) {
                     //console.log("remove item", item);
+                    // find transaction in list
                     var sIdx = -1;
                     for (var i in this._items) {
-                        if (item.isEqual(this._items[i]))
+                        if (transaction.isEqual(this._items[i]))
                             sIdx = +i;
                     }
                     if (sIdx > -1) {
+                        // remove old transaction
                         this._items.splice(sIdx, 1);
+                        //remove item from transaction
+                        transaction.removeItem(item);
+                        // if transaction has more items - add it back to list
+                        if (transaction.items.length > 0)
+                            this._items.push(transaction);
                         this.checkEmptiness();
                         this.checkTransfer();
                         if (!!this.onRemoveItem)
@@ -199,28 +208,170 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     if (!!this.onChangeInvestments)
                         this.onChangeInvestments.emit(list);
                 };
-                /*
-                compileTransactions() {
-                  let gList : BaseTransaction[] = [];
-                  if(!!this.investments) for(let item of this.investments) gList.push(item);
-                  if(!!this.trade) for(let item of this.trade) gList.push(item);
-                  if(!!this.items) for(let item of this.items) {
-                    if(item.owner == TransactionObject.Company) gList.push(item);
-                    else for(let comp of this.companies)  {
-                      item.target = comp;
-                      gList.push(item);
+                SupplyListComponent.prototype.addBusiness = function (b) {
+                    if (!this.businessesToRefresh)
+                        this.businessesToRefresh = [];
+                    for (var _i = 0, _a = this.businessesToRefresh; _i < _a.length; _i++) {
+                        var c = _a[_i];
+                        if (b.id == c.id)
+                            return;
                     }
-                  }
-                  return gList;
-                }
-                */
-                /*
-                footer handlers
-                */
+                    this.businessesToRefresh.push(b);
+                };
+                SupplyListComponent.prototype.findBusiness = function (b, list) {
+                    for (var i in list) {
+                        if (list[i].business.id === b.id)
+                            return +i;
+                    }
+                    return -1;
+                };
+                SupplyListComponent.prototype.compileTransactions = function () {
+                    var gList = [];
+                    // add all transfers from company to corporation
+                    for (var _i = 0, _a = this.toCorpTransfer; _i < _a.length; _i++) {
+                        var t = _a[_i];
+                        gList.push(t);
+                    }
+                    // add all transfers from corporation to company
+                    if (!!this.companies && this.companies.length > 0 && !!this.toCompTransfer) {
+                        for (var _b = 0, _c = this.companies; _b < _c.length; _b++) {
+                            var c = _c[_b];
+                            var t = new transactions_1.ItemsTransaction(transactions_1.TransactionDirection.FromCorporation, c);
+                            for (var _d = 0, _e = this.toCompTransfer.items; _d < _e.length; _d++) {
+                                var i = _e[_d];
+                                t.addItem(i);
+                            }
+                            gList.push(t);
+                        }
+                    }
+                    // add all trades
+                    for (var _f = 0, _g = this.trade; _f < _g.length; _f++) {
+                        var t = _g[_f];
+                        gList.push(t);
+                    }
+                    // add all investments
+                    for (var _h = 0, _j = this.investments; _h < _j.length; _h++) {
+                        var t = _j[_h];
+                        gList.push(t);
+                    }
+                    // put to property
+                    return gList;
+                };
                 SupplyListComponent.prototype.save = function () {
                     //let list = this.compileTransactions();
                     //console.log("save list:", list);
                     //this._transactionList
+                };
+                SupplyListComponent.prototype.go = function () {
+                    var _this = this;
+                    this.businessesToRefresh = [];
+                    var tList = this.compileTransactions();
+                    // calculate the number of operations for progress bar
+                    var tNum = tList.length;
+                    this.initProgress(tNum);
+                    // go through transactions
+                    var _loop_1 = function(t) {
+                        console.log("Transaction:", t);
+                        // add business to refresh list
+                        this_1.addBusiness(t.business);
+                        // add loading counter
+                        this_1._coreService.isLoading = true;
+                        switch (t.type) {
+                            case transactions_1.TransactionType.Trade:
+                                if (t instanceof transactions_1.SellItemTransaction) {
+                                    var func = void 0;
+                                    if (t.direction === transactions_1.TransactionDirection.FromCompany)
+                                        func = this_1._corporationService.sellItemFromCompany(t.business.id, t.item.ItemType.id, t.amount, t.money);
+                                    if (t.direction == transactions_1.TransactionDirection.FromCorporation)
+                                        func = this_1._corporationService.sellItemFromCorporation(t.business.id, t.item.ItemType.id, t.amount, t.money);
+                                    func.subscribe(function (res) {
+                                        _this._coreService.isLoading = false;
+                                        _this.parseErrors(t, res);
+                                        console.log("trade result", res);
+                                        _this.incrementProgress();
+                                    });
+                                }
+                                break;
+                            case transactions_1.TransactionType.Invest:
+                                if (t instanceof transactions_1.InvestTransaction) {
+                                    // TODO: implement corporation investment
+                                    this_1._corporationService.addFundsToCompany(t.business.id, t.money).subscribe(function (res) {
+                                        _this._coreService.isLoading = false;
+                                        _this.parseErrors(t, res);
+                                        console.log("invest money in companies result", res);
+                                        _this.incrementProgress();
+                                    });
+                                }
+                                break;
+                            case transactions_1.TransactionType.ClearStorage:
+                                // TODO: implement
+                                break;
+                            case transactions_1.TransactionType.Transfer:
+                                if (t instanceof transactions_1.ItemsTransaction) {
+                                    if (t.direction === transactions_1.TransactionDirection.FromCompany) {
+                                        for (var _i = 0, _a = t.items; _i < _a.length; _i++) {
+                                            var i = _a[_i];
+                                            this_1._corporationService.moveItemToCorporation(t.business.id, i.item.ItemType.id, i.amount)
+                                                .subscribe(function (res) {
+                                                _this._coreService.isLoading = false;
+                                                _this.parseErrors(t, res);
+                                                console.log("transfer items to corporation result:", res);
+                                                _this.incrementProgress();
+                                            });
+                                        }
+                                    }
+                                    else {
+                                        this_1._corporationService.moveItemsToCompany(t.business.id, t.items)
+                                            .subscribe(function (res) {
+                                            _this._coreService.isLoading = false;
+                                            var mArr = [];
+                                            for (var i in res) {
+                                                var m = res[i];
+                                                if (m.class !== "flash_success") {
+                                                    m.msg += t.getTitle();
+                                                }
+                                                mArr.push(m);
+                                            }
+                                            _this._messages.addMessages(mArr);
+                                            console.log("transfer items to company result:", mArr);
+                                            _this.incrementProgress();
+                                        });
+                                    }
+                                }
+                                break;
+                        }
+                    };
+                    var this_1 = this;
+                    for (var _b = 0, tList_1 = tList; _b < tList_1.length; _b++) {
+                        var t = tList_1[_b];
+                        _loop_1(t);
+                    }
+                };
+                /*
+                  printTransactionInfo(t: BaseTransaction) {
+                    let start = " in transaction: "
+                        let isInvest = t.type === TransactionType.Invest;
+                        let invest = (isInvest && t instanceof InvestTransaction)? "investment of " + t.money + " to " + t.business.name : "";
+                    let itemT = (!isInvest && t instanceof TransferItemTransaction)? "transfer an item " + (<TransferItemTransaction>t).item.ItemType.name : "";
+                        let itemS = (!isInvest && t instanceof SellItemTransaction)? "sell an item " + (<SellItemTransaction>t).item.ItemType.name : "";
+                        let business = " to " + t.business.name;
+                        if(!isInvest) {
+                            business = (t instanceof TransferItemTransaction && t.direction === TransactionDirection.FromCorporation)? " to " + t.business.name : " from " + t.business.name;
+                        }
+                    return start + invest + itemS + itemT + business;
+                  }
+                */
+                SupplyListComponent.prototype.parseErrors = function (t, mArr) {
+                    if (!!mArr) {
+                        var res = [];
+                        for (var _i = 0, mArr_1 = mArr; _i < mArr_1.length; _i++) {
+                            var m = mArr_1[_i];
+                            if (m.class !== "flash_success")
+                                m.msg += t.getTitle();
+                            res.push(m);
+                        }
+                        this._messages.addMessages(res);
+                    }
                 };
                 SupplyListComponent.prototype.clear = function () {
                     this._init();
@@ -232,160 +383,6 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                         this.onRemoveTrade.emit([]);
                     if (!!this.onChangeInvestments)
                         this.onChangeInvestments.emit([]);
-                };
-                SupplyListComponent.prototype.addBusiness = function (b) {
-                    if (!this.businessesToRefresh)
-                        this.businessesToRefresh = [];
-                    for (var _i = 0, _a = this.businessesToRefresh; _i < _a.length; _i++) {
-                        var c = _a[_i];
-                        if (b.id == c.id)
-                            return;
-                    }
-                    this.businessesToRefresh.push(b);
-                };
-                SupplyListComponent.prototype.go = function () {
-                    var _this = this;
-                    this.businessesToRefresh = [];
-                    // calculate the number of operations for progress bar
-                    var tNum = 0;
-                    if (!!this.investments)
-                        tNum += this.investments.length;
-                    if (!!this.trade)
-                        tNum += this.trade.length;
-                    var corpList = [];
-                    var corpTransList = [];
-                    var compList = [];
-                    if (!!this.items) {
-                        // split transfer list by owner
-                        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
-                            var i = _a[_i];
-                            if (i.direction === transactions_1.TransactionDirection.FromCorporation) {
-                                corpList.push({
-                                    id: i.item.ItemType.id,
-                                    amount: i.amount
-                                });
-                                corpTransList.push(i);
-                            }
-                            else
-                                compList.push(i);
-                        }
-                    }
-                    tNum += compList.length;
-                    if ((corpList.length > 0) && !!this.companies)
-                        tNum += this.companies.length;
-                    this.initProgress(tNum);
-                    // transfer items to companies.
-                    if ((corpList.length > 0) && !!this.companies) {
-                        var _loop_1 = function(c) {
-                            this_1.addBusiness(c);
-                            this_1._coreService.isLoading = true;
-                            this_1._corporationService.moveItemsToCompany(c.id, corpList)
-                                .subscribe(function (res) {
-                                _this._coreService.isLoading = false;
-                                var mArr = [];
-                                for (var i in res) {
-                                    var m = res[i];
-                                    if (m.class !== "flash_success") {
-                                        var t = corpTransList[i];
-                                        t.business = c;
-                                        m.msg += _this.printTransactionInfo(t);
-                                    }
-                                    mArr.push(m);
-                                }
-                                _this._messages.addMessages(mArr);
-                                console.log("transfer items to company result:", mArr);
-                                _this.incrementProgress();
-                            });
-                        };
-                        var this_1 = this;
-                        for (var _b = 0, _c = this.companies; _b < _c.length; _b++) {
-                            var c = _c[_b];
-                            _loop_1(c);
-                        }
-                    }
-                    // transfer items to corporation
-                    if (compList.length > 0) {
-                        var _loop_2 = function(t) {
-                            this_2._coreService.isLoading = true;
-                            this_2.addBusiness(t.business);
-                            this_2._corporationService.moveItemToCorporation(t.business.id, t.item.ItemType.id, t.amount)
-                                .subscribe(function (res) {
-                                _this._coreService.isLoading = false;
-                                _this.parseErrors(t, res);
-                                console.log("transfer items to corporation result:", res);
-                                _this.incrementProgress();
-                            });
-                        };
-                        var this_2 = this;
-                        for (var _d = 0, compList_1 = compList; _d < compList_1.length; _d++) {
-                            var t = compList_1[_d];
-                            _loop_2(t);
-                        }
-                    }
-                    // invest money in companies
-                    if (!!this.investments)
-                        var _loop_3 = function(t) {
-                            // TODO: implement corporation investment
-                            this_3.addBusiness(t.business);
-                            this_3._coreService.isLoading = true;
-                            this_3._corporationService.addFundsToCompany(t.business.id, t.money).subscribe(function (res) {
-                                _this._coreService.isLoading = false;
-                                _this.parseErrors(t, res);
-                                console.log("invest money in companies result", res);
-                                _this.incrementProgress();
-                            });
-                        };
-                        var this_3 = this;
-                        for (var _e = 0, _f = this.investments; _e < _f.length; _e++) {
-                            var t = _f[_e];
-                            _loop_3(t);
-                        }
-                    // sell goods
-                    if (!!this.trade)
-                        var _loop_4 = function(t) {
-                            var func = void 0;
-                            this_4.addBusiness(t.business);
-                            this_4._coreService.isLoading = true;
-                            if (t.direction === transactions_1.TransactionDirection.FromCompany)
-                                func = this_4._corporationService.sellItemFromCompany(t.business.id, t.item.ItemType.id, t.amount, t.money);
-                            if (t.direction == transactions_1.TransactionDirection.FromCorporation)
-                                func = this_4._corporationService.sellItemFromCorporation(t.business.id, t.item.ItemType.id, t.amount, t.money);
-                            func.subscribe(function (res) {
-                                _this._coreService.isLoading = false;
-                                _this.parseErrors(t, res);
-                                console.log("trade result", res);
-                                _this.incrementProgress();
-                            });
-                        };
-                        var this_4 = this;
-                        for (var _g = 0, _h = this.trade; _g < _h.length; _g++) {
-                            var t = _h[_g];
-                            _loop_4(t);
-                        }
-                };
-                SupplyListComponent.prototype.printTransactionInfo = function (t) {
-                    var start = " in transaction: ";
-                    var isInvest = t.type === transactions_1.TransactionType.Invest;
-                    var invest = (isInvest && t instanceof transactions_1.InvestTransaction) ? "investment of " + t.money + " to " + t.business.name : "";
-                    var itemT = (!isInvest && t instanceof transactions_1.TransferItemTransaction) ? "transfer an item " + t.item.ItemType.name : "";
-                    var itemS = (!isInvest && t instanceof transactions_1.SellItemTransaction) ? "sell an item " + t.item.ItemType.name : "";
-                    var business = " to " + t.business.name;
-                    if (!isInvest) {
-                        business = (t instanceof transactions_1.TransferItemTransaction && t.direction === transactions_1.TransactionDirection.FromCorporation) ? " to " + t.business.name : " from " + t.business.name;
-                    }
-                    return start + invest + itemS + itemT + business;
-                };
-                SupplyListComponent.prototype.parseErrors = function (t, mArr) {
-                    if (!!mArr) {
-                        var res = [];
-                        for (var _i = 0, mArr_1 = mArr; _i < mArr_1.length; _i++) {
-                            var m = mArr_1[_i];
-                            if (m.class !== "flash_success")
-                                m.msg += this.printTransactionInfo(t);
-                            res.push(m);
-                        }
-                        this._messages.addMessages(res);
-                    }
                 };
                 /*
                 progress indicator

@@ -27,7 +27,7 @@
 		<div class="list-group-item list-group-item-info" *ngIf="hasTransfer">
 			<i class="fa fa-truck"></i> Transfer goods ({{toCompTransfer.length + toCorpTransfer.length}}):
 		</div>
-		<div class="list-group-item" *ngIf="hasTransfer && !!toCompTransfer && toCompTransfer.length > 0">
+		<div class="list-group-item" *ngIf="hasTransfer && !!toCompTransfer">
 			<div class="row">
 				<div class="col-sm-4">
 					<div class="panel panel-default" *ngFor="#c of companies">
@@ -46,7 +46,7 @@
 					</div>
 			  </div>
 				<div class="col-sm-8">
-					<div class="panel panel-default" *ngFor="#item of toCompTransfer">
+					<div class="panel panel-default" *ngFor="#item of toCompTransfer.items">
 						<div class="panel-body">
 							<div class="row">
 								<div class="col-sm-8">
@@ -62,7 +62,7 @@
 											(keyup)="item.amount = +amount.value"
 											(blur)="item.amount = +amount.value">
 										<div class="input-group-btn">
-											<button type="button" class="btn btn-danger" (click)="removeTransfer(item)">
+											<button type="button" class="btn btn-danger" (click)="removeTransfer(item, toCompTransfer)">
 												<i class="glyphicon glyphicon-trash"></i>
 											</button>
 										</div>

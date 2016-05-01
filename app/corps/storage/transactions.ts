@@ -48,7 +48,7 @@ export class BaseTransaction implements IBaseTransaction {
 	}
 }
 // intermediate class to work with items array
-class ItemsPackageTransaction extends BaseTransaction {
+export class ItemsPackageTransaction extends BaseTransaction {
 	private _items : IItemPackage[];
 	constructor(
 		type			: TransactionType,
@@ -74,17 +74,31 @@ class ItemsPackageTransaction extends BaseTransaction {
 			else iArr.push(item);
 		this._items = iArr;
 	}
-	public hasItem(item : IItemPackage) {
+	public hasItemExact(item : IItemPackage) : boolean {
 		for(let i of this._items)
 			if((item.item.ItemType.id === i.item.ItemType.id) && (item.amount === i.amount)) return true;
 		return false;
 	}
+	public hasItem(item : BaseStorageElement) : boolean {
+		for(let i of this._items)
+			if(item.ItemType.id === i.item.ItemType.id) return true;
+		return false;
+	}
+	public findItem(item : BaseStorageElement) : number {
+		for(let i in this._items)
+			if((item.ItemType.id === this._items[i].item.ItemType.id)) return +i;
+		return -1;
+	}
 	public isEqual(target : BaseTransaction) : boolean {
 		if(!super.isEqual(target)) return false;
 		if(target instanceof ItemsTransaction) {
-			for(let t of target.items) if(!this.hasItem(t)) return false;
+			for(let t of target.items) if(!this.hasItem(t.item)) return false;
 			return true;
 		} else return false;
+	}
+	// compares only base properties without items
+	public isLike(target) : boolean {
+		return super.isEqual(target);
 	}
 }
 // final transaction class to work with transfer of multiple items
@@ -158,5 +172,9 @@ export class SellItemTransaction extends BaseTransaction implements IMoneyTransa
 		public getTitle() : string {
 			let source = (!!this.business)? this.business.name : "Corporation";
 			return super.getTitle() + "Sell " + this.amount + " of " + this.item.ItemType.name + " for " + this.money + " vDollars from " + source;
+		}
+		public hasItem(item : BaseStorageElement) : boolean {
+			if(item.ItemType.id === this.item.ItemType.id) return true;
+			return false;
 		}
 }

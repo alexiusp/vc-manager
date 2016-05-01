@@ -5,7 +5,14 @@ import { BaseBusiness, CorpInfo, Company, CompanyDetail } from './contracts';
 import { CorporationStorageElement, CompanyStorageElement, BaseStorageElement } from './storage/contracts';
 import { StorageItem } from './storage/models';
 
-import { BaseTransaction, TransactionDirection, SellItemTransaction, TransferItemTransaction, InvestTransaction } from './storage/transactions';
+import {
+	BaseTransaction,
+	TransactionDirection,
+	TransactionType,
+	SellItemTransaction,
+	ItemsTransaction,
+	InvestTransaction
+} from './storage/transactions';
 import { CorporationService } from './corporation.service';
 import { CoreService } from '../core/core.service';
 import { Dictionary, map } from '../core/dictionary';
@@ -25,9 +32,6 @@ export class CorporationDetailComponent implements OnInit {
   private corpId : number;
   private corpInfo : CorpInfo; // corporation structure received from backend
   private corpStorage: StorageItem[];// corporation storage
-  private progressValue: number;
-  private maxProgress: number;
-  private iProgress: number;
   private investList: InvestTransaction[];
   // new version of companies list handling
   private details : map<CompanyDetailItem>;
@@ -40,9 +44,6 @@ export class CorporationDetailComponent implements OnInit {
     private _routeParams: RouteParams,
 		private _storageService: StorageService
   ) {
-    this.progressValue = 0;
-    this.maxProgress = 0;
-    this.iProgress = 0;
     this.resetLists();
   }
   ngOnInit() {
@@ -98,7 +99,7 @@ export class CorporationDetailComponent implements OnInit {
 			});
 	}
 	loadCompanyInfo(c : Company) {
-		console.log("loadCompanyInfo ", c.name);
+		//console.log("loadCompanyInfo ", c.name);
 		this.details[c.id] = new CompanyDetailItem();
 		this.loadCompanyDetail(c.id);
 		this._coreService.isLoading = true;
@@ -148,22 +149,6 @@ export class CorporationDetailComponent implements OnInit {
       }
 		});
   }
-  initProgress(maxNum : number) {
-		console.log("corp detail initProgress");
-    this.maxProgress = maxNum;
-    this.iProgress = 0;
-    this.progressValue = 10;
-  }
-  incrementProgress() {
-    this.iProgress++;
-    if (this.iProgress >= this.maxProgress) {
-      this.progressValue = 0;
-      this.loadCorpInfo();
-    } else {
-      this.progressValue += 100/this.maxProgress;
-    }
-    //console.log("progress:",this.progressValue);
-  }
   /*
   backend operations functions
   */
@@ -180,6 +165,7 @@ export class CorporationDetailComponent implements OnInit {
         });
 		}
   }
+	// companies list filter
 	private companyFilter : string;
 	setFilter(filter : string) {
 		//console.log("setFilter:", filter);
@@ -219,12 +205,16 @@ export class CorporationDetailComponent implements OnInit {
   */
   // supply list
   private tradeList : SellItemTransaction[];
-  private transferList : TransferItemTransaction[];
+  private transferList : ItemsTransaction[];
+	// parses corporation storage for transfers and trades
   parseStorage() {
     if(!!this.corpStorage) {
       let corp = this._corporationService.getCorporation(this.corpId);
-      let sList = [];
-      let tList = [];
+			// new transaction to use if no transaction found in list
+			let transfer : ItemsTransaction = new ItemsTransaction(TransactionDirection.FromCorporation, corp);
+			// new lists required for change event to happen
+      let sList : SellItemTransaction[] = [];
+      let tList : ItemsTransaction[] = [];
       for(let i of this.corpStorage) {
         if(i.isSell) {
           let s : SellItemTransaction = new SellItemTransaction(
@@ -235,29 +225,27 @@ export class CorporationDetailComponent implements OnInit {
 						corp
 					);
           if(!!this.tradeList) for(let t of this.tradeList) {
-            if(s.isEqual(t)) {
-              s.money = t.money;
-              s.amount = t.amount;
-            }
+            if(s.isEqual(t)) s = t;
           }
           sList.push(s);
         }
         if(i.isTransfer) {
-          let s : TransferItemTransaction = new TransferItemTransaction(
-						i.item[0].total_quantity,
-						i.item,
-						TransactionDirection.FromCorporation,
-						corp
-					);
+					transfer.addItem({item:i.item,amount:i.item[0].total_quantity});
           if(!!this.transferList) for(let t of this.transferList) {
-            if(s.isEqual(t)) {
-              s.amount = t.amount;
-            }
+						// try to find transaction in list
+						if(t.isLike(transfer)) {
+							// try to find storage item in transaction
+							if(!t.hasItem(i.item)) {
+								t.addItem({item:i.item,amount:i.item[0].total_quantity});
+							}
+							// overwrite new transaction with found
+							transfer = t;
+						}
           }
-          tList.push(s);
+          tList.push(transfer);
         }
       }
-      // copy all items from companies
+      // copy all transactions from companies
       if(!!this.tradeList) for(let t of this.tradeList) {
         if(t.direction == TransactionDirection.FromCompany) sList.push(t);
       }
@@ -269,11 +257,10 @@ export class CorporationDetailComponent implements OnInit {
     }
   }
   findInStorage(item: BaseStorageElement) {
-    let find = -1;
     for(let i in this.corpStorage) {
       if(this.corpStorage[i].item.ItemType.id == item.ItemType.id) return +i;
     }
-    return find;
+    return -1;
   }
   // corporation storage change
   storageChange(list:StorageItem[]) {
@@ -281,22 +268,26 @@ export class CorporationDetailComponent implements OnInit {
     this.parseStorage();
   }
   // trade list change
-  findItemTransaction(item : StorageItem, list: TransferItemTransaction[] | SellItemTransaction[]) : number {
+  findItemTransaction(item : StorageItem, list: BaseTransaction[]) : number {
     for(let i in list) {
-      if(list[i].item.ItemType.id == item.item.ItemType.id) return +i;
+			let t = list[i];
+			if((t instanceof ItemsTransaction) || (t instanceof SellItemTransaction)) {
+				if(t.hasItem(item.item)) return +i;
+			}
     }
     return -1;
   }
+	// trade list change event handler
   tradeChange(list : SellItemTransaction[]) {
     //console.log("tradeChange", list)
     // parse changed list
     let corpList = [];
     let compList = [];
-    for(let sell of list) {
-      if(sell.direction === TransactionDirection.FromCorporation) {
-        corpList.push(sell);
+    for(let t of list) {
+      if(t.direction === TransactionDirection.FromCorporation) {
+        corpList.push(t);
       } else {
-        compList.push(sell);
+        compList.push(t);
       }
     }
     // join with transfer
@@ -310,41 +301,57 @@ export class CorporationDetailComponent implements OnInit {
     this.parseStorageTransactions(corpList);
     this.parseCompaniesTransactions(compList);
   }
-  parseStorageTransactions(list : TransferItemTransaction[] | SellItemTransaction[]) {
+	// actualises corporations storage with given transactions list
+  parseStorageTransactions(list : BaseTransaction[]) {
     let cList = [];
     for(let t of this.corpStorage) {
-      if(t.isTransfer && (this.findItemTransaction(t, list) == -1)) {
-        t.isTransfer = false;
-      }
-      if(t.isSell && (this.findItemTransaction(t, list) == -1)) {
-        t.isSell = false;
+			// find active transactions in storage
+			// and turn them off if they do not found in the given list
+			if(t.isTransfer) {
+				let i = this.findItemTransaction(t, list);
+				if((i == -1) || (list[i].type !== TransactionType.Transfer)) t.isTransfer = false;
+			}
+      if(t.isSell) {
+				let i = this.findItemTransaction(t, list);
+				if((i == -1) || (list[i].type !== TransactionType.Trade)) t.isSell = false;
       }
       cList.push(t);
     }
     this.storageChange(cList);
   }
-  parseCompaniesTransactions(list : TransferItemTransaction[] | SellItemTransaction[]) {
+	// actualises companies storage with given transactions list
+  parseCompaniesTransactions(list : BaseTransaction[]) {
     //console.log("parseCompaniesTransactions", list);
     for(let c of this.corpInfo.companies) {
       for(let s of this.details[c.id].storage) {
-        if(s.isTransfer && (this.findItemTransaction(s, list) == -1)) s.isTransfer = false;
-        if(s.isSell && (this.findItemTransaction(s, list) == -1)) s.isSell = false;
+				// find active transactions in storage
+				// and turn them off if they do not found in the given list
+				if(s.isTransfer) {
+					let i = this.findItemTransaction(s, list);
+					if((i == -1) || (list[i].type !== TransactionType.Transfer)) s.isTransfer = false;
+				}
+        if(s.isSell) {
+					let i = this.findItemTransaction(s, list);
+					if((i == -1) || (list[i].type !== TransactionType.Trade)) s.isSell = false;
+				}
       }
       this.companyStorageChange({ cId : c.id, list : this.details[c.id].storage });
     }
   }
-  transferChange(list : TransferItemTransaction[]) {
+	// transfer list change event handler
+  transferChange(list : ItemsTransaction[]) {
     //console.log("transferChange:", list);
+		// split list by source business
     let corpList = [];
     let compList = [];
-    for(let sell of list) {
-      if(sell.direction === TransactionDirection.FromCorporation) {
-        corpList.push(sell);
+    for(let t of list) {
+      if(t.direction === TransactionDirection.FromCorporation) {
+        corpList.push(t);
       } else {
-        compList.push(sell);
+        compList.push(t);
       }
     }
-    // join with trade
+    // join with trade list
     for(let i of this.tradeList) {
       if(i.direction == TransactionDirection.FromCorporation) {
         corpList.push(i);
@@ -405,11 +412,17 @@ export class CorporationDetailComponent implements OnInit {
         //console.log("sell transaction", s);
       }
       if(i.isTransfer) {
-        let s : TransferItemTransaction = new TransferItemTransaction(amount, item, direction, company);
+				let s : ItemsTransaction = new ItemsTransaction(direction, company);
+				s.addItem({item:i.item,amount:i.item[0].total_quantity});
         if(!!this.transferList) for(let t of this.transferList) {
-          if(s.isEqual(t)) {
-            s.amount = t.amount;
-          }
+					// try to find transaction for company in list
+					if(t.isLike(s)) {
+						// try to find storage item in this transaction
+						if(!t.hasItem(i.item)) {
+							t.addItem({item:i.item,amount:i.item[0].total_quantity});
+						}
+						s = t;
+					}
         }
         tList.push(s);
       }
@@ -448,6 +461,7 @@ export class CorporationDetailComponent implements OnInit {
   }
   investmentsChange(list : InvestTransaction[]) {
     // TODO: implement investments list change event handler
+		// will be needed if we will save the investment amount in companies list
     console.log("not implemented investmentsChange", list);
   }
   findPos(obj) {
