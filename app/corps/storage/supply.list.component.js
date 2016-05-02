@@ -132,6 +132,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                 });
                 // parse items transaction array into two arrays
                 SupplyListComponent.prototype.parseTransfer = function () {
+                    console.log("parseTransfer", this._items);
                     this.toCompTransfer = null;
                     var corpTransfer = [];
                     if (!!this._items) {
@@ -315,7 +316,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                                                 .subscribe(function (res) {
                                                 _this._coreService.isLoading = false;
                                                 _this.parseErrors(t, res);
-                                                console.log("transfer items to corporation result:", res);
+                                                console.log("transfer item to corporation result:", res);
                                                 _this.incrementProgress();
                                             });
                                         }

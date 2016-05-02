@@ -118,6 +118,7 @@ export class SupplyListComponent implements OnInit {
   private toCorpTransfer : ItemsTransaction[];
 	// parse items transaction array into two arrays
   parseTransfer() {
+		console.log("parseTransfer", this._items);
 		this.toCompTransfer = null;
 		let corpTransfer = [];
     if(!!this._items) {
@@ -272,7 +273,7 @@ export class SupplyListComponent implements OnInit {
 								.subscribe((res:ResultMessage[]) => {
 									this._coreService.isLoading = false;
 									this.parseErrors(t, res);
-									console.log("transfer items to corporation result:",res);
+									console.log("transfer item to corporation result:",res);
 									this.incrementProgress();
 								});
 						} else {

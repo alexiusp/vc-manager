@@ -230,21 +230,11 @@ export class CorporationDetailComponent implements OnInit {
           sList.push(s);
         }
         if(i.isTransfer) {
+					// put all storage items into new transaction
 					transfer.addItem({item:i.item,amount:i.item[0].total_quantity});
-          if(!!this.transferList) for(let t of this.transferList) {
-						// try to find transaction in list
-						if(t.isLike(transfer)) {
-							// try to find storage item in transaction
-							if(!t.hasItem(i.item)) {
-								t.addItem({item:i.item,amount:i.item[0].total_quantity});
-							}
-							// overwrite new transaction with found
-							transfer = t;
-						}
-          }
-          tList.push(transfer);
         }
       }
+			tList.push(transfer);
       // copy all transactions from companies
       if(!!this.tradeList) for(let t of this.tradeList) {
         if(t.direction == TransactionDirection.FromCompany) sList.push(t);

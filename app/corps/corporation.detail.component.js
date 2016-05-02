@@ -251,33 +251,21 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                                 sList.push(s);
                             }
                             if (i.isTransfer) {
+                                // put all storage items into new transaction
                                 transfer.addItem({ item: i.item, amount: i.item[0].total_quantity });
-                                if (!!this.transferList)
-                                    for (var _d = 0, _e = this.transferList; _d < _e.length; _d++) {
-                                        var t = _e[_d];
-                                        // try to find transaction in list
-                                        if (t.isLike(transfer)) {
-                                            // try to find storage item in transaction
-                                            if (!t.hasItem(i.item)) {
-                                                t.addItem({ item: i.item, amount: i.item[0].total_quantity });
-                                            }
-                                            // overwrite new transaction with found
-                                            transfer = t;
-                                        }
-                                    }
-                                tList.push(transfer);
                             }
                         }
+                        tList.push(transfer);
                         // copy all transactions from companies
                         if (!!this.tradeList)
-                            for (var _f = 0, _g = this.tradeList; _f < _g.length; _f++) {
-                                var t = _g[_f];
+                            for (var _d = 0, _e = this.tradeList; _d < _e.length; _d++) {
+                                var t = _e[_d];
                                 if (t.direction == transactions_1.TransactionDirection.FromCompany)
                                     sList.push(t);
                             }
                         if (!!this.transferList)
-                            for (var _h = 0, _j = this.transferList; _h < _j.length; _h++) {
-                                var t = _j[_h];
+                            for (var _f = 0, _g = this.transferList; _f < _g.length; _f++) {
+                                var t = _g[_f];
                                 if (t.direction == transactions_1.TransactionDirection.FromCompany)
                                     tList.push(t);
                             }
