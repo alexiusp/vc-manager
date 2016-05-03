@@ -234,7 +234,7 @@ export class CorporationDetailComponent implements OnInit {
 					transfer.addItem({item:i.item,amount:i.item[0].total_quantity});
         }
       }
-			tList.push(transfer);
+			if(transfer.items.length > 0) tList.push(transfer);
       // copy all transactions from companies
       if(!!this.tradeList) for(let t of this.tradeList) {
         if(t.direction == TransactionDirection.FromCompany) sList.push(t);
@@ -311,7 +311,7 @@ export class CorporationDetailComponent implements OnInit {
   }
 	// actualises companies storage with given transactions list
   parseCompaniesTransactions(list : BaseTransaction[]) {
-    //console.log("parseCompaniesTransactions", list);
+    console.log("parseCompaniesTransactions", list);
     for(let c of this.corpInfo.companies) {
       for(let s of this.details[c.id].storage) {
 				// find active transactions in storage
@@ -330,7 +330,7 @@ export class CorporationDetailComponent implements OnInit {
   }
 	// transfer list change event handler
   transferChange(list : ItemsTransaction[]) {
-    //console.log("transferChange:", list);
+    console.log("transferChange:", list);
 		// split list by source business
     let corpList = [];
     let compList = [];
@@ -380,14 +380,15 @@ export class CorporationDetailComponent implements OnInit {
     this.parseSelectedCompanies();
   }
   companyStorageChange(changeEvent : {cId : number, list : StorageItem[]}) {
-    //console.log("companyStorageChange", changeEvent);
+    console.log("companyStorageChange", changeEvent);
     let company = this.details[changeEvent.cId].item;
     let corp = this._corporationService.getCorporation(this.corpId);
+		let direction = TransactionDirection.FromCompany;
+		let transfer : ItemsTransaction = new ItemsTransaction(direction, company);
     //console.log("company", company);
     let sList = [];
     let tList = [];
     for(let i of changeEvent.list) {
-      let direction = TransactionDirection.FromCompany;
 			let amount = i.item[0].total_quantity;
 			let item = i.item;
       if(i.isSell) {
@@ -402,21 +403,10 @@ export class CorporationDetailComponent implements OnInit {
         //console.log("sell transaction", s);
       }
       if(i.isTransfer) {
-				let s : ItemsTransaction = new ItemsTransaction(direction, company);
-				s.addItem({item:i.item,amount:i.item[0].total_quantity});
-        if(!!this.transferList) for(let t of this.transferList) {
-					// try to find transaction for company in list
-					if(t.isLike(s)) {
-						// try to find storage item in this transaction
-						if(!t.hasItem(i.item)) {
-							t.addItem({item:i.item,amount:i.item[0].total_quantity});
-						}
-						s = t;
-					}
-        }
-        tList.push(s);
+				transfer.addItem({item:i.item,amount:i.item[0].total_quantity});
       }
     }
+		if(transfer.items.length > 0) tList.push(transfer);
     // copy all corporation storage items and company storage items from other companies
     if(!!this.tradeList) for(let t of this.tradeList) {
       if(t.direction == TransactionDirection.FromCorporation) sList.push(t);
@@ -424,8 +414,9 @@ export class CorporationDetailComponent implements OnInit {
     }
     if(!!this.transferList) for(let t of this.transferList) {
       if(t.direction == TransactionDirection.FromCorporation) tList.push(t);
-      if((t.direction == TransactionDirection.FromCompany) && (t.business.id != changeEvent.cId)) tList.push(t);
+      if((t.direction == TransactionDirection.FromCompany) && (t.business.id !== changeEvent.cId)) tList.push(t);
     }
+		console.info("companyStorageChange end:", tList);
     this.tradeList = sList;
     this.transferList = tList;
   }

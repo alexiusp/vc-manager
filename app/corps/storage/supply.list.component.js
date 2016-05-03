@@ -154,7 +154,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                 };
                 ;
                 SupplyListComponent.prototype.removeTransfer = function (item, transaction) {
-                    //console.log("remove item", item);
+                    console.log("remove transfer", item, transaction);
                     // find transaction in list
                     var sIdx = -1;
                     for (var i in this._items) {

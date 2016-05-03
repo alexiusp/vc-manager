@@ -136,7 +136,7 @@ export class SupplyListComponent implements OnInit {
   };
   @Output('on-remove-item') onRemoveItem = new EventEmitter();
   removeTransfer(item : IItemPackage, transaction : ItemsTransaction) {
-    //console.log("remove item", item);
+    console.log("remove transfer", item, transaction);
 		// find transaction in list
     let sIdx = -1;
     for(let i in this._items) {
