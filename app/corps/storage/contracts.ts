@@ -66,6 +66,12 @@ export interface BaseStorageElement {
   ItemType: ItemType
 }
 
+export interface SerializedStorageElement {
+	id : number,
+	name: string,
+	image: string
+}
+
 export interface CorporationStorageElement extends BaseStorageElement {
   CorporationItem: BaseItem
 }

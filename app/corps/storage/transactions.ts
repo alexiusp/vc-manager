@@ -1,4 +1,4 @@
-import { BaseStorageElement } from './contracts';
+import { BaseStorageElement, SerializedStorageElement } from './contracts';
 import { BaseBusiness } from '../contracts';
 
 export enum TransactionType {
@@ -20,6 +20,7 @@ export interface IBaseTransaction {
 	business	: BaseBusiness;
 	isEqual(target : IBaseTransaction) : boolean;
 	getTitle() : string;
+	serialize() : string;
 }
 export interface ICountableTransaction {
 	amount	: number;
@@ -45,6 +46,15 @@ export class BaseTransaction implements IBaseTransaction {
 	}
 	public getTitle() : string {
 		return "Transaction: ";
+	}
+	public serialize() : string {
+		let business = {
+			id : this.business.id,
+			name : this.business.name,
+			img : this.business.img
+		}
+		this.business = business;
+		return JSON.stringify(this);
 	}
 }
 // intermediate class to work with items array
@@ -99,6 +109,23 @@ export class ItemsPackageTransaction extends BaseTransaction {
 	// compares only base properties without items
 	public isLike(target) : boolean {
 		return super.isEqual(target);
+	}
+	public serialize() : string {
+		let _items = [];
+		for(let i of this._items) {
+			let _item = {
+				total_quantity: i.item[0].total_quantity,
+				id : i.item.ItemType.id,
+				name: i.item.ItemType.name,
+				image: i.item.ItemType.image
+			}
+			_items.push({
+				amount : i.amount,
+				item : _item
+			});
+		}
+		this._items = _items;
+		return super.serialize();
 	}
 }
 // final transaction class to work with transfer of multiple items
@@ -156,7 +183,7 @@ export class InvestTransaction extends BaseTransaction implements IMoneyTransact
 }
 export class SellItemTransaction extends BaseTransaction implements IMoneyTransaction, ICountableTransaction {
 	constructor(public amount	: number,
-		public item    : BaseStorageElement,
+		public item    : BaseStorageElement | SerializedStorageElement,
 		public money	: number,
 		direction	: TransactionDirection,
 		business	: BaseBusiness) {
@@ -176,5 +203,14 @@ export class SellItemTransaction extends BaseTransaction implements IMoneyTransa
 		public hasItem(item : BaseStorageElement) : boolean {
 			if(item.ItemType.id === this.item.ItemType.id) return true;
 			return false;
+		}
+		public serialize() : string {
+			let i = this.item;
+			this.item = {
+				id : i.ItemType.id,
+				name: i.ItemType.name,
+				image: i.ItemType.image
+			}
+			return super.serialize();
 		}
 }

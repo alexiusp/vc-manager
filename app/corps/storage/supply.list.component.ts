@@ -118,7 +118,7 @@ export class SupplyListComponent implements OnInit {
   private toCorpTransfer : ItemsTransaction[];
 	// parse items transaction array into two arrays
   parseTransfer() {
-		console.log("parseTransfer", this._items);
+		//console.log("parseTransfer", this._items);
 		this.toCompTransfer = null;
 		let corpTransfer = [];
     if(!!this._items) {
@@ -129,6 +129,7 @@ export class SupplyListComponent implements OnInit {
 					//console.log("corpName ", this.corpName);
 	        if((!!this.companies) && this.companies.length > 0) this.toCompTransfer = i;
 	      } else corpTransfer.push(i);
+				//console.log(i.getTitle());
 	    }
 		}
 		this.toCorpTransfer = corpTransfer;
@@ -136,7 +137,7 @@ export class SupplyListComponent implements OnInit {
   };
   @Output('on-remove-item') onRemoveItem = new EventEmitter();
   removeTransfer(item : IItemPackage, transaction : ItemsTransaction) {
-    console.log("remove transfer", item, transaction);
+    //console.log("remove transfer", item, transaction);
 		// find transaction in list
     let sIdx = -1;
     for(let i in this._items) {
@@ -208,6 +209,7 @@ export class SupplyListComponent implements OnInit {
 				let t = new ItemsTransaction(TransactionDirection.FromCorporation, c);
 				for(let i of this.toCompTransfer.items) t.addItem(i);
 				gList.push(t);
+				console.log(t.serialize());
 			}
 		}
 		// add all trades
@@ -218,8 +220,8 @@ export class SupplyListComponent implements OnInit {
 		return gList;
 	}
 	save() {
-    //let list = this.compileTransactions();
-    //console.log("save list:", list);
+    let list = this.compileTransactions();
+    console.log("save list:", list);
     //this._transactionList
 	}
   go() {
@@ -240,13 +242,13 @@ export class SupplyListComponent implements OnInit {
 					if(t instanceof SellItemTransaction) {
 						let func;
 						if(t.direction === TransactionDirection.FromCompany)
-							func = this._corporationService.sellItemFromCompany(t.business.id, t.item.ItemType.id, t.amount, t.money);
+							func = this._corporationService.sellItemFromCompany(t.business.id, t.item.ItemType.id, +t.amount, +t.money);
 						if(t.direction == TransactionDirection.FromCorporation)
-							func = this._corporationService.sellItemFromCorporation(t.business.id, t.item.ItemType.id, t.amount, t.money);
+							func = this._corporationService.sellItemFromCorporation(t.business.id, t.item.ItemType.id, +t.amount, +t.money);
 						func.subscribe((res:ResultMessage[]) => {
 							this._coreService.isLoading = false;
 							this.parseErrors(t, res);
-							console.log("trade result",res);
+							//console.log("trade result",res);
 							this.incrementProgress();
 						});
 					}
@@ -254,10 +256,10 @@ export class SupplyListComponent implements OnInit {
 				case TransactionType.Invest:
 					if(t instanceof InvestTransaction) {
 						// TODO: implement corporation investment
-						this._corporationService.addFundsToCompany(t.business.id, t.money).subscribe((res:ResultMessage[]) => {
+						this._corporationService.addFundsToCompany(t.business.id, +t.money).subscribe((res:ResultMessage[]) => {
 							this._coreService.isLoading = false;
 							this.parseErrors(t, res);
-							console.log("invest money in companies result", res);
+							//console.log("invest money in companies result", res);
 							this.incrementProgress();
 						});
 					}
@@ -269,15 +271,17 @@ export class SupplyListComponent implements OnInit {
 					if(t instanceof ItemsTransaction) {
 						if(t.direction === TransactionDirection.FromCompany) {
 							for(let i of t.items)
-								this._corporationService.moveItemToCorporation(t.business.id, i.item.ItemType.id, i.amount)
+								this._corporationService.moveItemToCorporation(t.business.id, i.item.ItemType.id, +i.amount)
 								.subscribe((res:ResultMessage[]) => {
 									this._coreService.isLoading = false;
 									this.parseErrors(t, res);
-									console.log("transfer item to corporation result:",res);
+									//console.log("transfer item to corporation result:",res);
 									this.incrementProgress();
 								});
 						} else {
-							this._corporationService.moveItemsToCompany(t.business.id, t.items)
+							let items = [];
+							for(let i of t.items) items.push({id:i.item.ItemType.id,amount:i.amount});
+							this._corporationService.moveItemsToCompany(t.business.id, items)
 			          .subscribe((res:ResultMessage[]) => {
 			            this._coreService.isLoading = false;
 									let mArr : ResultMessage[] = [];
@@ -289,7 +293,7 @@ export class SupplyListComponent implements OnInit {
 										mArr.push(m);
 									}
 			            this._messages.addMessages(mArr);
-			            console.log("transfer items to company result:", mArr);
+			            //console.log("transfer items to company result:", mArr);
 			            this.incrementProgress();
 			          });
 						}

@@ -132,7 +132,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                 });
                 // parse items transaction array into two arrays
                 SupplyListComponent.prototype.parseTransfer = function () {
-                    console.log("parseTransfer", this._items);
+                    //console.log("parseTransfer", this._items);
                     this.toCompTransfer = null;
                     var corpTransfer = [];
                     if (!!this._items) {
@@ -154,7 +154,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                 };
                 ;
                 SupplyListComponent.prototype.removeTransfer = function (item, transaction) {
-                    console.log("remove transfer", item, transaction);
+                    //console.log("remove transfer", item, transaction);
                     // find transaction in list
                     var sIdx = -1;
                     for (var i in this._items) {
@@ -243,6 +243,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                                 t.addItem(i);
                             }
                             gList.push(t);
+                            console.log(t.serialize());
                         }
                     }
                     // add all trades
@@ -259,8 +260,8 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     return gList;
                 };
                 SupplyListComponent.prototype.save = function () {
-                    //let list = this.compileTransactions();
-                    //console.log("save list:", list);
+                    var list = this.compileTransactions();
+                    console.log("save list:", list);
                     //this._transactionList
                 };
                 SupplyListComponent.prototype.go = function () {
@@ -282,13 +283,13 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                                 if (t instanceof transactions_1.SellItemTransaction) {
                                     var func = void 0;
                                     if (t.direction === transactions_1.TransactionDirection.FromCompany)
-                                        func = this_1._corporationService.sellItemFromCompany(t.business.id, t.item.ItemType.id, t.amount, t.money);
+                                        func = this_1._corporationService.sellItemFromCompany(t.business.id, t.item.ItemType.id, +t.amount, +t.money);
                                     if (t.direction == transactions_1.TransactionDirection.FromCorporation)
-                                        func = this_1._corporationService.sellItemFromCorporation(t.business.id, t.item.ItemType.id, t.amount, t.money);
+                                        func = this_1._corporationService.sellItemFromCorporation(t.business.id, t.item.ItemType.id, +t.amount, +t.money);
                                     func.subscribe(function (res) {
                                         _this._coreService.isLoading = false;
                                         _this.parseErrors(t, res);
-                                        console.log("trade result", res);
+                                        //console.log("trade result",res);
                                         _this.incrementProgress();
                                     });
                                 }
@@ -296,10 +297,10 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                             case transactions_1.TransactionType.Invest:
                                 if (t instanceof transactions_1.InvestTransaction) {
                                     // TODO: implement corporation investment
-                                    this_1._corporationService.addFundsToCompany(t.business.id, t.money).subscribe(function (res) {
+                                    this_1._corporationService.addFundsToCompany(t.business.id, +t.money).subscribe(function (res) {
                                         _this._coreService.isLoading = false;
                                         _this.parseErrors(t, res);
-                                        console.log("invest money in companies result", res);
+                                        //console.log("invest money in companies result", res);
                                         _this.incrementProgress();
                                     });
                                 }
@@ -312,17 +313,22 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                                     if (t.direction === transactions_1.TransactionDirection.FromCompany) {
                                         for (var _i = 0, _a = t.items; _i < _a.length; _i++) {
                                             var i = _a[_i];
-                                            this_1._corporationService.moveItemToCorporation(t.business.id, i.item.ItemType.id, i.amount)
+                                            this_1._corporationService.moveItemToCorporation(t.business.id, i.item.ItemType.id, +i.amount)
                                                 .subscribe(function (res) {
                                                 _this._coreService.isLoading = false;
                                                 _this.parseErrors(t, res);
-                                                console.log("transfer item to corporation result:", res);
+                                                //console.log("transfer item to corporation result:",res);
                                                 _this.incrementProgress();
                                             });
                                         }
                                     }
                                     else {
-                                        this_1._corporationService.moveItemsToCompany(t.business.id, t.items)
+                                        var items = [];
+                                        for (var _b = 0, _c = t.items; _b < _c.length; _b++) {
+                                            var i = _c[_b];
+                                            items.push({ id: i.item.ItemType.id, amount: i.amount });
+                                        }
+                                        this_1._corporationService.moveItemsToCompany(t.business.id, items)
                                             .subscribe(function (res) {
                                             _this._coreService.isLoading = false;
                                             var mArr = [];
@@ -334,7 +340,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                                                 mArr.push(m);
                                             }
                                             _this._messages.addMessages(mArr);
-                                            console.log("transfer items to company result:", mArr);
+                                            //console.log("transfer items to company result:", mArr);
                                             _this.incrementProgress();
                                         });
                                     }
@@ -343,8 +349,8 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                         }
                     };
                     var this_1 = this;
-                    for (var _b = 0, tList_1 = tList; _b < tList_1.length; _b++) {
-                        var t = tList_1[_b];
+                    for (var _d = 0, tList_1 = tList; _d < tList_1.length; _d++) {
+                        var t = tList_1[_d];
                         _loop_1(t);
                     }
                 };

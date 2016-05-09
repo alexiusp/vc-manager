@@ -43,6 +43,15 @@ System.register([], function(exports_1, context_1) {
                 BaseTransaction.prototype.getTitle = function () {
                     return "Transaction: ";
                 };
+                BaseTransaction.prototype.serialize = function () {
+                    var business = {
+                        id: this.business.id,
+                        name: this.business.name,
+                        img: this.business.img
+                    };
+                    this.business = business;
+                    return JSON.stringify(this);
+                };
                 return BaseTransaction;
             }());
             exports_1("BaseTransaction", BaseTransaction);
@@ -121,6 +130,24 @@ System.register([], function(exports_1, context_1) {
                 // compares only base properties without items
                 ItemsPackageTransaction.prototype.isLike = function (target) {
                     return _super.prototype.isEqual.call(this, target);
+                };
+                ItemsPackageTransaction.prototype.serialize = function () {
+                    var _items = [];
+                    for (var _i = 0, _a = this._items; _i < _a.length; _i++) {
+                        var i = _a[_i];
+                        var _item = {
+                            total_quantity: i.item[0].total_quantity,
+                            id: i.item.ItemType.id,
+                            name: i.item.ItemType.name,
+                            image: i.item.ItemType.image
+                        };
+                        _items.push({
+                            amount: i.amount,
+                            item: _item
+                        });
+                    }
+                    this._items = _items;
+                    return _super.prototype.serialize.call(this);
                 };
                 return ItemsPackageTransaction;
             }(BaseTransaction));
@@ -217,6 +244,15 @@ System.register([], function(exports_1, context_1) {
                     if (item.ItemType.id === this.item.ItemType.id)
                         return true;
                     return false;
+                };
+                SellItemTransaction.prototype.serialize = function () {
+                    var i = this.item;
+                    this.item = {
+                        id: i.ItemType.id,
+                        name: i.ItemType.name,
+                        image: i.ItemType.image
+                    };
+                    return _super.prototype.serialize.call(this);
                 };
                 return SellItemTransaction;
             }(BaseTransaction));
