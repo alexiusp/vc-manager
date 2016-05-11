@@ -223,8 +223,15 @@ export class SupplyListComponent implements OnInit {
     let list = this.compileTransactions();
 		let saveList = [];
 		for(let i of list) saveList.push(i.serialize());
-    console.log("save list:", saveList);
-    this.saveList = saveList;
+    //console.log("save list:", saveList);
+		if(!this.saveList) this.saveList = [];
+		let label = "save" + (this.saveList.length+1);
+    this.saveList.push({
+			name	: label,
+			isEdit: false,
+			list	: saveList
+		});
+		console.log("saveList:", this.saveList);
 	}
   go() {
 		this.businessesToRefresh = [];

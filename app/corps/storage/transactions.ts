@@ -143,6 +143,11 @@ export class ItemsTransaction extends ItemsPackageTransaction {
 		let target = (this.direction === TransactionDirection.FromCorporation) ? this.business.name : "Corporation";
 		return super.getTitle() + "Transfer of " + this.items.length + " item packages from " + source + " to " + target;
 	}
+	public serialize(obj? : any) : string {
+		let res = (!!obj)? obj : {};
+		res.title = this.getTitle();
+		return super.serialize(res);
+	}
 }
 export class ClearStorageTransaction extends ItemsPackageTransaction {
 	constructor(direction	: TransactionDirection,
@@ -152,6 +157,11 @@ export class ClearStorageTransaction extends ItemsPackageTransaction {
 	public getTitle() : string {
 		let source = (!!this.business) ? this.business.name : "Corporation";
 		return super.getTitle() + "Clear storage of " + source + " which contains " + this.items.length + " item packages";
+	}
+	public serialize(obj? : any) : string {
+		let res = (!!obj)? obj : {};
+		res.title = this.getTitle();
+		return super.serialize(res);
 	}
 }
 // single item transfer transaction - DEPRECATED
@@ -187,6 +197,7 @@ export class InvestTransaction extends BaseTransaction implements IMoneyTransact
 	public serialize(obj? : any) : string {
 		let res = (!!obj)? obj : {};
 		res.money = this.money;
+		res.title = this.getTitle();
 		return super.serialize(res);
 	}
 }
@@ -224,6 +235,7 @@ export class SellItemTransaction extends BaseTransaction implements IMoneyTransa
 			res.item = item;
 			res.money = this.money;
 			res.amount = this.amount;
+			res.title = this.getTitle();
 			return super.serialize(res);
 		}
 }

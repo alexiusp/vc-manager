@@ -262,8 +262,16 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                         var i = list_1[_i];
                         saveList.push(i.serialize());
                     }
-                    console.log("save list:", saveList);
-                    this.saveList = saveList;
+                    //console.log("save list:", saveList);
+                    if (!this.saveList)
+                        this.saveList = [];
+                    var label = "save" + (this.saveList.length + 1);
+                    this.saveList.push({
+                        name: label,
+                        isEdit: false,
+                        list: saveList
+                    });
+                    console.log("saveList:", this.saveList);
                 };
                 SupplyListComponent.prototype.go = function () {
                     var _this = this;
