@@ -1,5 +1,3 @@
-export type mapIndex = string | number;
-
 export class map<T> {
   [index : number] : T;
   [key : string] : T;

@@ -43,14 +43,17 @@ System.register([], function(exports_1, context_1) {
                 BaseTransaction.prototype.getTitle = function () {
                     return "Transaction: ";
                 };
-                BaseTransaction.prototype.serialize = function () {
+                BaseTransaction.prototype.serialize = function (obj) {
                     var business = {
                         id: this.business.id,
                         name: this.business.name,
                         img: this.business.img
                     };
-                    this.business = business;
-                    return JSON.stringify(this);
+                    var res = (!!obj) ? obj : {};
+                    res.business = business;
+                    res.type = this.type;
+                    res.direction = this.direction;
+                    return JSON.stringify(res);
                 };
                 return BaseTransaction;
             }());
@@ -131,7 +134,7 @@ System.register([], function(exports_1, context_1) {
                 ItemsPackageTransaction.prototype.isLike = function (target) {
                     return _super.prototype.isEqual.call(this, target);
                 };
-                ItemsPackageTransaction.prototype.serialize = function () {
+                ItemsPackageTransaction.prototype.serialize = function (obj) {
                     var _items = [];
                     for (var _i = 0, _a = this._items; _i < _a.length; _i++) {
                         var i = _a[_i];
@@ -146,8 +149,9 @@ System.register([], function(exports_1, context_1) {
                             item: _item
                         });
                     }
-                    this._items = _items;
-                    return _super.prototype.serialize.call(this);
+                    var res = (!!obj) ? obj : {};
+                    res.items = _items;
+                    return _super.prototype.serialize.call(this, res);
                 };
                 return ItemsPackageTransaction;
             }(BaseTransaction));
@@ -214,6 +218,11 @@ System.register([], function(exports_1, context_1) {
                 InvestTransaction.prototype.getTitle = function () {
                     return _super.prototype.getTitle.call(this) + "Invest " + this.money + " vDollars to " + this.business.name;
                 };
+                InvestTransaction.prototype.serialize = function (obj) {
+                    var res = (!!obj) ? obj : {};
+                    res.money = this.money;
+                    return _super.prototype.serialize.call(this, res);
+                };
                 return InvestTransaction;
             }(BaseTransaction));
             exports_1("InvestTransaction", InvestTransaction);
@@ -245,14 +254,18 @@ System.register([], function(exports_1, context_1) {
                         return true;
                     return false;
                 };
-                SellItemTransaction.prototype.serialize = function () {
+                SellItemTransaction.prototype.serialize = function (obj) {
                     var i = this.item;
-                    this.item = {
+                    var item = {
                         id: i.ItemType.id,
                         name: i.ItemType.name,
                         image: i.ItemType.image
                     };
-                    return _super.prototype.serialize.call(this);
+                    var res = (!!obj) ? obj : {};
+                    res.item = item;
+                    res.money = this.money;
+                    res.amount = this.amount;
+                    return _super.prototype.serialize.call(this, res);
                 };
                 return SellItemTransaction;
             }(BaseTransaction));

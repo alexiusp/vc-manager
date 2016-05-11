@@ -26,7 +26,7 @@ import { ResultMessage } from '../../request/response';
 	directives: [StorageItemComponent]
 })
 export class SupplyListComponent implements OnInit {
-  private _transactionList : Dictionary<BaseTransaction[]>;
+	private saveList: any[];
   private progressValue: number;
   private maxProgress: number;
   private iProgress: number;
@@ -35,7 +35,7 @@ export class SupplyListComponent implements OnInit {
 	constructor(private _corporationService: CorporationService,
     private _coreService : CoreService,
     private _messages : MessagesService) {
-		this._transactionList = new Dictionary<BaseTransaction[]>();
+		this.saveList = [];
 		this._init();
 	}
 	ngOnInit() {
@@ -209,7 +209,7 @@ export class SupplyListComponent implements OnInit {
 				let t = new ItemsTransaction(TransactionDirection.FromCorporation, c);
 				for(let i of this.toCompTransfer.items) t.addItem(i);
 				gList.push(t);
-				console.log(t.serialize());
+				//console.log(t.serialize());
 			}
 		}
 		// add all trades
@@ -221,8 +221,10 @@ export class SupplyListComponent implements OnInit {
 	}
 	save() {
     let list = this.compileTransactions();
-    console.log("save list:", list);
-    //this._transactionList
+		let saveList = [];
+		for(let i of list) saveList.push(i.serialize());
+    console.log("save list:", saveList);
+    this.saveList = saveList;
 	}
   go() {
 		this.businessesToRefresh = [];
@@ -242,9 +244,9 @@ export class SupplyListComponent implements OnInit {
 					if(t instanceof SellItemTransaction) {
 						let func;
 						if(t.direction === TransactionDirection.FromCompany)
-							func = this._corporationService.sellItemFromCompany(t.business.id, t.item.ItemType.id, +t.amount, +t.money);
+							func = this._corporationService.sellItemFromCompany(t.business.id, (<BaseStorageElement>t.item).ItemType.id, +t.amount, +t.money);
 						if(t.direction == TransactionDirection.FromCorporation)
-							func = this._corporationService.sellItemFromCorporation(t.business.id, t.item.ItemType.id, +t.amount, +t.money);
+							func = this._corporationService.sellItemFromCorporation(t.business.id, (<BaseStorageElement>t.item).ItemType.id, +t.amount, +t.money);
 						func.subscribe((res:ResultMessage[]) => {
 							this._coreService.isLoading = false;
 							this.parseErrors(t, res);

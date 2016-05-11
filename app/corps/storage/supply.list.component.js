@@ -1,4 +1,4 @@
-System.register(['angular2/core', '../../core/core.service', '../../messages/messages.service', './transactions', './storage.item.component', '../../core/dictionary', '../corporation.service'], function(exports_1, context_1) {
+System.register(['angular2/core', '../../core/core.service', '../../messages/messages.service', './transactions', './storage.item.component', '../corporation.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, core_service_1, messages_service_1, transactions_1, storage_item_component_1, dictionary_1, corporation_service_1;
+    var core_1, core_service_1, messages_service_1, transactions_1, storage_item_component_1, corporation_service_1;
     var SupplyListComponent;
     return {
         setters:[
@@ -29,9 +29,6 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
             function (storage_item_component_1_1) {
                 storage_item_component_1 = storage_item_component_1_1;
             },
-            function (dictionary_1_1) {
-                dictionary_1 = dictionary_1_1;
-            },
             function (corporation_service_1_1) {
                 corporation_service_1 = corporation_service_1_1;
             }],
@@ -46,7 +43,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     this.onRemoveCompany = new core_1.EventEmitter();
                     this.onChangeInvestments = new core_1.EventEmitter();
                     this.onRefresh = new core_1.EventEmitter();
-                    this._transactionList = new dictionary_1.Dictionary();
+                    this.saveList = [];
                     this._init();
                 }
                 SupplyListComponent.prototype.ngOnInit = function () {
@@ -243,7 +240,6 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                                 t.addItem(i);
                             }
                             gList.push(t);
-                            console.log(t.serialize());
                         }
                     }
                     // add all trades
@@ -261,8 +257,13 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                 };
                 SupplyListComponent.prototype.save = function () {
                     var list = this.compileTransactions();
-                    console.log("save list:", list);
-                    //this._transactionList
+                    var saveList = [];
+                    for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
+                        var i = list_1[_i];
+                        saveList.push(i.serialize());
+                    }
+                    console.log("save list:", saveList);
+                    this.saveList = saveList;
                 };
                 SupplyListComponent.prototype.go = function () {
                     var _this = this;

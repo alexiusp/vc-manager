@@ -20,7 +20,7 @@ export interface IBaseTransaction {
 	business	: BaseBusiness;
 	isEqual(target : IBaseTransaction) : boolean;
 	getTitle() : string;
-	serialize() : string;
+	serialize(obj? : any) : string;
 }
 export interface ICountableTransaction {
 	amount	: number;
@@ -47,14 +47,17 @@ export class BaseTransaction implements IBaseTransaction {
 	public getTitle() : string {
 		return "Transaction: ";
 	}
-	public serialize() : string {
+	public serialize(obj? : any) : string {
 		let business = {
 			id : this.business.id,
 			name : this.business.name,
 			img : this.business.img
 		}
-		this.business = business;
-		return JSON.stringify(this);
+		let res = (!!obj)? obj : {};
+		res.business = business;
+		res.type = this.type;
+		res.direction = this.direction;
+		return JSON.stringify(res);
 	}
 }
 // intermediate class to work with items array
@@ -110,7 +113,7 @@ export class ItemsPackageTransaction extends BaseTransaction {
 	public isLike(target) : boolean {
 		return super.isEqual(target);
 	}
-	public serialize() : string {
+	public serialize(obj? : any) : string {
 		let _items = [];
 		for(let i of this._items) {
 			let _item = {
@@ -124,8 +127,9 @@ export class ItemsPackageTransaction extends BaseTransaction {
 				item : _item
 			});
 		}
-		this._items = _items;
-		return super.serialize();
+		let res = (!!obj)? obj : {};
+		res.items = _items;
+		return super.serialize(res);
 	}
 }
 // final transaction class to work with transfer of multiple items
@@ -180,10 +184,15 @@ export class InvestTransaction extends BaseTransaction implements IMoneyTransact
 	public getTitle() : string {
 		return super.getTitle() + "Invest " + this.money + " vDollars to " + this.business.name;
 	}
+	public serialize(obj? : any) : string {
+		let res = (!!obj)? obj : {};
+		res.money = this.money;
+		return super.serialize(res);
+	}
 }
 export class SellItemTransaction extends BaseTransaction implements IMoneyTransaction, ICountableTransaction {
 	constructor(public amount	: number,
-		public item    : BaseStorageElement | SerializedStorageElement,
+		public item    : BaseStorageElement,
 		public money	: number,
 		direction	: TransactionDirection,
 		business	: BaseBusiness) {
@@ -204,13 +213,17 @@ export class SellItemTransaction extends BaseTransaction implements IMoneyTransa
 			if(item.ItemType.id === this.item.ItemType.id) return true;
 			return false;
 		}
-		public serialize() : string {
+		public serialize(obj? : any) : string {
 			let i = this.item;
-			this.item = {
+			let item = {
 				id : i.ItemType.id,
 				name: i.ItemType.name,
 				image: i.ItemType.image
-			}
-			return super.serialize();
+			};
+			let res = (!!obj)? obj : {};
+			res.item = item;
+			res.money = this.money;
+			res.amount = this.amount;
+			return super.serialize(res);
 		}
 }
