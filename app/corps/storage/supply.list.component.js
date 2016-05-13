@@ -1,4 +1,4 @@
-System.register(['angular2/core', '../../core/core.service', '../../messages/messages.service', './transactions', './storage.item.component', '../corporation.service'], function(exports_1, context_1) {
+System.register(['angular2/core', '../../core/core.service', '../../messages/messages.service', './transactions', './storage.item.component', '../corporation.service', '../../account/account.service', '../../storage/storage.service'], function(exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
@@ -10,7 +10,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
     var __metadata = (this && this.__metadata) || function (k, v) {
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
-    var core_1, core_service_1, messages_service_1, transactions_1, storage_item_component_1, corporation_service_1;
+    var core_1, core_service_1, messages_service_1, transactions_1, storage_item_component_1, corporation_service_1, account_service_1, storage_service_1;
     var SupplyListComponent;
     return {
         setters:[
@@ -31,13 +31,21 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
             },
             function (corporation_service_1_1) {
                 corporation_service_1 = corporation_service_1_1;
+            },
+            function (account_service_1_1) {
+                account_service_1 = account_service_1_1;
+            },
+            function (storage_service_1_1) {
+                storage_service_1 = storage_service_1_1;
             }],
         execute: function() {
             SupplyListComponent = (function () {
-                function SupplyListComponent(_corporationService, _coreService, _messages) {
+                function SupplyListComponent(_corporationService, _coreService, _messages, _account, _storage) {
                     this._corporationService = _corporationService;
                     this._coreService = _coreService;
                     this._messages = _messages;
+                    this._account = _account;
+                    this._storage = _storage;
                     this.onRemoveTrade = new core_1.EventEmitter();
                     this.onRemoveItem = new core_1.EventEmitter();
                     this.onRemoveCompany = new core_1.EventEmitter();
@@ -48,6 +56,8 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                 }
                 SupplyListComponent.prototype.ngOnInit = function () {
                     this.corpName = "Corporation";
+                    if (!!this._storage)
+                        this._load();
                 };
                 SupplyListComponent.prototype._init = function () {
                     this._companies = [];
@@ -255,24 +265,6 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     // put to property
                     return gList;
                 };
-                SupplyListComponent.prototype.save = function () {
-                    var list = this.compileTransactions();
-                    var saveList = [];
-                    for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                        var i = list_1[_i];
-                        saveList.push(i.serialize());
-                    }
-                    //console.log("save list:", saveList);
-                    if (!this.saveList)
-                        this.saveList = [];
-                    var label = "save" + (this.saveList.length + 1);
-                    this.saveList.push({
-                        name: label,
-                        isEdit: false,
-                        list: saveList
-                    });
-                    console.log("saveList:", this.saveList);
-                };
                 SupplyListComponent.prototype.go = function () {
                     var _this = this;
                     this.businessesToRefresh = [];
@@ -361,6 +353,81 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     for (var _d = 0, tList_1 = tList; _d < tList_1.length; _d++) {
                         var t = tList_1[_d];
                         _loop_1(t);
+                    }
+                };
+                /**
+                ** Operations on saved transactions lists
+                **/
+                SupplyListComponent.prototype.save = function () {
+                    var list = this.compileTransactions();
+                    var saveList = [];
+                    for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
+                        var i = list_1[_i];
+                        saveList.push(i.serialize());
+                    }
+                    //console.log("save list:", saveList);
+                    if (!this.saveList)
+                        this.saveList = [];
+                    var label = "save" + (this.saveList.length + 1);
+                    this.saveList.push({
+                        name: label,
+                        isEdit: false,
+                        list: saveList
+                    });
+                    console.log("saveList:", this.saveList);
+                    this._save();
+                };
+                SupplyListComponent.prototype.change = function (label, save) {
+                    console.log("change:", label, save);
+                    this._storage.removeData(this._account.User.id + '_' + save.name);
+                    save.name = label;
+                    save.isEdit = false;
+                    this._save();
+                };
+                SupplyListComponent.prototype.delete = function (save) {
+                    this._storage.removeData(this._account.User.id + '_' + save.name);
+                    var l = [];
+                    for (var _i = 0, _a = this.saveList; _i < _a.length; _i++) {
+                        var i = _a[_i];
+                        if (i.name !== save.name)
+                            l.push(i);
+                    }
+                    this.saveList = l;
+                    this._save();
+                };
+                SupplyListComponent.prototype._save = function () {
+                    if (this._storage.isLoaded) {
+                        var l = [];
+                        var tKey = this._account.User.id + "_transactions";
+                        for (var _i = 0, _a = this.saveList; _i < _a.length; _i++) {
+                            var i = _a[_i];
+                            l.push(i.name);
+                            this._storage.saveData(this._account.User.id + '_' + i.name, i.list);
+                        }
+                        this._storage.saveData(tKey, l);
+                        console.log("end _save:", tKey, l);
+                    }
+                };
+                SupplyListComponent.prototype._load = function () {
+                    if (this._storage.isLoaded) {
+                        // load saveList from localStorage
+                        var tKey = this._account.User.id + "_transactions";
+                        var l = this._storage.loadData(tKey);
+                        console.log("transactions list:", l);
+                        if (!l)
+                            return;
+                        var saveList = [];
+                        for (var _i = 0, l_1 = l; _i < l_1.length; _i++) {
+                            var k = l_1[_i];
+                            var list = this._storage.loadData(this._account.User.id + '_' + k);
+                            saveList.push({
+                                name: k,
+                                isEdit: false,
+                                list: list
+                            });
+                        }
+                        this.saveList = saveList;
+                        console.log("loaded saveList:", saveList);
                     }
                 };
                 /*
@@ -468,7 +535,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                         templateUrl: 'app/corps/storage/supply.list.component.html',
                         directives: [storage_item_component_1.StorageItemComponent]
                     }), 
-                    __metadata('design:paramtypes', [corporation_service_1.CorporationService, core_service_1.CoreService, messages_service_1.MessagesService])
+                    __metadata('design:paramtypes', [corporation_service_1.CorporationService, core_service_1.CoreService, messages_service_1.MessagesService, account_service_1.AccountService, storage_service_1.StorageService])
                 ], SupplyListComponent);
                 return SupplyListComponent;
             }());

@@ -22,11 +22,21 @@ System.register(['angular2/core'], function(exports_1, context_1) {
                 function StorageService() {
                     this._ls = window.localStorage;
                 }
+                Object.defineProperty(StorageService.prototype, "isLoaded", {
+                    get: function () {
+                        return !!this._ls;
+                    },
+                    enumerable: true,
+                    configurable: true
+                });
                 StorageService.prototype.loadData = function (key) {
                     return JSON.parse(this._ls.getItem(key));
                 };
                 StorageService.prototype.saveData = function (key, data) {
                     this._ls.setItem(key, JSON.stringify(data));
+                };
+                StorageService.prototype.removeData = function (key) {
+                    this._ls.removeItem(key);
                 };
                 StorageService = __decorate([
                     core_1.Injectable(), 

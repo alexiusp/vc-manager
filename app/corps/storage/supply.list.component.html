@@ -4,7 +4,7 @@
 			<div class="panel-heading">
 				<h3 class="panel-title">
 					<label  *ngIf="!save.isEdit" (click)="save.isEdit = !save.isEdit;">{{save.name}}</label >
-					<input class="form-control input-sm" type="text" [value]="save.name" #newlabel *ngIf="save.isEdit" (keyup.enter)="save.name = newlabel.value;save.isEdit = !save.isEdit;" />
+					<input class="form-control input-sm" type="text" [value]="save.name" #newlabel *ngIf="save.isEdit" (keyup.enter)="change(newlabel.value, save);" />
 				</h3>
 			</div>
 			<div class="panel-footer">
@@ -16,7 +16,7 @@
 					</div>
 					<div class="btn-group" role="group">
 						<button type="button" class="btn btn-info" (click)="load(save)">
-							<i class="glyphicon glyphicon-save"></i>
+							<i class="glyphicon glyphicon-open"></i>
 						</button>
 					</div>
 					<div class="btn-group" role="group">

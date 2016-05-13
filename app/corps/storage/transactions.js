@@ -169,7 +169,7 @@ System.register([], function(exports_1, context_1) {
                 };
                 ItemsTransaction.prototype.serialize = function (obj) {
                     var res = (!!obj) ? obj : {};
-                    res.title = this.getTitle();
+                    //res.title = this.getTitle();
                     return _super.prototype.serialize.call(this, res);
                 };
                 return ItemsTransaction;
@@ -186,7 +186,7 @@ System.register([], function(exports_1, context_1) {
                 };
                 ClearStorageTransaction.prototype.serialize = function (obj) {
                     var res = (!!obj) ? obj : {};
-                    res.title = this.getTitle();
+                    //res.title = this.getTitle();
                     return _super.prototype.serialize.call(this, res);
                 };
                 return ClearStorageTransaction;
@@ -231,7 +231,7 @@ System.register([], function(exports_1, context_1) {
                 InvestTransaction.prototype.serialize = function (obj) {
                     var res = (!!obj) ? obj : {};
                     res.money = this.money;
-                    res.title = this.getTitle();
+                    //res.title = this.getTitle();
                     return _super.prototype.serialize.call(this, res);
                 };
                 return InvestTransaction;
@@ -276,7 +276,7 @@ System.register([], function(exports_1, context_1) {
                     res.item = item;
                     res.money = this.money;
                     res.amount = this.amount;
-                    res.title = this.getTitle();
+                    //res.title = this.getTitle();
                     return _super.prototype.serialize.call(this, res);
                 };
                 return SellItemTransaction;

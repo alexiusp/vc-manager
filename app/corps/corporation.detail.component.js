@@ -428,7 +428,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this.parseSelectedCompanies();
                 };
                 CorporationDetailComponent.prototype.companyStorageChange = function (changeEvent) {
-                    console.log("companyStorageChange", changeEvent);
+                    //console.log("companyStorageChange", changeEvent);
                     var company = this.details[changeEvent.cId].item;
                     var corp = this._corporationService.getCorporation(this.corpId);
                     var direction = transactions_1.TransactionDirection.FromCompany;
@@ -475,7 +475,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                             if ((t.direction == transactions_1.TransactionDirection.FromCompany) && (t.business.id !== changeEvent.cId))
                                 tList.push(t);
                         }
-                    console.info("companyStorageChange end:", tList);
+                    //console.info("companyStorageChange end:", tList);
                     this.tradeList = sList;
                     this.transferList = tList;
                 };

@@ -380,7 +380,7 @@ export class CorporationDetailComponent implements OnInit {
     this.parseSelectedCompanies();
   }
   companyStorageChange(changeEvent : {cId : number, list : StorageItem[]}) {
-    console.log("companyStorageChange", changeEvent);
+    //console.log("companyStorageChange", changeEvent);
     let company = this.details[changeEvent.cId].item;
     let corp = this._corporationService.getCorporation(this.corpId);
 		let direction = TransactionDirection.FromCompany;
@@ -416,7 +416,7 @@ export class CorporationDetailComponent implements OnInit {
       if(t.direction == TransactionDirection.FromCorporation) tList.push(t);
       if((t.direction == TransactionDirection.FromCompany) && (t.business.id !== changeEvent.cId)) tList.push(t);
     }
-		console.info("companyStorageChange end:", tList);
+		//console.info("companyStorageChange end:", tList);
     this.tradeList = sList;
     this.transferList = tList;
   }

@@ -19,6 +19,8 @@ import {StorageItemComponent} from './storage.item.component';
 import {Dictionary} from '../../core/dictionary';
 import { CorporationService } from '../corporation.service';
 import { ResultMessage } from '../../request/response';
+import { AccountService } from '../../account/account.service';
+import { StorageService } from '../../storage/storage.service';
 
 @Component({
   selector: 'supply-list',
@@ -32,14 +34,19 @@ export class SupplyListComponent implements OnInit {
   private iProgress: number;
 	private corpName: string;
 
-	constructor(private _corporationService: CorporationService,
+	constructor(
+		private _corporationService: CorporationService,
     private _coreService : CoreService,
-    private _messages : MessagesService) {
+    private _messages : MessagesService,
+		private _account : AccountService,
+		private _storage : StorageService
+		) {
 		this.saveList = [];
 		this._init();
 	}
 	ngOnInit() {
 		this.corpName = "Corporation";
+		if(!!this._storage) this._load();
 	}
   _init() {
     this._companies = [];
@@ -219,20 +226,6 @@ export class SupplyListComponent implements OnInit {
 		// put to property
 		return gList;
 	}
-	save() {
-    let list = this.compileTransactions();
-		let saveList = [];
-		for(let i of list) saveList.push(i.serialize());
-    //console.log("save list:", saveList);
-		if(!this.saveList) this.saveList = [];
-		let label = "save" + (this.saveList.length+1);
-    this.saveList.push({
-			name	: label,
-			isEdit: false,
-			list	: saveList
-		});
-		console.log("saveList:", this.saveList);
-	}
   go() {
 		this.businessesToRefresh = [];
 		let tList = this.compileTransactions();
@@ -311,6 +304,74 @@ export class SupplyListComponent implements OnInit {
 			}
 		}
   }
+/**
+** Operations on saved transactions lists
+**/
+	save() {// save current transactions list
+		let list = this.compileTransactions();
+		let saveList = [];
+		for(let i of list) saveList.push(i.serialize());
+		//console.log("save list:", saveList);
+		if(!this.saveList) this.saveList = [];
+		let label = "save" + (this.saveList.length+1);
+		this.saveList.push({
+			name	: label,
+			isEdit: false,
+			list	: saveList
+		});
+		console.log("saveList:", this.saveList);
+		this._save();
+	}
+	change(label : string, save : any) {
+		console.log("change:", label, save);
+		this._storage.removeData(this._account.User.id + '_' + save.name);
+		save.name = label;
+		save.isEdit = false;
+		this._save();
+	}
+	delete(save : any) {
+		this._storage.removeData(this._account.User.id + '_' + save.name);
+		let l = [];
+		for(let i of this.saveList) {
+			if(i.name !== save.name) l.push(i);
+		}
+		this.saveList = l;
+		this._save();
+	}
+	_save() {
+		if(this._storage.isLoaded) {
+			let l = [];
+			let tKey = this._account.User.id + "_transactions";
+			for(let i of this.saveList) {
+				l.push(i.name);
+				this._storage.saveData(this._account.User.id + '_' + i.name, i.list);
+			}
+			this._storage.saveData(tKey, l);
+			console.log("end _save:", tKey, l);
+		}
+	}
+	_load() {
+		if(this._storage.isLoaded) {
+			// load saveList from localStorage
+			let tKey = this._account.User.id + "_transactions";
+			let l = this._storage.loadData(tKey);
+			console.log("transactions list:", l);
+			if(!l) return;
+			let saveList = [];
+			for(let k of l) {
+				let list = this._storage.loadData(this._account.User.id + '_' +  k);
+				saveList.push(
+					{
+						name	: k,
+						isEdit: false,
+						list	: list
+					}
+				);
+			}
+			this.saveList = saveList;
+			console.log("loaded saveList:", saveList);
+		}
+	}
 /*
   printTransactionInfo(t: BaseTransaction) {
     let start = " in transaction: "

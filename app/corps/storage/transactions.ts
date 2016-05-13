@@ -145,7 +145,7 @@ export class ItemsTransaction extends ItemsPackageTransaction {
 	}
 	public serialize(obj? : any) : string {
 		let res = (!!obj)? obj : {};
-		res.title = this.getTitle();
+		//res.title = this.getTitle();
 		return super.serialize(res);
 	}
 }
@@ -160,7 +160,7 @@ export class ClearStorageTransaction extends ItemsPackageTransaction {
 	}
 	public serialize(obj? : any) : string {
 		let res = (!!obj)? obj : {};
-		res.title = this.getTitle();
+		//res.title = this.getTitle();
 		return super.serialize(res);
 	}
 }
@@ -197,7 +197,7 @@ export class InvestTransaction extends BaseTransaction implements IMoneyTransact
 	public serialize(obj? : any) : string {
 		let res = (!!obj)? obj : {};
 		res.money = this.money;
-		res.title = this.getTitle();
+		//res.title = this.getTitle();
 		return super.serialize(res);
 	}
 }
@@ -235,7 +235,7 @@ export class SellItemTransaction extends BaseTransaction implements IMoneyTransa
 			res.item = item;
 			res.money = this.money;
 			res.amount = this.amount;
-			res.title = this.getTitle();
+			//res.title = this.getTitle();
 			return super.serialize(res);
 		}
 }
