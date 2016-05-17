@@ -1,4 +1,4 @@
-import { BaseStorageElement, SerializedStorageElement } from './contracts';
+import { BaseStorageElement } from './contracts';
 import { BaseBusiness } from '../contracts';
 
 export enum TransactionType {
@@ -20,7 +20,6 @@ export interface IBaseTransaction {
 	business	: BaseBusiness;
 	isEqual(target : IBaseTransaction) : boolean;
 	getTitle() : string;
-	serialize(obj? : any) : string;
 }
 export interface ICountableTransaction {
 	amount	: number;
@@ -33,11 +32,16 @@ export interface IItemTransaction {
 }
 export interface IItemPackage extends IItemTransaction, ICountableTransaction {
 }
+export interface ISerializable {
+	serialize(obj? : any) : string;
+	deserialize(input:string) : IBaseTransaction
+}
 // base class for all transactions
-export class BaseTransaction implements IBaseTransaction {
+export class BaseTransaction implements IBaseTransaction, ISerializable {
 	constructor(public type			: TransactionType,
 		public direction	: TransactionDirection,
 		public business	: BaseBusiness) {}
+
 	public isEqual(target : BaseTransaction) : boolean {
 		if(this.type !== target.type) return false;
 		if(this.direction !== target.direction) return false;
@@ -58,6 +62,9 @@ export class BaseTransaction implements IBaseTransaction {
 		res.type = this.type;
 		res.direction = this.direction;
 		return JSON.stringify(res);
+	}
+	public deserialize(input:string) : BaseTransaction {
+		return undefined;
 	}
 }
 // intermediate class to work with items array
@@ -117,10 +124,11 @@ export class ItemsPackageTransaction extends BaseTransaction {
 		let _items = [];
 		for(let i of this._items) {
 			let _item = {
-				total_quantity: i.item[0].total_quantity,
+				//total_quantity: i.item[0].total_quantity,
 				id : i.item.ItemType.id,
 				name: i.item.ItemType.name,
-				image: i.item.ItemType.image
+				image: i.item.ItemType.image,
+				type: i.item.ItemType.type
 			}
 			_items.push({
 				amount : i.amount,
@@ -229,7 +237,8 @@ export class SellItemTransaction extends BaseTransaction implements IMoneyTransa
 			let item = {
 				id : i.ItemType.id,
 				name: i.ItemType.name,
-				image: i.ItemType.image
+				image: i.ItemType.image,
+				type: i.ItemType.type
 			};
 			let res = (!!obj)? obj : {};
 			res.item = item;
@@ -238,4 +247,26 @@ export class SellItemTransaction extends BaseTransaction implements IMoneyTransa
 			//res.title = this.getTitle();
 			return super.serialize(res);
 		}
+		static deserialize(input?:string) : SellItemTransaction {
+			let obj = JSON.parse(input);
+			let item = {
+				0: {
+			    total_quantity: 0
+			  },
+			  ItemType: obj.item
+			};
+			return new SellItemTransaction(+obj.amount, item, +obj.money, obj.direction, obj.business);
+		}
+}
+
+export function TransactionDeserialize(input : string) : BaseTransaction {
+	let obj = JSON.parse(input);
+	if(obj.type === undefined) return undefined;
+	let result:BaseTransaction;
+	switch(obj.type) {
+		case TransactionType.Trade:
+		result = SellItemTransaction.deserialize(input);
+		break;
+	}
+	return result;
 }
