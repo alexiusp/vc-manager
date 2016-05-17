@@ -13,7 +13,8 @@ import {
 	TransferItemTransaction,
 	ItemsTransaction,
 	TransactionDirection,
-	TransactionType
+	TransactionType,
+	TransactionDeserialize
 } from './transactions';
 import {StorageItemComponent} from './storage.item.component';
 import {Dictionary} from '../../core/dictionary';
@@ -371,6 +372,24 @@ export class SupplyListComponent implements OnInit {
 			this.saveList = saveList;
 			console.log("loaded saveList:", saveList);
 		}
+	}
+	load(save: any) {
+		this._init();
+		console.log("loading saved transaction list: ", save);
+		let sArr : SellItemTransaction[] = [];
+		for(let i of save.list) {
+			let t : BaseTransaction = TransactionDeserialize(i);
+			console.log("parsed transaction", t);
+			switch(t.type) {
+				case TransactionType.Trade:
+				sArr.push(<SellItemTransaction>t);
+				break;
+			}
+		}
+		if(!!this.onRemoveCompany) this.onRemoveCompany.emit([]);
+    if(!!this.onRemoveItem) this.onRemoveItem.emit([]);
+    if(!!this.onRemoveTrade) this.onRemoveTrade.emit(sArr);
+    if(!!this.onChangeInvestments) this.onChangeInvestments.emit([]);
 	}
 /*
   printTransactionInfo(t: BaseTransaction) {

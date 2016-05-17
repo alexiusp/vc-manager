@@ -58,12 +58,18 @@ export interface ItemType {
   recalculate_prod_hours:number,
   subtype:string
 }
+interface SerializedItemType {
+	id:number,
+	name:string,
+	image:string,
+	type:string
+}
 
 export interface BaseStorageElement {
   0: {
     total_quantity: number
   },
-  ItemType: ItemType
+  ItemType: ItemType | SerializedItemType
 }
 
 export interface SerializedStorageElement {

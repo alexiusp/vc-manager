@@ -430,6 +430,29 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                         console.log("loaded saveList:", saveList);
                     }
                 };
+                SupplyListComponent.prototype.load = function (save) {
+                    this._init();
+                    console.log("loading saved transaction list: ", save);
+                    var sArr = [];
+                    for (var _i = 0, _a = save.list; _i < _a.length; _i++) {
+                        var i = _a[_i];
+                        var t = transactions_1.TransactionDeserialize(i);
+                        console.log("parsed transaction", t);
+                        switch (t.type) {
+                            case transactions_1.TransactionType.Trade:
+                                sArr.push(t);
+                                break;
+                        }
+                    }
+                    if (!!this.onRemoveCompany)
+                        this.onRemoveCompany.emit([]);
+                    if (!!this.onRemoveItem)
+                        this.onRemoveItem.emit([]);
+                    if (!!this.onRemoveTrade)
+                        this.onRemoveTrade.emit(sArr);
+                    if (!!this.onChangeInvestments)
+                        this.onChangeInvestments.emit([]);
+                };
                 /*
                   printTransactionInfo(t: BaseTransaction) {
                     let start = " in transaction: "

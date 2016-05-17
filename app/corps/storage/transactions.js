@@ -7,6 +7,19 @@ System.register([], function(exports_1, context_1) {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
     var TransactionType, TransactionDirection, BaseTransaction, ItemsPackageTransaction, ItemsTransaction, ClearStorageTransaction, TransferItemTransaction, InvestTransaction, SellItemTransaction;
+    function TransactionDeserialize(input) {
+        var obj = JSON.parse(input);
+        if (obj.type === undefined)
+            return undefined;
+        var result;
+        switch (obj.type) {
+            case TransactionType.Trade:
+                result = SellItemTransaction.deserialize(input);
+                break;
+        }
+        return result;
+    }
+    exports_1("TransactionDeserialize", TransactionDeserialize);
     return {
         setters:[],
         execute: function() {
@@ -54,6 +67,9 @@ System.register([], function(exports_1, context_1) {
                     res.type = this.type;
                     res.direction = this.direction;
                     return JSON.stringify(res);
+                };
+                BaseTransaction.prototype.deserialize = function (input) {
+                    return undefined;
                 };
                 return BaseTransaction;
             }());
@@ -139,10 +155,11 @@ System.register([], function(exports_1, context_1) {
                     for (var _i = 0, _a = this._items; _i < _a.length; _i++) {
                         var i = _a[_i];
                         var _item = {
-                            total_quantity: i.item[0].total_quantity,
+                            //total_quantity: i.item[0].total_quantity,
                             id: i.item.ItemType.id,
                             name: i.item.ItemType.name,
-                            image: i.item.ItemType.image
+                            image: i.item.ItemType.image,
+                            type: i.item.ItemType.type
                         };
                         _items.push({
                             amount: i.amount,
@@ -270,7 +287,8 @@ System.register([], function(exports_1, context_1) {
                     var item = {
                         id: i.ItemType.id,
                         name: i.ItemType.name,
-                        image: i.ItemType.image
+                        image: i.ItemType.image,
+                        type: i.ItemType.type
                     };
                     var res = (!!obj) ? obj : {};
                     res.item = item;
@@ -278,6 +296,16 @@ System.register([], function(exports_1, context_1) {
                     res.amount = this.amount;
                     //res.title = this.getTitle();
                     return _super.prototype.serialize.call(this, res);
+                };
+                SellItemTransaction.deserialize = function (input) {
+                    var obj = JSON.parse(input);
+                    var item = {
+                        0: {
+                            total_quantity: 0
+                        },
+                        ItemType: obj.item
+                    };
+                    return new SellItemTransaction(+obj.amount, item, +obj.money, obj.direction, obj.business);
                 };
                 return SellItemTransaction;
             }(BaseTransaction));

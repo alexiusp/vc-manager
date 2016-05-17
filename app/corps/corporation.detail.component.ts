@@ -177,7 +177,7 @@ export class CorporationDetailComponent implements OnInit {
 		if(!!tList) {
       this.loadCorpInfo();
       for(let b of tList) {
-        //
+        // TODO: implement!
       }
 		} else {
 	    this.loadCorpInfo();
@@ -217,8 +217,9 @@ export class CorporationDetailComponent implements OnInit {
       let tList : ItemsTransaction[] = [];
       for(let i of this.corpStorage) {
         if(i.isSell) {
+					let amount = (!!i.amountSell)? i.amountSell : i.item[0].total_quantity;
           let s : SellItemTransaction = new SellItemTransaction(
-						i.item[0].total_quantity,
+						amount,
 						i.item,
 						0,
 						TransactionDirection.FromCorporation,
@@ -231,7 +232,8 @@ export class CorporationDetailComponent implements OnInit {
         }
         if(i.isTransfer) {
 					// put all storage items into new transaction
-					transfer.addItem({item:i.item,amount:i.item[0].total_quantity});
+					let amount = (!!i.amountTransfer)? i.amountTransfer : i.item[0].total_quantity;
+					transfer.addItem({item:i.item,amount:amount});
         }
       }
 			if(transfer.items.length > 0) tList.push(transfer);
@@ -254,22 +256,25 @@ export class CorporationDetailComponent implements OnInit {
   }
   // corporation storage change
   storageChange(list:StorageItem[]) {
+		//console.log("corp storage change", list);
     this.corpStorage = list;
     this.parseStorage();
   }
-  // trade list change
-  findItemTransaction(item : StorageItem, list: BaseTransaction[]) : number {
+  // find transaction of given direction in given list
+  findItemTransaction(item : StorageItem, list: BaseTransaction[], direction : TransactionDirection) : number {
     for(let i in list) {
 			let t = list[i];
-			if((t instanceof ItemsTransaction) || (t instanceof SellItemTransaction)) {
-				if(t.hasItem(item.item)) return +i;
+			if(t.direction == direction) {
+				if((t instanceof ItemsTransaction) || (t instanceof SellItemTransaction)) {
+					if(t.hasItem(item.item)) return +i;
+				}
 			}
     }
     return -1;
   }
 	// trade list change event handler
   tradeChange(list : SellItemTransaction[]) {
-    //console.log("tradeChange", list)
+    console.log("tradeChange", list)
     // parse changed list
     let corpList = [];
     let compList = [];
@@ -291,41 +296,62 @@ export class CorporationDetailComponent implements OnInit {
     this.parseStorageTransactions(corpList);
     this.parseCompaniesTransactions(compList);
   }
+	_parseStorage(storage : StorageItem[], list : BaseTransaction[], direction : TransactionDirection)  : StorageItem[] {
+		let result : StorageItem[] = [];
+		for(let t of storage) {
+			let i = this.findItemTransaction(t, list, direction);
+			// if item is not found - its neither transfer nor sale active
+			t.isTransfer = false;
+			t.isSell = false;
+			if(i !== -1) {
+				// get first transaction in list
+				let removed = list.splice(i, 1);
+				// check its type
+				if(removed[0].type == TransactionType.Transfer) {
+					let transaction = <ItemsTransaction>removed[0];
+					let item = transaction.items[transaction.findItem(t.item)];
+					t.amountTransfer = item.amount;
+					t.isTransfer = true;
+				}
+				if(removed[0].type == TransactionType.Trade) {
+					let transaction = <SellItemTransaction>removed[0];
+					t.amountSell = transaction.amount;
+					t.isSell = true;
+				}
+				// search for second transaction
+				let second = this.findItemTransaction(t, list, direction);
+				if(second !== -1) {
+					if(list[second].type == TransactionType.Transfer) {
+						let transaction = <ItemsTransaction>list[second];
+						let item = transaction.items[transaction.findItem(t.item)];
+						t.amountTransfer = item.amount;
+						t.isTransfer = true;
+					}
+					if(list[second].type == TransactionType.Trade) {
+						let transaction = <SellItemTransaction>list[second];
+						t.amountSell = transaction.amount;
+						t.isSell = true;
+					}
+				}
+				// put removed element back to original array
+				// because transaction may have more than one item in it
+				list = list.concat(removed);
+			}
+      result.push(t);
+    }
+		return result;
+	}
 	// actualises corporations storage with given transactions list
   parseStorageTransactions(list : BaseTransaction[]) {
-    let cList = [];
-    for(let t of this.corpStorage) {
-			// find active transactions in storage
-			// and turn them off if they do not found in the given list
-			if(t.isTransfer) {
-				let i = this.findItemTransaction(t, list);
-				if((i == -1) || (list[i].type !== TransactionType.Transfer)) t.isTransfer = false;
-			}
-      if(t.isSell) {
-				let i = this.findItemTransaction(t, list);
-				if((i == -1) || (list[i].type !== TransactionType.Trade)) t.isSell = false;
-      }
-      cList.push(t);
-    }
+    let cList = this._parseStorage(this.corpStorage, list, TransactionDirection.FromCorporation);
     this.storageChange(cList);
   }
 	// actualises companies storage with given transactions list
   parseCompaniesTransactions(list : BaseTransaction[]) {
     console.log("parseCompaniesTransactions", list);
     for(let c of this.corpInfo.companies) {
-      for(let s of this.details[c.id].storage) {
-				// find active transactions in storage
-				// and turn them off if they do not found in the given list
-				if(s.isTransfer) {
-					let i = this.findItemTransaction(s, list);
-					if((i == -1) || (list[i].type !== TransactionType.Transfer)) s.isTransfer = false;
-				}
-        if(s.isSell) {
-					let i = this.findItemTransaction(s, list);
-					if((i == -1) || (list[i].type !== TransactionType.Trade)) s.isSell = false;
-				}
-      }
-      this.companyStorageChange({ cId : c.id, list : this.details[c.id].storage });
+			let cList = this._parseStorage(this.details[c.id].storage, list, TransactionDirection.FromCompany);
+      this.companyStorageChange({ cId : c.id, list : cList });
     }
   }
 	// transfer list change event handler
@@ -389,9 +415,9 @@ export class CorporationDetailComponent implements OnInit {
     let sList = [];
     let tList = [];
     for(let i of changeEvent.list) {
-			let amount = i.item[0].total_quantity;
 			let item = i.item;
       if(i.isSell) {
+				let amount = (!!(<StorageItem>i).amountSell) ? (<StorageItem>i).amountSell : i.item[0].total_quantity;
         let s : SellItemTransaction = new SellItemTransaction(amount, item, 0, direction, company);
         if(!!this.tradeList) for(let t of this.tradeList) {
           if(s.isEqual(t)) {
@@ -403,7 +429,8 @@ export class CorporationDetailComponent implements OnInit {
         //console.log("sell transaction", s);
       }
       if(i.isTransfer) {
-				transfer.addItem({item:i.item,amount:i.item[0].total_quantity});
+				let amount = (!!(<StorageItem>i).amountTransfer) ? (<StorageItem>i).amountTransfer : i.item[0].total_quantity;
+				transfer.addItem({item:i.item,amount:amount});
       }
     }
 		if(transfer.items.length > 0) tList.push(transfer);

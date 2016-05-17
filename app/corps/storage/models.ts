@@ -26,6 +26,7 @@ export class StorageItem extends SelectableItem {
     //console.log("set Transfer", val, s);
     this.isSelected = s;
   }
+	public amountTransfer : number;
   private _isSell : boolean;
   get isSell() {
     return !!this._isSell;
@@ -36,4 +37,5 @@ export class StorageItem extends SelectableItem {
     //console.log("set Sell", val, s);
     this.isSelected = s;
   }
+	public amountSell : number;
 }

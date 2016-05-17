@@ -241,7 +241,8 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         for (var _i = 0, _a = this.corpStorage; _i < _a.length; _i++) {
                             var i = _a[_i];
                             if (i.isSell) {
-                                var s = new transactions_1.SellItemTransaction(i.item[0].total_quantity, i.item, 0, transactions_1.TransactionDirection.FromCorporation, corp);
+                                var amount = (!!i.amountSell) ? i.amountSell : i.item[0].total_quantity;
+                                var s = new transactions_1.SellItemTransaction(amount, i.item, 0, transactions_1.TransactionDirection.FromCorporation, corp);
                                 if (!!this.tradeList)
                                     for (var _b = 0, _c = this.tradeList; _b < _c.length; _b++) {
                                         var t = _c[_b];
@@ -252,7 +253,8 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                             }
                             if (i.isTransfer) {
                                 // put all storage items into new transaction
-                                transfer.addItem({ item: i.item, amount: i.item[0].total_quantity });
+                                var amount = (!!i.amountTransfer) ? i.amountTransfer : i.item[0].total_quantity;
+                                transfer.addItem({ item: i.item, amount: amount });
                             }
                         }
                         if (transfer.items.length > 0)
@@ -283,23 +285,26 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                 };
                 // corporation storage change
                 CorporationDetailComponent.prototype.storageChange = function (list) {
+                    //console.log("corp storage change", list);
                     this.corpStorage = list;
                     this.parseStorage();
                 };
-                // trade list change
-                CorporationDetailComponent.prototype.findItemTransaction = function (item, list) {
+                // find transaction of given direction in given list
+                CorporationDetailComponent.prototype.findItemTransaction = function (item, list, direction) {
                     for (var i in list) {
                         var t = list[i];
-                        if ((t instanceof transactions_1.ItemsTransaction) || (t instanceof transactions_1.SellItemTransaction)) {
-                            if (t.hasItem(item.item))
-                                return +i;
+                        if (t.direction == direction) {
+                            if ((t instanceof transactions_1.ItemsTransaction) || (t instanceof transactions_1.SellItemTransaction)) {
+                                if (t.hasItem(item.item))
+                                    return +i;
+                            }
                         }
                     }
                     return -1;
                 };
                 // trade list change event handler
                 CorporationDetailComponent.prototype.tradeChange = function (list) {
-                    //console.log("tradeChange", list)
+                    console.log("tradeChange", list);
                     // parse changed list
                     var corpList = [];
                     var compList = [];
@@ -325,25 +330,55 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this.parseStorageTransactions(corpList);
                     this.parseCompaniesTransactions(compList);
                 };
+                CorporationDetailComponent.prototype._parseStorage = function (storage, list, direction) {
+                    var result = [];
+                    for (var _i = 0, storage_1 = storage; _i < storage_1.length; _i++) {
+                        var t = storage_1[_i];
+                        var i = this.findItemTransaction(t, list, direction);
+                        // if item is not found - its neither transfer nor sale active
+                        t.isTransfer = false;
+                        t.isSell = false;
+                        if (i !== -1) {
+                            // get first transaction in list
+                            var removed = list.splice(i, 1);
+                            // check its type
+                            if (removed[0].type == transactions_1.TransactionType.Transfer) {
+                                var transaction = removed[0];
+                                var item = transaction.items[transaction.findItem(t.item)];
+                                t.amountTransfer = item.amount;
+                                t.isTransfer = true;
+                            }
+                            if (removed[0].type == transactions_1.TransactionType.Trade) {
+                                var transaction = removed[0];
+                                t.amountSell = transaction.amount;
+                                t.isSell = true;
+                            }
+                            // search for second transaction
+                            var second = this.findItemTransaction(t, list, direction);
+                            if (second !== -1) {
+                                if (list[second].type == transactions_1.TransactionType.Transfer) {
+                                    var transaction = list[second];
+                                    var item = transaction.items[transaction.findItem(t.item)];
+                                    t.amountTransfer = item.amount;
+                                    t.isTransfer = true;
+                                }
+                                if (list[second].type == transactions_1.TransactionType.Trade) {
+                                    var transaction = list[second];
+                                    t.amountSell = transaction.amount;
+                                    t.isSell = true;
+                                }
+                            }
+                            // put removed element back to original array
+                            // because transaction may have more than one item in it
+                            list = list.concat(removed);
+                        }
+                        result.push(t);
+                    }
+                    return result;
+                };
                 // actualises corporations storage with given transactions list
                 CorporationDetailComponent.prototype.parseStorageTransactions = function (list) {
-                    var cList = [];
-                    for (var _i = 0, _a = this.corpStorage; _i < _a.length; _i++) {
-                        var t = _a[_i];
-                        // find active transactions in storage
-                        // and turn them off if they do not found in the given list
-                        if (t.isTransfer) {
-                            var i = this.findItemTransaction(t, list);
-                            if ((i == -1) || (list[i].type !== transactions_1.TransactionType.Transfer))
-                                t.isTransfer = false;
-                        }
-                        if (t.isSell) {
-                            var i = this.findItemTransaction(t, list);
-                            if ((i == -1) || (list[i].type !== transactions_1.TransactionType.Trade))
-                                t.isSell = false;
-                        }
-                        cList.push(t);
-                    }
+                    var cList = this._parseStorage(this.corpStorage, list, transactions_1.TransactionDirection.FromCorporation);
                     this.storageChange(cList);
                 };
                 // actualises companies storage with given transactions list
@@ -351,22 +386,8 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     console.log("parseCompaniesTransactions", list);
                     for (var _i = 0, _a = this.corpInfo.companies; _i < _a.length; _i++) {
                         var c = _a[_i];
-                        for (var _b = 0, _c = this.details[c.id].storage; _b < _c.length; _b++) {
-                            var s = _c[_b];
-                            // find active transactions in storage
-                            // and turn them off if they do not found in the given list
-                            if (s.isTransfer) {
-                                var i = this.findItemTransaction(s, list);
-                                if ((i == -1) || (list[i].type !== transactions_1.TransactionType.Transfer))
-                                    s.isTransfer = false;
-                            }
-                            if (s.isSell) {
-                                var i = this.findItemTransaction(s, list);
-                                if ((i == -1) || (list[i].type !== transactions_1.TransactionType.Trade))
-                                    s.isSell = false;
-                            }
-                        }
-                        this.companyStorageChange({ cId: c.id, list: this.details[c.id].storage });
+                        var cList = this._parseStorage(this.details[c.id].storage, list, transactions_1.TransactionDirection.FromCompany);
+                        this.companyStorageChange({ cId: c.id, list: cList });
                     }
                 };
                 // transfer list change event handler
@@ -438,9 +459,9 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     var tList = [];
                     for (var _i = 0, _a = changeEvent.list; _i < _a.length; _i++) {
                         var i = _a[_i];
-                        var amount = i.item[0].total_quantity;
                         var item = i.item;
                         if (i.isSell) {
+                            var amount = (!!i.amountSell) ? i.amountSell : i.item[0].total_quantity;
                             var s = new transactions_1.SellItemTransaction(amount, item, 0, direction, company);
                             if (!!this.tradeList)
                                 for (var _b = 0, _c = this.tradeList; _b < _c.length; _b++) {
@@ -453,7 +474,8 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                             sList.push(s);
                         }
                         if (i.isTransfer) {
-                            transfer.addItem({ item: i.item, amount: i.item[0].total_quantity });
+                            var amount = (!!i.amountTransfer) ? i.amountTransfer : i.item[0].total_quantity;
+                            transfer.addItem({ item: i.item, amount: amount });
                         }
                     }
                     if (transfer.items.length > 0)

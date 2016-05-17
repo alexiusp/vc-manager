@@ -62,7 +62,7 @@ System.register(['angular2/core', '../corporation.service', './storage.item.comp
                             return this._items;
                     },
                     set: function (itemArr) {
-                        //console.log("storage list setter", JSON.stringify(itemArr));
+                        console.log("corp storage list setter", JSON.stringify(itemArr));
                         var types = [];
                         if (!!itemArr)
                             for (var _i = 0, itemArr_1 = itemArr; _i < itemArr_1.length; _i++) {
