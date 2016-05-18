@@ -171,6 +171,11 @@ export class ClearStorageTransaction extends ItemsPackageTransaction {
 		//res.title = this.getTitle();
 		return super.serialize(res);
 	}
+	static deserialize(input?:string) : ClearStorageTransaction {
+		let obj = JSON.parse(input);
+		return new ClearStorageTransaction(obj.direction, obj.business);
+	}
+
 }
 // single item transfer transaction - DEPRECATED
 export class TransferItemTransaction extends BaseTransaction implements ICountableTransaction, IItemTransaction {
@@ -208,6 +213,11 @@ export class InvestTransaction extends BaseTransaction implements IMoneyTransact
 		//res.title = this.getTitle();
 		return super.serialize(res);
 	}
+	static deserialize(input?:string) : InvestTransaction {
+		let obj = JSON.parse(input);
+		return new InvestTransaction(+obj.money, obj.direction, obj.business);
+	}
+
 }
 export class SellItemTransaction extends BaseTransaction implements IMoneyTransaction, ICountableTransaction {
 	constructor(public amount	: number,
@@ -265,8 +275,11 @@ export function TransactionDeserialize(input : string) : BaseTransaction {
 	let result:BaseTransaction;
 	switch(obj.type) {
 		case TransactionType.Trade:
-		result = SellItemTransaction.deserialize(input);
-		break;
+			result = SellItemTransaction.deserialize(input);
+			break;
+		case TransactionType.Invest:
+			result = InvestTransaction.deserialize(input);
+			break;
 	}
 	return result;
 }

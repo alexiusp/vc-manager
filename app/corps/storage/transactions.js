@@ -16,6 +16,9 @@ System.register([], function(exports_1, context_1) {
             case TransactionType.Trade:
                 result = SellItemTransaction.deserialize(input);
                 break;
+            case TransactionType.Invest:
+                result = InvestTransaction.deserialize(input);
+                break;
         }
         return result;
     }
@@ -206,6 +209,10 @@ System.register([], function(exports_1, context_1) {
                     //res.title = this.getTitle();
                     return _super.prototype.serialize.call(this, res);
                 };
+                ClearStorageTransaction.deserialize = function (input) {
+                    var obj = JSON.parse(input);
+                    return new ClearStorageTransaction(obj.direction, obj.business);
+                };
                 return ClearStorageTransaction;
             }(ItemsPackageTransaction));
             exports_1("ClearStorageTransaction", ClearStorageTransaction);
@@ -250,6 +257,10 @@ System.register([], function(exports_1, context_1) {
                     res.money = this.money;
                     //res.title = this.getTitle();
                     return _super.prototype.serialize.call(this, res);
+                };
+                InvestTransaction.deserialize = function (input) {
+                    var obj = JSON.parse(input);
+                    return new InvestTransaction(+obj.money, obj.direction, obj.business);
                 };
                 return InvestTransaction;
             }(BaseTransaction));
