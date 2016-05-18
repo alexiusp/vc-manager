@@ -218,10 +218,11 @@ export class CorporationDetailComponent implements OnInit {
       for(let i of this.corpStorage) {
         if(i.isSell) {
 					let amount = (!!i.amountSell)? i.amountSell : i.item[0].total_quantity;
+					let money = (!!i.priceSell) ? i.priceSell : 0;
           let s : SellItemTransaction = new SellItemTransaction(
 						amount,
 						i.item,
-						0,
+						money,
 						TransactionDirection.FromCorporation,
 						corp
 					);
@@ -316,6 +317,7 @@ export class CorporationDetailComponent implements OnInit {
 				if(removed[0].type == TransactionType.Trade) {
 					let transaction = <SellItemTransaction>removed[0];
 					t.amountSell = transaction.amount;
+					t.priceSell = transaction.money;
 					t.isSell = true;
 				}
 				// search for second transaction
@@ -330,6 +332,7 @@ export class CorporationDetailComponent implements OnInit {
 					if(list[second].type == TransactionType.Trade) {
 						let transaction = <SellItemTransaction>list[second];
 						t.amountSell = transaction.amount;
+						t.priceSell = transaction.money;
 						t.isSell = true;
 					}
 				}
@@ -418,7 +421,8 @@ export class CorporationDetailComponent implements OnInit {
 			let item = i.item;
       if(i.isSell) {
 				let amount = (!!(<StorageItem>i).amountSell) ? (<StorageItem>i).amountSell : i.item[0].total_quantity;
-        let s : SellItemTransaction = new SellItemTransaction(amount, item, 0, direction, company);
+				let money = (!!(<StorageItem>i).priceSell) ? (<StorageItem>i).priceSell : 0;
+        let s : SellItemTransaction = new SellItemTransaction(amount, item, money, direction, company);
         if(!!this.tradeList) for(let t of this.tradeList) {
           if(s.isEqual(t)) {
             s.money = t.money;

@@ -242,7 +242,8 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                             var i = _a[_i];
                             if (i.isSell) {
                                 var amount = (!!i.amountSell) ? i.amountSell : i.item[0].total_quantity;
-                                var s = new transactions_1.SellItemTransaction(amount, i.item, 0, transactions_1.TransactionDirection.FromCorporation, corp);
+                                var money = (!!i.priceSell) ? i.priceSell : 0;
+                                var s = new transactions_1.SellItemTransaction(amount, i.item, money, transactions_1.TransactionDirection.FromCorporation, corp);
                                 if (!!this.tradeList)
                                     for (var _b = 0, _c = this.tradeList; _b < _c.length; _b++) {
                                         var t = _c[_b];
@@ -351,6 +352,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                             if (removed[0].type == transactions_1.TransactionType.Trade) {
                                 var transaction = removed[0];
                                 t.amountSell = transaction.amount;
+                                t.priceSell = transaction.money;
                                 t.isSell = true;
                             }
                             // search for second transaction
@@ -365,6 +367,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                                 if (list[second].type == transactions_1.TransactionType.Trade) {
                                     var transaction = list[second];
                                     t.amountSell = transaction.amount;
+                                    t.priceSell = transaction.money;
                                     t.isSell = true;
                                 }
                             }
@@ -462,7 +465,8 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         var item = i.item;
                         if (i.isSell) {
                             var amount = (!!i.amountSell) ? i.amountSell : i.item[0].total_quantity;
-                            var s = new transactions_1.SellItemTransaction(amount, item, 0, direction, company);
+                            var money = (!!i.priceSell) ? i.priceSell : 0;
+                            var s = new transactions_1.SellItemTransaction(amount, item, money, direction, company);
                             if (!!this.tradeList)
                                 for (var _b = 0, _c = this.tradeList; _b < _c.length; _b++) {
                                     var t = _c[_b];

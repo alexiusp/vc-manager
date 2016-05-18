@@ -38,4 +38,5 @@ export class StorageItem extends SelectableItem {
     this.isSelected = s;
   }
 	public amountSell : number;
+  public priceSell  : number;
 }
