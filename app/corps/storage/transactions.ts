@@ -21,17 +21,22 @@ export interface IBaseTransaction {
 	isEqual(target : IBaseTransaction) : boolean;
 	getTitle() : string;
 }
+
 export interface ICountableTransaction {
 	amount	: number;
 }
+
 export interface IMoneyTransaction {
 	money	: number;
 }
+
 export interface IItemTransaction {
 	item : BaseStorageElement
 }
+
 export interface IItemPackage extends IItemTransaction, ICountableTransaction {
 }
+
 export interface ISerializable {
 	serialize(obj? : any) : string;
 	deserialize(input:string) : IBaseTransaction
@@ -132,7 +137,12 @@ export class ItemsPackageTransaction extends BaseTransaction {
 			}
 			_items.push({
 				amount : i.amount,
-				item : _item
+				item : {
+					0: {
+				    total_quantity: -1
+				  },
+				  ItemType: _item
+				}
 			});
 		}
 		let res = (!!obj)? obj : {};
@@ -155,6 +165,14 @@ export class ItemsTransaction extends ItemsPackageTransaction {
 		let res = (!!obj)? obj : {};
 		//res.title = this.getTitle();
 		return super.serialize(res);
+	}
+	static deserialize(input?:string) : ItemsTransaction {
+		let obj = JSON.parse(input);
+		let t = new ItemsTransaction(obj.direction, obj.business);
+		for(let i of obj.items) {
+			t.addItem(<IItemPackage>i);
+		}
+		return t;
 	}
 }
 export class ClearStorageTransaction extends ItemsPackageTransaction {
@@ -279,6 +297,9 @@ export function TransactionDeserialize(input : string) : BaseTransaction {
 			break;
 		case TransactionType.Invest:
 			result = InvestTransaction.deserialize(input);
+			break;
+		case TransactionType.Transfer:
+			result = ItemsTransaction.deserialize(input);
 			break;
 	}
 	return result;

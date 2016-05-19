@@ -31,7 +31,7 @@ export class CorporationStorageComponent implements OnInit {
   private _items : StorageItem[];
   @Input('items')
 	set items(itemArr : StorageItem[]) {
-		console.log("corp storage list setter", JSON.stringify(itemArr));
+		//console.log("corp storage list setter", JSON.stringify(itemArr));
     let types = [];
     if(!!itemArr) for(let i of itemArr) {
       if(types.indexOf(i.item.ItemType.type) == -1) types.push(i.item.ItemType.type);

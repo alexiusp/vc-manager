@@ -274,7 +274,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     this.initProgress(tNum);
                     // go through transactions
                     var _loop_1 = function(t) {
-                        console.log("Transaction:", t);
+                        //console.log("Transaction:", t);
                         // add business to refresh list
                         this_1.addBusiness(t.business);
                         // add loading counter
@@ -374,11 +374,11 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                         isEdit: false,
                         list: saveList
                     });
-                    console.log("saveList:", this.saveList);
+                    //console.log("saveList:", this.saveList);
                     this._save();
                 };
                 SupplyListComponent.prototype.change = function (label, save) {
-                    console.log("change:", label, save);
+                    //console.log("change:", label, save);
                     this._storage.removeData(this._account.User.id + '_' + save.name);
                     save.name = label;
                     save.isEdit = false;
@@ -405,7 +405,6 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                             this._storage.saveData(this._account.User.id + '_' + i.name, i.list);
                         }
                         this._storage.saveData(tKey, l);
-                        console.log("end _save:", tKey, l);
                     }
                 };
                 SupplyListComponent.prototype._load = function () {
@@ -413,7 +412,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                         // load saveList from localStorage
                         var tKey = this._account.User.id + "_transactions";
                         var l = this._storage.loadData(tKey);
-                        console.log("transactions list:", l);
+                        //console.log("transactions list:", l);
                         if (!l)
                             return;
                         var saveList = [];
@@ -427,13 +426,13 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                             });
                         }
                         this.saveList = saveList;
-                        console.log("loaded saveList:", saveList);
                     }
                 };
                 SupplyListComponent.prototype.load = function (save) {
                     this._init();
                     console.log("loading saved transaction list: ", save);
                     var sArr = [];
+                    var tArr = [];
                     for (var _i = 0, _a = save.list; _i < _a.length; _i++) {
                         var i = _a[_i];
                         var t = transactions_1.TransactionDeserialize(i);
@@ -442,12 +441,36 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                             case transactions_1.TransactionType.Trade:
                                 sArr.push(t);
                                 break;
+                            case transactions_1.TransactionType.Transfer:
+                                tArr.push(t);
                         }
                     }
+                    // companies array
+                    var cArr = [];
+                    // final items transaction array
+                    var iArr = [];
+                    var fromCorporation;
+                    for (var _b = 0, tArr_1 = tArr; _b < tArr_1.length; _b++) {
+                        var t = tArr_1[_b];
+                        if (t.direction == transactions_1.TransactionDirection.FromCompany) {
+                            iArr.push(t);
+                        }
+                        else {
+                            cArr.push(t.business);
+                            if (!fromCorporation) {
+                                fromCorporation = new transactions_1.ItemsTransaction(transactions_1.TransactionDirection.FromCorporation, t.business);
+                                for (var _c = 0, _d = t.items; _c < _d.length; _c++) {
+                                    var i = _d[_c];
+                                    fromCorporation.addItem(i);
+                                }
+                            }
+                        }
+                    }
+                    iArr.push(fromCorporation);
                     if (!!this.onRemoveCompany)
-                        this.onRemoveCompany.emit([]);
+                        this.onRemoveCompany.emit(cArr);
                     if (!!this.onRemoveItem)
-                        this.onRemoveItem.emit([]);
+                        this.onRemoveItem.emit(iArr);
                     if (!!this.onRemoveTrade)
                         this.onRemoveTrade.emit(sArr);
                     if (!!this.onChangeInvestments)

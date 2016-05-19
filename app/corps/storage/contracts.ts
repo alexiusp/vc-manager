@@ -58,6 +58,7 @@ export interface ItemType {
   recalculate_prod_hours:number,
   subtype:string
 }
+
 interface SerializedItemType {
 	id:number,
 	name:string,

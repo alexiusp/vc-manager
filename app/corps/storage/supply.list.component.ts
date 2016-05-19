@@ -235,7 +235,7 @@ export class SupplyListComponent implements OnInit {
 		this.initProgress(tNum);
 		// go through transactions
 		for(let t of tList) {
-			console.log("Transaction:", t);
+			//console.log("Transaction:", t);
 			// add business to refresh list
 			this.addBusiness(t.business);
 			// add loading counter
@@ -320,11 +320,11 @@ export class SupplyListComponent implements OnInit {
 			isEdit: false,
 			list	: saveList
 		});
-		console.log("saveList:", this.saveList);
+		//console.log("saveList:", this.saveList);
 		this._save();
 	}
 	change(label : string, save : any) {
-		console.log("change:", label, save);
+		//console.log("change:", label, save);
 		this._storage.removeData(this._account.User.id + '_' + save.name);
 		save.name = label;
 		save.isEdit = false;
@@ -348,7 +348,7 @@ export class SupplyListComponent implements OnInit {
 				this._storage.saveData(this._account.User.id + '_' + i.name, i.list);
 			}
 			this._storage.saveData(tKey, l);
-			console.log("end _save:", tKey, l);
+			//console.log("end _save:", tKey, l);
 		}
 	}
 	_load() {
@@ -356,7 +356,7 @@ export class SupplyListComponent implements OnInit {
 			// load saveList from localStorage
 			let tKey = this._account.User.id + "_transactions";
 			let l = this._storage.loadData(tKey);
-			console.log("transactions list:", l);
+			//console.log("transactions list:", l);
 			if(!l) return;
 			let saveList = [];
 			for(let k of l) {
@@ -370,24 +370,44 @@ export class SupplyListComponent implements OnInit {
 				);
 			}
 			this.saveList = saveList;
-			console.log("loaded saveList:", saveList);
+			//console.log("loaded saveList:", saveList);
 		}
 	}
 	load(save: any) {
 		this._init();
 		console.log("loading saved transaction list: ", save);
 		let sArr : SellItemTransaction[] = [];
+		let tArr : ItemsTransaction[] = [];
 		for(let i of save.list) {
 			let t : BaseTransaction = TransactionDeserialize(i);
 			console.log("parsed transaction", t);
 			switch(t.type) {
 				case TransactionType.Trade:
-				sArr.push(<SellItemTransaction>t);
-				break;
+					sArr.push(<SellItemTransaction>t);
+					break;
+				case TransactionType.Transfer:
+					tArr.push(<ItemsTransaction>t);
 			}
 		}
-		if(!!this.onRemoveCompany) this.onRemoveCompany.emit([]);
-    if(!!this.onRemoveItem) this.onRemoveItem.emit([]);
+		// companies array
+		let cArr = [];
+		// final items transaction array
+		let iArr = [];
+		let fromCorporation : ItemsTransaction;
+		for(let t of tArr) {
+			if(t.direction == TransactionDirection.FromCompany) {
+				iArr.push(t);
+			}	else {
+				cArr.push(t.business);
+				if(!fromCorporation) {// we need to create this only once
+					fromCorporation  = new ItemsTransaction(TransactionDirection.FromCorporation, t.business);
+					for(let i of t.items) fromCorporation.addItem(i);
+				}
+			}
+		}
+		iArr.push(fromCorporation);
+		if(!!this.onRemoveCompany) this.onRemoveCompany.emit(cArr);
+    if(!!this.onRemoveItem) this.onRemoveItem.emit(iArr);
     if(!!this.onRemoveTrade) this.onRemoveTrade.emit(sArr);
     if(!!this.onChangeInvestments) this.onChangeInvestments.emit([]);
 	}

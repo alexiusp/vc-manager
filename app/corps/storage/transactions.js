@@ -19,6 +19,9 @@ System.register([], function(exports_1, context_1) {
             case TransactionType.Invest:
                 result = InvestTransaction.deserialize(input);
                 break;
+            case TransactionType.Transfer:
+                result = ItemsTransaction.deserialize(input);
+                break;
         }
         return result;
     }
@@ -166,7 +169,12 @@ System.register([], function(exports_1, context_1) {
                         };
                         _items.push({
                             amount: i.amount,
-                            item: _item
+                            item: {
+                                0: {
+                                    total_quantity: -1
+                                },
+                                ItemType: _item
+                            }
                         });
                     }
                     var res = (!!obj) ? obj : {};
@@ -191,6 +199,15 @@ System.register([], function(exports_1, context_1) {
                     var res = (!!obj) ? obj : {};
                     //res.title = this.getTitle();
                     return _super.prototype.serialize.call(this, res);
+                };
+                ItemsTransaction.deserialize = function (input) {
+                    var obj = JSON.parse(input);
+                    var t = new ItemsTransaction(obj.direction, obj.business);
+                    for (var _i = 0, _a = obj.items; _i < _a.length; _i++) {
+                        var i = _a[_i];
+                        t.addItem(i);
+                    }
+                    return t;
                 };
                 return ItemsTransaction;
             }(ItemsPackageTransaction));
