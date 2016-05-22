@@ -86,6 +86,9 @@ export class ItemsPackageTransaction extends BaseTransaction {
 	public addItem(item : IItemPackage) {
 		this._items.push(item);
 	}
+	public addItems(items : IItemPackage[]) {
+		this._items = this._items.concat(items);
+	}
 	public removeItem(item : IItemPackage) {
 		let iArr : IItemPackage[] = [];
 		for(let i of this._items) if(i.item.ItemType.id !== item.item.ItemType.id) iArr.push(i);
@@ -191,6 +194,7 @@ export class ClearStorageTransaction extends ItemsPackageTransaction {
 	}
 	static deserialize(input?:string) : ClearStorageTransaction {
 		let obj = JSON.parse(input);
+		// we don't need to deserialize items
 		return new ClearStorageTransaction(obj.direction, obj.business);
 	}
 
@@ -300,6 +304,9 @@ export function TransactionDeserialize(input : string) : BaseTransaction {
 			break;
 		case TransactionType.Transfer:
 			result = ItemsTransaction.deserialize(input);
+			break;
+		case TransactionType.ClearStorage:
+			result = ClearStorageTransaction.deserialize(input);
 			break;
 	}
 	return result;

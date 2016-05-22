@@ -42,13 +42,6 @@ export class CompaniesListComponent {
 
   companyStorageChange(cId : number, list : StorageItem[]) {
     if(!!this.details[cId]) this.details[cId].storage = list;
-    /*
-    let selected = false;
-    for(let i of list) {
-      if(i.isSelected) selected = true;
-    }
-    if(this.options[cId].isSelected != selected) this.selectOne(this.findCompanyById(cId));
-    */
     if(!!this.onChange) this.onChange.emit({cId : cId, list : list});
   }
   @Output('on-change') onChange = new EventEmitter();
@@ -145,6 +138,7 @@ export class CompaniesListComponent {
 		//console.log("invest to selected", +amount);
     if(!!this.onInvest) this.onInvest.emit({cId : c.id, amount: +amount});
   }
+	// handler for events from CompanyPanelComponent
 	unload(c : Company, unloadAll : boolean) {
 		if(unloadAll) this.putCompStorageToCorp(c);
 		else this.unloadProduction(c);

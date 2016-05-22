@@ -433,6 +433,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     console.log("loading saved transaction list: ", save);
                     var sArr = [];
                     var tArr = [];
+                    var invArr = [];
                     for (var _i = 0, _a = save.list; _i < _a.length; _i++) {
                         var i = _a[_i];
                         var t = transactions_1.TransactionDeserialize(i);
@@ -443,6 +444,13 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                                 break;
                             case transactions_1.TransactionType.Transfer:
                                 tArr.push(t);
+                                break;
+                            case transactions_1.TransactionType.Invest:
+                                invArr.push(t);
+                                break;
+                            case transactions_1.TransactionType.ClearStorage:
+                                tArr.push(t);
+                                break;
                         }
                     }
                     // companies array
@@ -466,7 +474,8 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                             }
                         }
                     }
-                    iArr.push(fromCorporation);
+                    if (!!fromCorporation)
+                        iArr.push(fromCorporation);
                     if (!!this.onRemoveCompany)
                         this.onRemoveCompany.emit(cArr);
                     if (!!this.onRemoveItem)
@@ -474,7 +483,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     if (!!this.onRemoveTrade)
                         this.onRemoveTrade.emit(sArr);
                     if (!!this.onChangeInvestments)
-                        this.onChangeInvestments.emit([]);
+                        this.onChangeInvestments.emit(invArr);
                 };
                 /*
                   printTransactionInfo(t: BaseTransaction) {

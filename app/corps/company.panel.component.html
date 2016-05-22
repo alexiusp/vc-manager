@@ -10,7 +10,7 @@
   <span>&nbsp;{{company.name}}</span>&nbsp;
   <span *ngIf="detail.isLoading"><i class="fa fa-spinner fa-pulse"></i>Loading...</span>
   <span *ngIf="!detail.isLoading" class="label label-success">{{ detail?.item.vd_balance | vMoney }}</span>
-  <button  *ngIf="!detail.isLoading" type="button" class="btn btn-xs pull-right"
+  <button *ngIf="!detail.isLoading" type="button" class="btn btn-xs pull-right"
     [ngClass]="{'btn-default': !detail.isSelected, 'btn-primary' : detail.isSelected}"
     (click)="openCompany()">
     <i class="glyphicon" [ngClass]="{'glyphicon-menu-down': detail.isOpen, 'glyphicon-menu-right': !detail.isOpen}"></i>

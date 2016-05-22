@@ -12,6 +12,7 @@ import {
 	SellItemTransaction,
 	TransferItemTransaction,
 	ItemsTransaction,
+	ClearStorageTransaction,
 	TransactionDirection,
 	TransactionType,
 	TransactionDeserialize
@@ -377,7 +378,8 @@ export class SupplyListComponent implements OnInit {
 		this._init();
 		console.log("loading saved transaction list: ", save);
 		let sArr : SellItemTransaction[] = [];
-		let tArr : ItemsTransaction[] = [];
+		let tArr : ItemsPackageTransaction[] = [];
+		let invArr : InvestTransaction[] = [];
 		for(let i of save.list) {
 			let t : BaseTransaction = TransactionDeserialize(i);
 			console.log("parsed transaction", t);
@@ -387,6 +389,13 @@ export class SupplyListComponent implements OnInit {
 					break;
 				case TransactionType.Transfer:
 					tArr.push(<ItemsTransaction>t);
+					break;
+				case TransactionType.Invest:
+					invArr.push(<InvestTransaction>t);
+					break;
+				case TransactionType.ClearStorage:
+					tArr.push(<ClearStorageTransaction>t);
+					break;
 			}
 		}
 		// companies array
@@ -405,11 +414,11 @@ export class SupplyListComponent implements OnInit {
 				}
 			}
 		}
-		iArr.push(fromCorporation);
+		if(!!fromCorporation) iArr.push(fromCorporation);
 		if(!!this.onRemoveCompany) this.onRemoveCompany.emit(cArr);
     if(!!this.onRemoveItem) this.onRemoveItem.emit(iArr);
     if(!!this.onRemoveTrade) this.onRemoveTrade.emit(sArr);
-    if(!!this.onChangeInvestments) this.onChangeInvestments.emit([]);
+    if(!!this.onChangeInvestments) this.onChangeInvestments.emit(invArr);
 	}
 /*
   printTransactionInfo(t: BaseTransaction) {

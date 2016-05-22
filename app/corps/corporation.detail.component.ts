@@ -10,7 +10,9 @@ import {
 	TransactionDirection,
 	TransactionType,
 	SellItemTransaction,
+	ItemsPackageTransaction,
 	ItemsTransaction,
+	ClearStorageTransaction,
 	InvestTransaction
 } from './storage/transactions';
 import { CorporationService } from './corporation.service';
@@ -413,10 +415,11 @@ export class CorporationDetailComponent implements OnInit {
     let company = this.details[changeEvent.cId].item;
     let corp = this._corporationService.getCorporation(this.corpId);
 		let direction = TransactionDirection.FromCompany;
-		let transfer : ItemsTransaction = new ItemsTransaction(direction, company);
     //console.log("company", company);
     let sList = [];
     let tList = [];
+		let tItems = [];
+		let isTotal : boolean = true;
     for(let i of changeEvent.list) {
 			let item = i.item;
       if(i.isSell) {
@@ -433,12 +436,25 @@ export class CorporationDetailComponent implements OnInit {
         //console.log("sell transaction", s);
       }
       if(i.isTransfer) {
-				let amount = (!!(<StorageItem>i).amountTransfer) ? (<StorageItem>i).amountTransfer : i.item[0].total_quantity;
-				transfer.addItem({item:i.item,amount:amount});
+				let total = +i.item[0].total_quantity;
+				let amount = (!!(<StorageItem>i).amountTransfer) ? +((<StorageItem>i).amountTransfer) : +total;
+				if(total != amount) isTotal = false;
+				tItems.push({item:i.item,amount:amount});
       }
     }
-		if(transfer.items.length > 0) tList.push(transfer);
-    // copy all corporation storage items and company storage items from other companies
+		if(tItems.length > 0) {
+			let transfer : ItemsPackageTransaction;
+			// if full amount of all items must be transferred - its "clear storage"
+			if((tItems.length == changeEvent.list.length) && isTotal) {
+				transfer = new ItemsTransaction(direction, company);
+			} else {
+				transfer = new ClearStorageTransaction(direction, company);
+			}
+			transfer.addItems(tItems);
+			tList.push(transfer);
+		}
+    // copy all corporation storage items
+		// and company storage items from other companies
     if(!!this.tradeList) for(let t of this.tradeList) {
       if(t.direction == TransactionDirection.FromCorporation) sList.push(t);
       if((t.direction == TransactionDirection.FromCompany) && (t.business.id != changeEvent.cId)) sList.push(t);

@@ -22,6 +22,9 @@ System.register([], function(exports_1, context_1) {
             case TransactionType.Transfer:
                 result = ItemsTransaction.deserialize(input);
                 break;
+            case TransactionType.ClearStorage:
+                result = ClearStorageTransaction.deserialize(input);
+                break;
         }
         return result;
     }
@@ -94,6 +97,9 @@ System.register([], function(exports_1, context_1) {
                 });
                 ItemsPackageTransaction.prototype.addItem = function (item) {
                     this._items.push(item);
+                };
+                ItemsPackageTransaction.prototype.addItems = function (items) {
+                    this._items = this._items.concat(items);
                 };
                 ItemsPackageTransaction.prototype.removeItem = function (item) {
                     var iArr = [];
@@ -228,6 +234,7 @@ System.register([], function(exports_1, context_1) {
                 };
                 ClearStorageTransaction.deserialize = function (input) {
                     var obj = JSON.parse(input);
+                    // we don't need to deserialize items
                     return new ClearStorageTransaction(obj.direction, obj.business);
                 };
                 return ClearStorageTransaction;

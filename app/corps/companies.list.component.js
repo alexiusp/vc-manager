@@ -66,13 +66,6 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                 CompaniesListComponent.prototype.companyStorageChange = function (cId, list) {
                     if (!!this.details[cId])
                         this.details[cId].storage = list;
-                    /*
-                    let selected = false;
-                    for(let i of list) {
-                      if(i.isSelected) selected = true;
-                    }
-                    if(this.options[cId].isSelected != selected) this.selectOne(this.findCompanyById(cId));
-                    */
                     if (!!this.onChange)
                         this.onChange.emit({ cId: cId, list: list });
                 };
@@ -169,6 +162,7 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                     if (!!this.onInvest)
                         this.onInvest.emit({ cId: c.id, amount: +amount });
                 };
+                // handler for events from CompanyPanelComponent
                 CompaniesListComponent.prototype.unload = function (c, unloadAll) {
                     if (unloadAll)
                         this.putCompStorageToCorp(c);

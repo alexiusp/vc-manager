@@ -456,10 +456,11 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     var company = this.details[changeEvent.cId].item;
                     var corp = this._corporationService.getCorporation(this.corpId);
                     var direction = transactions_1.TransactionDirection.FromCompany;
-                    var transfer = new transactions_1.ItemsTransaction(direction, company);
                     //console.log("company", company);
                     var sList = [];
                     var tList = [];
+                    var tItems = [];
+                    var isTotal = true;
                     for (var _i = 0, _a = changeEvent.list; _i < _a.length; _i++) {
                         var i = _a[_i];
                         var item = i.item;
@@ -478,13 +479,27 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                             sList.push(s);
                         }
                         if (i.isTransfer) {
-                            var amount = (!!i.amountTransfer) ? i.amountTransfer : i.item[0].total_quantity;
-                            transfer.addItem({ item: i.item, amount: amount });
+                            var total = +i.item[0].total_quantity;
+                            var amount = (!!i.amountTransfer) ? +(i.amountTransfer) : +total;
+                            if (total != amount)
+                                isTotal = false;
+                            tItems.push({ item: i.item, amount: amount });
                         }
                     }
-                    if (transfer.items.length > 0)
+                    if (tItems.length > 0) {
+                        var transfer = void 0;
+                        // if full amount of all items must be transferred - its "clear storage"
+                        if ((tItems.length == changeEvent.list.length) && isTotal) {
+                            transfer = new transactions_1.ItemsTransaction(direction, company);
+                        }
+                        else {
+                            transfer = new transactions_1.ClearStorageTransaction(direction, company);
+                        }
+                        transfer.addItems(tItems);
                         tList.push(transfer);
-                    // copy all corporation storage items and company storage items from other companies
+                    }
+                    // copy all corporation storage items
+                    // and company storage items from other companies
                     if (!!this.tradeList)
                         for (var _d = 0, _e = this.tradeList; _d < _e.length; _d++) {
                             var t = _e[_d];
