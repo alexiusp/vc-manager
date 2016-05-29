@@ -300,11 +300,15 @@ export class CorporationDetailComponent implements OnInit {
     this.parseCompaniesTransactions(compList);
   }
 	_parseStorage(storage : StorageItem[], list : BaseTransaction[], direction : TransactionDirection)  : StorageItem[] {
+		console.log("_parseStorage:", storage, list);
 		let result : StorageItem[] = [];
+		// search for clear storage transactions
+		let isClear = false;
+		for(let i of list) if (i.type == TransactionType.ClearStorage) isClear = true;
 		for(let t of storage) {
 			let i = this.findItemTransaction(t, list, direction);
 			// if item is not found - its neither transfer nor sale active
-			t.isTransfer = false;
+			t.isTransfer = isClear;
 			t.isSell = false;
 			if(i !== -1) {
 				// get first transaction in list
@@ -353,9 +357,13 @@ export class CorporationDetailComponent implements OnInit {
   }
 	// actualises companies storage with given transactions list
   parseCompaniesTransactions(list : BaseTransaction[]) {
-    console.log("parseCompaniesTransactions", list);
+    //console.log("parseCompaniesTransactions", list);
     for(let c of this.corpInfo.companies) {
-			let cList = this._parseStorage(this.details[c.id].storage, list, TransactionDirection.FromCompany);
+			// filter list of transactions by company
+			let filteredList = [];
+			for(let i of list) if(i.business.id == c.id) filteredList.push(i);
+			// parse storage for items in transactions
+			let cList = this._parseStorage(this.details[c.id].storage, filteredList, TransactionDirection.FromCompany);
       this.companyStorageChange({ cId : c.id, list : cList });
     }
   }
@@ -446,9 +454,9 @@ export class CorporationDetailComponent implements OnInit {
 			let transfer : ItemsPackageTransaction;
 			// if full amount of all items must be transferred - its "clear storage"
 			if((tItems.length == changeEvent.list.length) && isTotal) {
-				transfer = new ItemsTransaction(direction, company);
-			} else {
 				transfer = new ClearStorageTransaction(direction, company);
+			} else {
+				transfer = new ItemsTransaction(direction, company);
 			}
 			transfer.addItems(tItems);
 			tList.push(transfer);

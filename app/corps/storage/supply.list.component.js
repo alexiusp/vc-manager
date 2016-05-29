@@ -161,7 +161,7 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                 };
                 ;
                 SupplyListComponent.prototype.removeTransfer = function (item, transaction) {
-                    //console.log("remove transfer", item, transaction);
+                    console.log("remove transfer", item, transaction, this._items);
                     // find transaction in list
                     var sIdx = -1;
                     for (var i in this._items) {
@@ -171,6 +171,12 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     if (sIdx > -1) {
                         // remove old transaction
                         this._items.splice(sIdx, 1);
+                        var newTrans = transaction;
+                        if (transaction.type == transactions_1.TransactionType.ClearStorage) {
+                            // convert ClearStorageTransaction to ItemsTransaction
+                            newTrans = new transactions_1.ItemsTransaction(transaction.direction, transaction.business);
+                            newTrans.addItems(transaction.items);
+                        }
                         //remove item from transaction
                         transaction.removeItem(item);
                         // if transaction has more items - add it back to list

@@ -118,11 +118,11 @@ export class ItemsPackageTransaction extends BaseTransaction {
 		return -1;
 	}
 	public isEqual(target : BaseTransaction) : boolean {
-		if(!super.isEqual(target)) return false;
+		let result = super.isEqual(target);
 		if(target instanceof ItemsTransaction) {
 			for(let t of target.items) if(!this.hasItem(t.item)) return false;
 			return true;
-		} else return false;
+		} else return result;
 	}
 	// compares only base properties without items
 	public isLike(target) : boolean {

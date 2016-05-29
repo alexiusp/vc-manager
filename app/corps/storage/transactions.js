@@ -145,8 +145,7 @@ System.register([], function(exports_1, context_1) {
                     return -1;
                 };
                 ItemsPackageTransaction.prototype.isEqual = function (target) {
-                    if (!_super.prototype.isEqual.call(this, target))
-                        return false;
+                    var result = _super.prototype.isEqual.call(this, target);
                     if (target instanceof ItemsTransaction) {
                         for (var _i = 0, _a = target.items; _i < _a.length; _i++) {
                             var t = _a[_i];
@@ -156,7 +155,7 @@ System.register([], function(exports_1, context_1) {
                         return true;
                     }
                     else
-                        return false;
+                        return result;
                 };
                 // compares only base properties without items
                 ItemsPackageTransaction.prototype.isLike = function (target) {

@@ -332,12 +332,20 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this.parseCompaniesTransactions(compList);
                 };
                 CorporationDetailComponent.prototype._parseStorage = function (storage, list, direction) {
+                    console.log("_parseStorage:", storage, list);
                     var result = [];
-                    for (var _i = 0, storage_1 = storage; _i < storage_1.length; _i++) {
-                        var t = storage_1[_i];
+                    // search for clear storage transactions
+                    var isClear = false;
+                    for (var _i = 0, list_2 = list; _i < list_2.length; _i++) {
+                        var i = list_2[_i];
+                        if (i.type == transactions_1.TransactionType.ClearStorage)
+                            isClear = true;
+                    }
+                    for (var _a = 0, storage_1 = storage; _a < storage_1.length; _a++) {
+                        var t = storage_1[_a];
                         var i = this.findItemTransaction(t, list, direction);
                         // if item is not found - its neither transfer nor sale active
-                        t.isTransfer = false;
+                        t.isTransfer = isClear;
                         t.isSell = false;
                         if (i !== -1) {
                             // get first transaction in list
@@ -386,10 +394,18 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                 };
                 // actualises companies storage with given transactions list
                 CorporationDetailComponent.prototype.parseCompaniesTransactions = function (list) {
-                    console.log("parseCompaniesTransactions", list);
+                    //console.log("parseCompaniesTransactions", list);
                     for (var _i = 0, _a = this.corpInfo.companies; _i < _a.length; _i++) {
                         var c = _a[_i];
-                        var cList = this._parseStorage(this.details[c.id].storage, list, transactions_1.TransactionDirection.FromCompany);
+                        // filter list of transactions by company
+                        var filteredList = [];
+                        for (var _b = 0, list_3 = list; _b < list_3.length; _b++) {
+                            var i = list_3[_b];
+                            if (i.business.id == c.id)
+                                filteredList.push(i);
+                        }
+                        // parse storage for items in transactions
+                        var cList = this._parseStorage(this.details[c.id].storage, filteredList, transactions_1.TransactionDirection.FromCompany);
                         this.companyStorageChange({ cId: c.id, list: cList });
                     }
                 };
@@ -399,8 +415,8 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     // split list by source business
                     var corpList = [];
                     var compList = [];
-                    for (var _i = 0, list_2 = list; _i < list_2.length; _i++) {
-                        var t = list_2[_i];
+                    for (var _i = 0, list_4 = list; _i < list_4.length; _i++) {
+                        var t = list_4[_i];
                         if (t.direction === transactions_1.TransactionDirection.FromCorporation) {
                             corpList.push(t);
                         }
@@ -441,8 +457,8 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         var c = _a[_i];
                         var d = this.details[c.id];
                         d.isSelected = false;
-                        for (var _b = 0, list_3 = list; _b < list_3.length; _b++) {
-                            var i = list_3[_b];
+                        for (var _b = 0, list_5 = list; _b < list_5.length; _b++) {
+                            var i = list_5[_b];
                             if (i.id == c.id)
                                 d.isSelected = true;
                         }
@@ -490,10 +506,10 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         var transfer = void 0;
                         // if full amount of all items must be transferred - its "clear storage"
                         if ((tItems.length == changeEvent.list.length) && isTotal) {
-                            transfer = new transactions_1.ItemsTransaction(direction, company);
+                            transfer = new transactions_1.ClearStorageTransaction(direction, company);
                         }
                         else {
-                            transfer = new transactions_1.ClearStorageTransaction(direction, company);
+                            transfer = new transactions_1.ItemsTransaction(direction, company);
                         }
                         transfer.addItems(tItems);
                         tList.push(transfer);

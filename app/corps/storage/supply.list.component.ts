@@ -115,16 +115,16 @@ export class SupplyListComponent implements OnInit {
     this.parseTransfer();
   }
   get companies() { return this._companies; }
-  private _items : ItemsTransaction[];
+  private _items : ItemsPackageTransaction[];
 	@Input('items')
-	set items(itemArr : ItemsTransaction[]) {
+	set items(itemArr : ItemsPackageTransaction[]) {
 		//console.log("set items", itemArr);
     this._items = itemArr;
     this.parseTransfer();
 	}
 	get items() { return this._items; }
   private toCompTransfer : ItemsTransaction;
-  private toCorpTransfer : ItemsTransaction[];
+  private toCorpTransfer : ItemsPackageTransaction[];
 	// parse items transaction array into two arrays
   parseTransfer() {
 		//console.log("parseTransfer", this._items);
@@ -145,8 +145,8 @@ export class SupplyListComponent implements OnInit {
 		this.checkEmptiness();
   };
   @Output('on-remove-item') onRemoveItem = new EventEmitter();
-  removeTransfer(item : IItemPackage, transaction : ItemsTransaction) {
-    //console.log("remove transfer", item, transaction);
+  removeTransfer(item : IItemPackage, transaction : ItemsPackageTransaction) {
+    console.log("remove transfer", item, transaction, this._items);
 		// find transaction in list
     let sIdx = -1;
     for(let i in this._items) {
@@ -155,6 +155,12 @@ export class SupplyListComponent implements OnInit {
     if(sIdx > -1) {
 			// remove old transaction
 			this._items.splice(sIdx, 1);
+			let newTrans = transaction;
+			if(transaction.type == TransactionType.ClearStorage) {
+				// convert ClearStorageTransaction to ItemsTransaction
+				newTrans = new ItemsTransaction(transaction.direction, transaction.business);
+				newTrans.addItems(transaction.items);
+			}
 			//remove item from transaction
 			transaction.removeItem(item);
 			// if transaction has more items - add it back to list
