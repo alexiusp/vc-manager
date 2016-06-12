@@ -174,7 +174,7 @@ export class CorporationDetailComponent implements OnInit {
 		this.companyFilter = filter;
 	}
   refresh(tList? : BaseBusiness[]) {
-    console.log("refresh:", tList);
+    //console.log("refresh:", tList);
     this.resetLists();
 		if(!!tList) {
       this.loadCorpInfo();
@@ -277,7 +277,7 @@ export class CorporationDetailComponent implements OnInit {
   }
 	// trade list change event handler
   tradeChange(list : SellItemTransaction[]) {
-    console.log("tradeChange", list)
+    //console.log("tradeChange", list)
     // parse changed list
     let corpList = [];
     let compList = [];
@@ -300,7 +300,7 @@ export class CorporationDetailComponent implements OnInit {
     this.parseCompaniesTransactions(compList);
   }
 	_parseStorage(storage : StorageItem[], list : BaseTransaction[], direction : TransactionDirection)  : StorageItem[] {
-		console.log("_parseStorage:", storage, list);
+		//console.log("_parseStorage:", storage, list);
 		let result : StorageItem[] = [];
 		// search for clear storage transactions
 		let isClear = false;
@@ -369,7 +369,7 @@ export class CorporationDetailComponent implements OnInit {
   }
 	// transfer list change event handler
   transferChange(list : ItemsTransaction[]) {
-    console.log("transferChange:", list);
+    //console.log("transferChange:", list);
 		// split list by source business
     let corpList = [];
     let compList = [];
@@ -498,7 +498,8 @@ export class CorporationDetailComponent implements OnInit {
   investmentsChange(list : InvestTransaction[]) {
     // TODO: implement investments list change event handler
 		// will be needed if we will save the investment amount in companies list
-    console.log("not implemented investmentsChange", list);
+    //console.log("investmentsChange", list);
+		this.investList = list;
   }
   findPos(obj) {
     let curtop = 0;

@@ -199,7 +199,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this.companyFilter = filter;
                 };
                 CorporationDetailComponent.prototype.refresh = function (tList) {
-                    console.log("refresh:", tList);
+                    //console.log("refresh:", tList);
                     this.resetLists();
                     if (!!tList) {
                         this.loadCorpInfo();
@@ -305,7 +305,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                 };
                 // trade list change event handler
                 CorporationDetailComponent.prototype.tradeChange = function (list) {
-                    console.log("tradeChange", list);
+                    //console.log("tradeChange", list)
                     // parse changed list
                     var corpList = [];
                     var compList = [];
@@ -332,7 +332,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this.parseCompaniesTransactions(compList);
                 };
                 CorporationDetailComponent.prototype._parseStorage = function (storage, list, direction) {
-                    console.log("_parseStorage:", storage, list);
+                    //console.log("_parseStorage:", storage, list);
                     var result = [];
                     // search for clear storage transactions
                     var isClear = false;
@@ -411,7 +411,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                 };
                 // transfer list change event handler
                 CorporationDetailComponent.prototype.transferChange = function (list) {
-                    console.log("transferChange:", list);
+                    //console.log("transferChange:", list);
                     // split list by source business
                     var corpList = [];
                     var compList = [];
@@ -561,7 +561,8 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                 CorporationDetailComponent.prototype.investmentsChange = function (list) {
                     // TODO: implement investments list change event handler
                     // will be needed if we will save the investment amount in companies list
-                    console.log("not implemented investmentsChange", list);
+                    //console.log("investmentsChange", list);
+                    this.investList = list;
                 };
                 CorporationDetailComponent.prototype.findPos = function (obj) {
                     var curtop = 0;

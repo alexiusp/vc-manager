@@ -161,13 +161,14 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                 };
                 ;
                 SupplyListComponent.prototype.removeTransfer = function (item, transaction) {
-                    console.log("remove transfer", item, transaction, this._items);
+                    //console.log("remove transfer", item, transaction, this._items);
                     // find transaction in list
                     var sIdx = -1;
                     for (var i in this._items) {
                         if (transaction.isEqual(this._items[i]))
                             sIdx = +i;
                     }
+                    //console.log("transaction to remove", sIdx);
                     if (sIdx > -1) {
                         // remove old transaction
                         this._items.splice(sIdx, 1);
@@ -178,10 +179,10 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                             newTrans.addItems(transaction.items);
                         }
                         //remove item from transaction
-                        transaction.removeItem(item);
+                        newTrans.removeItem(item);
                         // if transaction has more items - add it back to list
-                        if (transaction.items.length > 0)
-                            this._items.push(transaction);
+                        if (newTrans.items.length > 0)
+                            this._items.push(newTrans);
                         this.checkEmptiness();
                         this.checkTransfer();
                         if (!!this.onRemoveItem)
@@ -436,14 +437,14 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                 };
                 SupplyListComponent.prototype.load = function (save) {
                     this._init();
-                    console.log("loading saved transaction list: ", save);
+                    //console.log("loading saved transaction list: ", save);
                     var sArr = [];
                     var tArr = [];
                     var invArr = [];
                     for (var _i = 0, _a = save.list; _i < _a.length; _i++) {
                         var i = _a[_i];
                         var t = transactions_1.TransactionDeserialize(i);
-                        console.log("parsed transaction", t);
+                        //console.log("parsed transaction", t);
                         switch (t.type) {
                             case transactions_1.TransactionType.Trade:
                                 sArr.push(t);

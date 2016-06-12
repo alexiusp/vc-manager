@@ -146,12 +146,13 @@ export class SupplyListComponent implements OnInit {
   };
   @Output('on-remove-item') onRemoveItem = new EventEmitter();
   removeTransfer(item : IItemPackage, transaction : ItemsPackageTransaction) {
-    console.log("remove transfer", item, transaction, this._items);
+    //console.log("remove transfer", item, transaction, this._items);
 		// find transaction in list
     let sIdx = -1;
     for(let i in this._items) {
 			if(transaction.isEqual(this._items[i])) sIdx = +i;
     }
+		//console.log("transaction to remove", sIdx);
     if(sIdx > -1) {
 			// remove old transaction
 			this._items.splice(sIdx, 1);
@@ -162,9 +163,9 @@ export class SupplyListComponent implements OnInit {
 				newTrans.addItems(transaction.items);
 			}
 			//remove item from transaction
-			transaction.removeItem(item);
+			newTrans.removeItem(item);
 			// if transaction has more items - add it back to list
-			if(transaction.items.length > 0) this._items.push(transaction);
+			if(newTrans.items.length > 0) this._items.push(newTrans);
       this.checkEmptiness();
       this.checkTransfer();
       if(!!this.onRemoveItem) this.onRemoveItem.emit(this._items);
@@ -382,13 +383,13 @@ export class SupplyListComponent implements OnInit {
 	}
 	load(save: any) {
 		this._init();
-		console.log("loading saved transaction list: ", save);
+		//console.log("loading saved transaction list: ", save);
 		let sArr : SellItemTransaction[] = [];
 		let tArr : ItemsPackageTransaction[] = [];
 		let invArr : InvestTransaction[] = [];
 		for(let i of save.list) {
 			let t : BaseTransaction = TransactionDeserialize(i);
-			console.log("parsed transaction", t);
+			//console.log("parsed transaction", t);
 			switch(t.type) {
 				case TransactionType.Trade:
 					sArr.push(<SellItemTransaction>t);
