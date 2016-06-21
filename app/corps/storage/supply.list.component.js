@@ -278,10 +278,11 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     var tList = this.compileTransactions();
                     // calculate the number of operations for progress bar
                     var tNum = tList.length;
+                    //console.log("compiled transactions:", tList, tNum);
                     this.initProgress(tNum);
                     // go through transactions
                     var _loop_1 = function(t) {
-                        //console.log("Transaction:", t);
+                        console.log("Transaction:", t);
                         // add business to refresh list
                         this_1.addBusiness(t.business);
                         // add loading counter
@@ -314,13 +315,24 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                                 }
                                 break;
                             case transactions_1.TransactionType.ClearStorage:
-                                // TODO: implement
+                                if (t instanceof transactions_1.ClearStorageTransaction) {
+                                    for (var _i = 0, _a = t.items; _i < _a.length; _i++) {
+                                        var i = _a[_i];
+                                        this_1._corporationService.moveItemToCorporation(t.business.id, i.item.ItemType.id, +i.amount)
+                                            .subscribe(function (res) {
+                                            _this._coreService.isLoading = false;
+                                            _this.parseErrors(t, res);
+                                            //console.log("transfer item to corporation result:",res);
+                                            _this.incrementProgress();
+                                        });
+                                    }
+                                }
                                 break;
                             case transactions_1.TransactionType.Transfer:
                                 if (t instanceof transactions_1.ItemsTransaction) {
                                     if (t.direction === transactions_1.TransactionDirection.FromCompany) {
-                                        for (var _i = 0, _a = t.items; _i < _a.length; _i++) {
-                                            var i = _a[_i];
+                                        for (var _b = 0, _c = t.items; _b < _c.length; _b++) {
+                                            var i = _c[_b];
                                             this_1._corporationService.moveItemToCorporation(t.business.id, i.item.ItemType.id, +i.amount)
                                                 .subscribe(function (res) {
                                                 _this._coreService.isLoading = false;
@@ -332,8 +344,8 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                                     }
                                     else {
                                         var items = [];
-                                        for (var _b = 0, _c = t.items; _b < _c.length; _b++) {
-                                            var i = _c[_b];
+                                        for (var _d = 0, _e = t.items; _d < _e.length; _d++) {
+                                            var i = _e[_d];
                                             items.push({ id: i.item.ItemType.id, amount: i.amount });
                                         }
                                         this_1._corporationService.moveItemsToCompany(t.business.id, items)
@@ -357,8 +369,8 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                         }
                     };
                     var this_1 = this;
-                    for (var _d = 0, tList_1 = tList; _d < tList_1.length; _d++) {
-                        var t = tList_1[_d];
+                    for (var _f = 0, tList_1 = tList; _f < tList_1.length; _f++) {
+                        var t = tList_1[_f];
                         _loop_1(t);
                     }
                 };

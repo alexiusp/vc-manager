@@ -10,7 +10,6 @@ import {
 	BaseTransaction,
 	InvestTransaction,
 	SellItemTransaction,
-	TransferItemTransaction,
 	ItemsTransaction,
 	ClearStorageTransaction,
 	TransactionDirection,
@@ -240,10 +239,11 @@ export class SupplyListComponent implements OnInit {
 		let tList = this.compileTransactions();
 		// calculate the number of operations for progress bar
 		let tNum = tList.length;
+		//console.log("compiled transactions:", tList, tNum);
 		this.initProgress(tNum);
 		// go through transactions
 		for(let t of tList) {
-			//console.log("Transaction:", t);
+			console.log("Transaction:", t);
 			// add business to refresh list
 			this.addBusiness(t.business);
 			// add loading counter
@@ -276,7 +276,16 @@ export class SupplyListComponent implements OnInit {
 					}
 					break;
 				case TransactionType.ClearStorage:
-					// TODO: implement
+					if(t instanceof ClearStorageTransaction) {
+						for(let i of t.items)
+							this._corporationService.moveItemToCorporation(t.business.id, i.item.ItemType.id, +i.amount)
+							.subscribe((res:ResultMessage[]) => {
+								this._coreService.isLoading = false;
+								this.parseErrors(t, res);
+								//console.log("transfer item to corporation result:",res);
+								this.incrementProgress();
+							});
+					}
 					break;
 				case TransactionType.Transfer:
 					if(t instanceof ItemsTransaction) {

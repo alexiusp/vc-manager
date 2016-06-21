@@ -6,7 +6,7 @@ System.register([], function(exports_1, context_1) {
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var TransactionType, TransactionDirection, BaseTransaction, ItemsPackageTransaction, ItemsTransaction, ClearStorageTransaction, TransferItemTransaction, InvestTransaction, SellItemTransaction;
+    var TransactionType, TransactionDirection, BaseTransaction, ItemsPackageTransaction, ItemsTransaction, ClearStorageTransaction, InvestTransaction, SellItemTransaction;
     function TransactionDeserialize(input) {
         var obj = JSON.parse(input);
         if (obj.type === undefined)
@@ -240,32 +240,28 @@ System.register([], function(exports_1, context_1) {
             }(ItemsPackageTransaction));
             exports_1("ClearStorageTransaction", ClearStorageTransaction);
             // single item transfer transaction - DEPRECATED
-            TransferItemTransaction = (function (_super) {
-                __extends(TransferItemTransaction, _super);
-                function TransferItemTransaction(amount, item, direction, business) {
-                    _super.call(this, TransactionType.Transfer, direction, business);
-                    this.amount = amount;
-                    this.item = item;
+            /*
+            export class TransferItemTransaction extends BaseTransaction implements ICountableTransaction, IItemTransaction {
+                constructor(public amount	: number,
+                    public item    : BaseStorageElement,
+                    direction	: TransactionDirection,
+                    business	: BaseBusiness) {
+                    super(TransactionType.Transfer, direction, business);
                 }
-                TransferItemTransaction.prototype.isEqual = function (target) {
-                    if (!_super.prototype.isEqual.call(this, target))
-                        return false;
-                    if (target instanceof TransferItemTransaction) {
-                        if (this.item.ItemType.id !== target.item.ItemType.id)
-                            return false;
+                public isEqual(target : BaseTransaction) : boolean {
+                    if(!super.isEqual(target)) return false;
+                    if(target instanceof TransferItemTransaction) {
+                        if(this.item.ItemType.id !== target.item.ItemType.id) return false;
                         return true;
-                    }
-                    else
-                        return false;
-                };
-                TransferItemTransaction.prototype.getTitle = function () {
-                    var source = (this.direction === TransactionDirection.FromCompany) ? this.business.name : "Corporation";
-                    var target = (this.direction === TransactionDirection.FromCorporation) ? this.business.name : "Corporation";
-                    return _super.prototype.getTitle.call(this) + "Transfer of " + this.amount + " " + this.item.ItemType.name + " from " + source + " to " + target;
-                };
-                return TransferItemTransaction;
-            }(BaseTransaction));
-            exports_1("TransferItemTransaction", TransferItemTransaction);
+                    } else return false;
+                }
+                public getTitle() : string {
+                    let source = (this.direction === TransactionDirection.FromCompany) ? this.business.name : "Corporation";
+                    let target = (this.direction === TransactionDirection.FromCorporation) ? this.business.name : "Corporation";
+                    return super.getTitle() + "Transfer of " + this.amount + " " + this.item.ItemType.name + " from " + source + " to " + target;
+                }
+            }
+            */
             InvestTransaction = (function (_super) {
                 __extends(InvestTransaction, _super);
                 function InvestTransaction(money, direction, business) {

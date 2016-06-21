@@ -200,6 +200,7 @@ export class ClearStorageTransaction extends ItemsPackageTransaction {
 
 }
 // single item transfer transaction - DEPRECATED
+/*
 export class TransferItemTransaction extends BaseTransaction implements ICountableTransaction, IItemTransaction {
 	constructor(public amount	: number,
 		public item    : BaseStorageElement,
@@ -220,6 +221,7 @@ export class TransferItemTransaction extends BaseTransaction implements ICountab
 		return super.getTitle() + "Transfer of " + this.amount + " " + this.item.ItemType.name + " from " + source + " to " + target;
 	}
 }
+*/
 export class InvestTransaction extends BaseTransaction implements IMoneyTransaction {
 	constructor(public money	: number,
 		direction	: TransactionDirection,
