@@ -1,11 +1,14 @@
 'use strict';
 var http = require('http');
+var _requestDelay = 100;//ms
+var _inProgress = false;
 
 const requestType = {
   GET: "GET",
   POST: "POST"
 };
-var _request = function(type, path, body, cookies, callback) {
+
+var _request = function(conf) {//conf : type, path, body, cookies, callback
   let headers = {
     'Content-Type': 'application/x-www-form-urlencoded',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -14,14 +17,14 @@ var _request = function(type, path, body, cookies, callback) {
     'Referer': 'http://api.vircities.com/app/index.html',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'
   };
-  if(!!body && body.length > 0) headers['Content-Length'] = body.length;
-  //console.log("_request cookies:", JSON.stringify(cookies));
-  if(!!cookies && cookies.length > 0) headers['Cookie'] = cookies.join('; ');
+  if(!!conf.body && conf.body.length > 0) headers['Content-Length'] = conf.body.length;
+  //console.log("_request cookies:", JSON.stringify(conf.cookies));
+  if(!!conf.cookies && conf.cookies.length > 0) headers['Cookie'] = conf.cookies.join('; ');
   let options = {
     hostname: 'api.vircities.com',
     port: 80,
-    path: path,
-    method: type,
+    path: conf.path,
+    method: conf.type,
     headers: headers
   };
   let req = http.request(options, (res) => {
@@ -43,7 +46,8 @@ var _request = function(type, path, body, cookies, callback) {
         result.debug = dataString;
         result.statusCode = 8;
       }
-      callback(result);
+			_inProgress = false;
+      conf.callback(result);
     })
   });
   req.on('error', (e) => {
@@ -53,15 +57,44 @@ var _request = function(type, path, body, cookies, callback) {
       message : e.message
     };
     result.statusCode = 400;
+		_inProgress = false;
   });
-  if(body !== undefined) {
-    req.write(body);
+  if(conf.body !== undefined) {
+    req.write(conf.body);
   }
   req.end();
 }
+var getConfig = function(type, path, body, cookies, callback) {
+	return {
+		"type" : type,
+		"path" : path,
+		"body" : body,
+		"cookies" : cookies,
+		"callback" : callback
+	};
+}
+var requestQueue = [];
+
+var requestHandler = function() {
+	if(!_inProgress) {
+		if(requestQueue.length > 0) {
+			_inProgress = true;
+			let conf = requestQueue.shift();
+			_request(conf);
+		}
+	} else {
+		setTimeout(requestHandler, _requestDelay);
+	}
+}
+var putRequestToQueue = function(conf) {
+	requestQueue.push(conf);
+	requestHandler();
+}
 exports.get = function(path, cookiesArr, callback) {
-  _request(requestType.GET, path, undefined, cookiesArr, callback);
+	let c = getConfig(requestType.GET, path, undefined, cookiesArr, callback);
+  putRequestToQueue(c);
 }
 exports.post = function(path, postBody, cookiesArr, callback) {
-  _request(requestType.POST, path, postBody, cookiesArr, callback);
+	let c = getConfig(requestType.POST, path, postBody, cookiesArr, callback);
+	putRequestToQueue(c);
 }
