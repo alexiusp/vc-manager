@@ -223,15 +223,15 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     if (!!this.onChangeInvestments)
                         this.onChangeInvestments.emit(list);
                 };
-                SupplyListComponent.prototype.addBusiness = function (b) {
+                SupplyListComponent.prototype.addBusiness = function (c) {
                     if (!this.businessesToRefresh)
                         this.businessesToRefresh = [];
                     for (var _i = 0, _a = this.businessesToRefresh; _i < _a.length; _i++) {
-                        var c = _a[_i];
+                        var b = _a[_i];
                         if (b.id == c.id)
                             return;
                     }
-                    this.businessesToRefresh.push(b);
+                    this.businessesToRefresh.push(c);
                 };
                 SupplyListComponent.prototype.findBusiness = function (b, list) {
                     for (var i in list) {
@@ -282,9 +282,10 @@ System.register(['angular2/core', '../../core/core.service', '../../messages/mes
                     this.initProgress(tNum);
                     // go through transactions
                     var _loop_1 = function(t) {
-                        console.log("Transaction:", t);
+                        //console.log("Transaction:", t);
                         // add business to refresh list
-                        this_1.addBusiness(t.business);
+                        if (!!t.business.manager_id)
+                            this_1.addBusiness(t.business);
                         // add loading counter
                         this_1._coreService.isLoading = true;
                         switch (t.type) {

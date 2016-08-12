@@ -141,7 +141,7 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         _this._coreService.isLoading = false;
                     });
                 };
-                CorporationDetailComponent.prototype.loadCorpInfo = function () {
+                CorporationDetailComponent.prototype.loadCorpInfo = function (cList) {
                     var _this = this;
                     this.loadCorpDetail(function () {
                         _this.loadCorpStorage();
@@ -161,17 +161,25 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                                     _this._detailsCopied = true;
                                 }
                             });
-                            for (var _i = 0, _a = _this.corpInfo.companies; _i < _a.length; _i++) {
-                                var c = _a[_i];
-                                // load company info always for the first time
-                                if (!_this.details[c.id])
+                            if (!!cList) {
+                                for (var _i = 0, cList_1 = cList; _i < cList_1.length; _i++) {
+                                    var c = cList_1[_i];
                                     _this.loadCompanyInfo(c);
-                                else {
-                                    // check if the filter is set
-                                    var f = _this.companyFilter || "all";
-                                    //console.log("companies load:", c, f);
-                                    if (f == "all" || c.type == f)
+                                }
+                            }
+                            else {
+                                for (var _a = 0, _b = _this.corpInfo.companies; _a < _b.length; _a++) {
+                                    var c = _b[_a];
+                                    // load company info always for the first time
+                                    if (!_this.details[c.id])
                                         _this.loadCompanyInfo(c);
+                                    else {
+                                        // check if the filter is set
+                                        var f = _this.companyFilter || "all";
+                                        //console.log("companies load:", c, f);
+                                        if (f == "all" || c.type == f)
+                                            _this.loadCompanyInfo(c);
+                                    }
                                 }
                             }
                         }
@@ -198,18 +206,10 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     //console.log("setFilter:", filter);
                     this.companyFilter = filter;
                 };
-                CorporationDetailComponent.prototype.refresh = function (tList) {
-                    //console.log("refresh:", tList);
+                CorporationDetailComponent.prototype.refresh = function (cList) {
+                    console.log("refresh:", cList);
                     this.resetLists();
-                    if (!!tList) {
-                        this.loadCorpInfo();
-                        for (var _i = 0, tList_1 = tList; _i < tList_1.length; _i++) {
-                            var b = tList_1[_i];
-                        }
-                    }
-                    else {
-                        this.loadCorpInfo();
-                    }
+                    this.loadCorpInfo(cList);
                 };
                 CorporationDetailComponent.prototype.resetLists = function () {
                     this.tradeList = [];

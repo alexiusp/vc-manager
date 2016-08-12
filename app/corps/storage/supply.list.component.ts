@@ -3,7 +3,11 @@ import {Component, Input, EventEmitter, Output, OnInit} from 'angular2/core';
 import { CoreService } from '../../core/core.service';
 import { MessagesService } from '../../messages/messages.service';
 import {BaseStorageElement} from './contracts';
-import {BaseBusiness, Company, CompanyDetail } from '../contracts';
+import {
+	BaseBusiness,
+	Company,
+	CompanyDetail
+} from '../contracts';
 import {
 	IItemPackage,
 	ItemsPackageTransaction,
@@ -202,11 +206,11 @@ export class SupplyListComponent implements OnInit {
   /*
   footer handlers
   */
-	private businessesToRefresh : BaseBusiness[];
-	addBusiness(b : BaseBusiness) {
+	private businessesToRefresh : Company[];
+	addBusiness(c : Company) {
 		if(!this.businessesToRefresh) this.businessesToRefresh = [];
-		for(let c of this.businessesToRefresh) if(b.id == c.id) return;
-		this.businessesToRefresh.push(b);
+		for(let b of this.businessesToRefresh) if(b.id == c.id) return;
+		this.businessesToRefresh.push(c);
 	}
 	findBusiness(b : BaseBusiness, list : ItemsTransaction[]) : number {
 		for(let i in list) {
@@ -243,9 +247,9 @@ export class SupplyListComponent implements OnInit {
 		this.initProgress(tNum);
 		// go through transactions
 		for(let t of tList) {
-			console.log("Transaction:", t);
+			//console.log("Transaction:", t);
 			// add business to refresh list
-			this.addBusiness(t.business);
+			if(!!(<Company>t.business).manager_id) this.addBusiness(<Company>t.business);
 			// add loading counter
 			this._coreService.isLoading = true;
 			switch(t.type) {

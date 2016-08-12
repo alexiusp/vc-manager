@@ -120,7 +120,7 @@ export class CorporationDetailComponent implements OnInit {
 			});
 	}
   private _detailsCopied;
-  loadCorpInfo() {
+  loadCorpInfo(cList? : Company[]) {
 		this.loadCorpDetail(() => {
 			this.loadCorpStorage();
 			if(!!this.corpInfo.is_manager) {
@@ -138,16 +138,22 @@ export class CorporationDetailComponent implements OnInit {
             this._detailsCopied = true;
           }
         });
-        for(let c of this.corpInfo.companies) {
-					// load company info always for the first time
-					if(!this.details[c.id]) this.loadCompanyInfo(c);
-					else {
-						// check if the filter is set
-						let f = this.companyFilter || "all";
-						//console.log("companies load:", c, f);
-						if(f == "all" || c.type == f) this.loadCompanyInfo(c);
+				if(!!cList) {
+					for(let c of cList) {
+						this.loadCompanyInfo(c);
 					}
-			  }
+				} else {
+					for(let c of this.corpInfo.companies) {
+						// load company info always for the first time
+						if(!this.details[c.id]) this.loadCompanyInfo(c);
+						else {
+							// check if the filter is set
+							let f = this.companyFilter || "all";
+							//console.log("companies load:", c, f);
+							if(f == "all" || c.type == f) this.loadCompanyInfo(c);
+						}
+				  }
+				}
       }
 		});
   }
@@ -173,17 +179,10 @@ export class CorporationDetailComponent implements OnInit {
 		//console.log("setFilter:", filter);
 		this.companyFilter = filter;
 	}
-  refresh(tList? : BaseBusiness[]) {
-    //console.log("refresh:", tList);
+  refresh(cList? : Company[]) {
+    console.log("refresh:", cList);
     this.resetLists();
-		if(!!tList) {
-      this.loadCorpInfo();
-      for(let b of tList) {
-        // TODO: implement!
-      }
-		} else {
-	    this.loadCorpInfo();
-		}
+		this.loadCorpInfo(cList);
   }
   resetLists() {
     this.tradeList = [];
