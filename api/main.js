@@ -363,7 +363,7 @@ var getFile = function(url) {
     defaultEncoding: 'binary'
   }).on('error', function(err) {
     // bypassing errors
-    console.log("image creating error:", err.message);
+    //console.log("image creating error:", err.message);
   });
   var request = http.get("http://api.vircities.com"+url, function(response) {
     response.pipe(file);

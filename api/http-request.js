@@ -1,6 +1,6 @@
 'use strict';
 var http = require('http');
-var _requestDelay = 100;//ms
+var _requestDelay = 200;//ms
 var _inProgress = false;
 
 const requestType = {
@@ -9,6 +9,7 @@ const requestType = {
 };
 
 var _request = function(conf) {//conf : type, path, body, cookies, callback
+  console.log("making request", conf.path);
   let headers = {
     'Content-Type': 'application/x-www-form-urlencoded',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -83,10 +84,14 @@ var requestHandler = function() {
 			_request(conf);
 		}
 	} else {
-		setTimeout(requestHandler, _requestDelay);
+		setTimeout(function() {
+      console.log("http-request.requestHandler timeout. is in progress:", _inProgress);
+      requestHandler();
+    }, _requestDelay);
 	}
 }
 var putRequestToQueue = function(conf) {
+  console.log("http-request.putRequestToQueue:", conf.path);
 	requestQueue.push(conf);
 	requestHandler();
 }
