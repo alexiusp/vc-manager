@@ -67,7 +67,7 @@
   </div>
 </div>
 <div class="row" *ngIf="!!corpInfo">
-  <div class="col-sm-6">
+  <div class="col-xs-12 col-sm-7">
     <companies-list
       [companies]="corpInfo.companies"
       [details]="details"
@@ -80,7 +80,7 @@
       >
     </companies-list>
   </div>
-  <div class="col-sm-6">
+  <div class="col-xs-12 col-sm-5">
     <corporation-storage
       [items]="corpStorage"
       (on-change)="storageChange($event)"

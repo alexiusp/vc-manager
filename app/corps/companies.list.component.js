@@ -240,6 +240,17 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                                 this.invest(c, +amount);
                         }
                 };
+                CompaniesListComponent.prototype.clearFunds = function () {
+                    if (!this.loading)
+                        for (var _i = 0, _a = this.companies; _i < _a.length; _i++) {
+                            var c = _a[_i];
+                            if (this.details[c.id].isSelected) {
+                                var amount = +(this.details[c.id].item.vd_balance);
+                                if (amount > 0)
+                                    this.invest(c, amount);
+                            }
+                        }
+                };
                 CompaniesListComponent.prototype.scroll = function () {
                     if (!!this.onScroll)
                         this.onScroll.emit(null);

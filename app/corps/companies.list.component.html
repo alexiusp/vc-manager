@@ -16,7 +16,7 @@
     </li>
     <li class="list-group-item" *ngIf="is_manager">
       <div class="row">
-        <div class="col-sm-12 col-md-2">
+        <div class="col-sm-12 col-md-6">
           <div class="dropdown" [ngClass]="{'open': !!filterDropdownOpen}">
             <button type="button"
               class="btn btn-default btn-sm btn-block dropdown-toggle"
@@ -35,8 +35,10 @@
             </ul>
           </div>
         </div>
-        <div class="col-sm-12 col-md-5">
-					<div class="btn-group btn-group-sm btn-group-justified" role="group">
+        <div class="col-sm-12 col-md-6">
+					<div class="btn-group btn-group-sm btn-group-justified"
+            role="group"
+            aria-label="Storage operations">
 						<div class="btn-group" role="group">
 		          <button type="button"
                 class="btn btn-primary"
@@ -55,25 +57,41 @@
 						</div>
 					</div>
         </div>
-        <div class="col-sm-12 col-md-5">
-          <div class="input-group input-group-sm">
-            <span class="input-group-btn">
+      </div>
+    </li>
+    <li class="list-group-item" *ngIf="is_manager">
+      <div class="row">
+        <div class="col-sm-6">
+          <input type="number" class="form-control input-sm" placeholder="Investment" #addFundAmount (keyup)="0"/>
+        </div>
+        <div class="col-sm-6">
+          <div class="btn-group btn-group-sm btn-group-justified"
+            role="group"
+            aria-label="Funds operations">
+            <div class="btn-group" role="group">
               <button class="btn btn-warning"
                 type="button"
                 [ngClass]="{'disabled': loading}"
                 (click)="addFundsToAll(-addFundAmount.value);addFundAmount.value = ''">
                 <i class="glyphicon glyphicon-minus"></i>&nbsp;Take
               </button>
-            </span>
-            <input type="number" class="form-control" placeholder="Investment" #addFundAmount (keyup)="0"/>
-            <span class="input-group-btn">
+            </div>
+            <div class="btn-group" role="group">
               <button class="btn btn-success"
                 type="button"
                 [ngClass]="{'disabled': loading}"
                 (click)="addFundsToAll(+addFundAmount.value);addFundAmount.value = ''">
                 <i class="glyphicon glyphicon-plus"></i>&nbsp;Invest
               </button>
-            </span>
+            </div>
+            <div class="btn-group" role="group">
+              <button class="btn btn-danger"
+                type="button"
+                [ngClass]="{'disabled': loading}"
+                (click)="clearFunds()">
+                <i class="glyphicon glyphicon-remove"></i>&nbsp;Clear
+              </button>
+            </div>
           </div>
         </div>
       </div>

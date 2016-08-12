@@ -190,6 +190,12 @@ export class CompaniesListComponent {
 		//console.log("addFundsToAll", amount);
     if(!this.loading) for(let c of this.companies) if(this.details[c.id].isSelected) this.invest(c, +amount);
   }
+  clearFunds() {
+    if(!this.loading) for(let c of this.companies) if(this.details[c.id].isSelected) {
+      let amount = +(this.details[c.id].item.vd_balance);
+      if(amount > 0) this.invest(c, amount);
+    }
+  }
   @Output('on-scroll') onScroll = new EventEmitter();
   scroll() {
     if(!!this.onScroll) this.onScroll.emit(null);
