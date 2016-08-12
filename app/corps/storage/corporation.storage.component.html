@@ -13,10 +13,7 @@
     </div>
     <div class="list-group-item" *ngIf="!!items">
       <div class="row">
-        <div class="col-sm-6">
-          <button type="button" class="btn btn-success btn-sm btn-block disabled" disabled="true">Buy goods</button>
-        </div>
-        <div class="col-sm-6">
+        <div class="col-sm-12">
           <div class="dropdown" [ngClass]="{'open': !!filterDropdownOpen}">
             <button type="button" class="btn btn-default btn-sm btn-block dropdown-toggle" (click)="toggleFilter()">
               {{filterTitle}}&nbsp;
