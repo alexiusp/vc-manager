@@ -247,7 +247,7 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                             if (this.details[c.id].isSelected) {
                                 var amount = +(this.details[c.id].item.vd_balance);
                                 if (amount > 0)
-                                    this.invest(c, amount);
+                                    this.invest(c, -amount);
                             }
                         }
                 };
