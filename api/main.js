@@ -24,40 +24,49 @@ exports.init = function(xpress) {
     var user = req.body;
     var api = require('./login');
     api.login(user, (result) => {
+			console.log("login result:", result);
       var cookiesArr = result.headers['set-cookie'];
       req.session.remoteCookies = cookiesArr;
       if(result.statusCode == 200) {
         api.getUserInfo(cookiesArr, (result) => {
-          let a = result.data;
-          let b = a.user.User;
-          let c = a.user.UserLevel;
-          if(!!b.avatar_img) parseAvatar(b.avatar_img);
-          let answer = {
-            id          : b.id,
-            avatar      : b.avatar,
-            avatar_img  : b.avatar_img,
-            username    : b.username,
-            vd_balance  : b.vd_balance,
-            vg_balance  : b.vg_balance,
-            max_health  : b.max_health,
-            health      : b.health,
-            energy      : b.energy,
-            max_energy  : b.max_energy,
-            prestige    : b.prestige,
-            city_id     : b.city_id,
-            last_up_energy        : b.last_up_energy,
-            delta_recovery_energy : b.delta_recovery_energy,
-            military_rank         : b.military_rank,
-            military_rank_img     : b.military_rank_img,
-            level               : c.level,
-            xp                  : c.xp,
-            nextLevelExperience : c.nextLevelExperience
-          };
-          res.json({
-            data    :answer,
-            error   :0,
-            message :""
-          });
+					if(result.statusCode == 200) {
+	          let a = result.data;
+	          let b = a.user.User;
+	          let c = a.user.UserLevel;
+	          if(!!b.avatar_img) parseAvatar(b.avatar_img);
+	          let answer = {
+	            id          : b.id,
+	            avatar      : b.avatar,
+	            avatar_img  : b.avatar_img,
+	            username    : b.username,
+	            vd_balance  : b.vd_balance,
+	            vg_balance  : b.vg_balance,
+	            max_health  : b.max_health,
+	            health      : b.health,
+	            energy      : b.energy,
+	            max_energy  : b.max_energy,
+	            prestige    : b.prestige,
+	            city_id     : b.city_id,
+	            last_up_energy        : b.last_up_energy,
+	            delta_recovery_energy : b.delta_recovery_energy,
+	            military_rank         : b.military_rank,
+	            military_rank_img     : b.military_rank_img,
+	            level               : c.level,
+	            xp                  : c.xp,
+	            nextLevelExperience : c.nextLevelExperience
+	          };
+	          res.json({
+	            data    :answer,
+	            error   :0,
+	            message :""
+	          });
+					} else {
+						res.json({
+		          error:result.statusCode,
+		          message:result.data,
+		          data:JSON.stringify(result)
+		        });
+					}
         })
       } else {
         res.json({
