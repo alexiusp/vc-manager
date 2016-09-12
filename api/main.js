@@ -27,10 +27,10 @@ exports.init = function(xpress) {
 			console.log("login result:", result);
       var cookiesArr = result.headers['set-cookie'];
       req.session.remoteCookies = cookiesArr;
-      if(result.statusCode == 200) {
-        api.getUserInfo(cookiesArr, (result) => {
-					if(result.statusCode == 200) {
-	          let a = result.data;
+			handleRequestError(result, res, (result, res) => {
+				api.getUserInfo(cookiesArr, (result) => {
+					handleRequestError(result, res, (result, res) => {
+						let a = result.data;
 	          let b = a.user.User;
 	          let c = a.user.UserLevel;
 	          if(!!b.avatar_img) parseAvatar(b.avatar_img);
@@ -60,21 +60,9 @@ exports.init = function(xpress) {
 	            error   :0,
 	            message :""
 	          });
-					} else {
-						res.json({
-		          error:result.statusCode,
-		          message:result.data,
-		          data:JSON.stringify(result)
-		        });
-					}
-        })
-      } else {
-        res.json({
-          error:result.statusCode,
-          message:result.data,
-          data:JSON.stringify(result)
-        });
-      }
+					});
+				});
+      });
     });
   });
   app.get('/api/corps', function (req, res) {
@@ -85,13 +73,15 @@ exports.init = function(xpress) {
       var api = require('./corps');
       //console.log("calling getCorpsList");
       api.getCorpsList(sessCookies, (result) => {
-        let answer = result.data.corporations;
-        //console.log("getCorpsList finished", answer);
-        res.json({
-          data    : answer,
-          error   : (!!answer)? 0 : result.data.error,
-          message : (result.data.setFlash.length > 0)? result.data.setFlash[0].msg : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = result.data.corporations;
+	        //console.log("getCorpsList finished", answer);
+	        res.json({
+	          data    : answer,
+	          error   : (!!answer)? 0 : result.data.error,
+	          message : (result.data.setFlash.length > 0)? result.data.setFlash[0].msg : ""
+	        });
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -102,16 +92,18 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       api.getCorpDetail(id, sessCookies, (result) => {
-        let answer = {
-          is_manager:result.data.is_manager,
-          corporation:result.data.currentCorporation,
-          companies:result.data.companies
-        };
-        res.json({
-          data    : answer,
-          error   : result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = {
+	          is_manager:result.data.is_manager,
+	          corporation:result.data.currentCorporation,
+	          companies:result.data.companies
+	        };
+	        res.json({
+	          data    : answer,
+	          error   : result.data.error,
+	          message : ""
+	        });
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -122,13 +114,15 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       api.getCorpStorage(id, sessCookies, (result) => {
-        let answer = result.data.storage;
-        if(!!answer) parseStorageImg(answer);
-        res.json({
-          data    : answer,
-          error   : result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = result.data.storage;
+	        if(!!answer) parseStorageImg(answer);
+	        res.json({
+	          data    : answer,
+	          error   : result.data.error,
+	          message : ""
+	        });
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -139,13 +133,15 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       api.getCompanyStorage(id, sessCookies, (result) => {
-        let answer = result.data.storage;
-        if(!!answer) parseStorageImg(answer);
-        res.json({
-          data    : answer,
-          error   : result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = result.data.storage;
+	        if(!!answer) parseStorageImg(answer);
+	        res.json({
+	          data    : answer,
+	          error   : result.data.error,
+	          message : ""
+	        });
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -156,13 +152,15 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       api.getCompanyDetail(id, sessCookies, (result) => {
-        let answer = result.data.company;
-  			if(!!answer.img) getFile(answer.img);
-        res.json({
-          data    : answer,
-          error   : result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = result.data.company;
+					if(!!answer.img) getFile(answer.img);
+					res.json({
+						data    : answer,
+						error   : result.data.error,
+						message : ""
+					});
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -174,13 +172,15 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       api.moveItemToCorporation(cid, data.item, data.amount, sessCookies, (result) => {
-        let answer = result.data.setFlash;
-        console.log("storage move for company %s success:", cid, answer);
-        res.json({
-          data    : answer,
-          error   : result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = result.data.setFlash;
+					//console.log("storage move for company %s success:", cid, answer);
+					res.json({
+						data    : answer,
+						error   : result.data.error,
+						message : ""
+					});
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -192,13 +192,15 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       api.addFundsToCompany(cid, data.amount, sessCookies, (result) => {
-        let answer = result.data.setFlash;
-        //console.log("add funds for company %s success:", cid, answer);
-        res.json({
-          data    : answer,
-          error   : result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = result.data.setFlash;
+					//console.log("add funds for company %s success:", cid, answer);
+					res.json({
+						data    : answer,
+						error   : result.data.error,
+						message : ""
+					});
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -210,13 +212,15 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       api.addFundsToCorporation(cid, data.amount, sessCookies, (result) => {
-        let answer = result.data.setFlash;
-        //console.log("add funds for corporation %s success:", cid, answer);
-        res.json({
-          data    : answer,
-          error   : result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = result.data.setFlash;
+					//console.log("add funds for corporation %s success:", cid, answer);
+					res.json({
+						data    : answer,
+						error   : result.data.error,
+						message : ""
+					});
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -234,20 +238,22 @@ exports.init = function(xpress) {
   		if(!!data && !!data.items) data.items.forEach(elem => {
   			counter++;
   			api.moveItemToCompany(cid, elem.id, elem.amount, sessCookies, (result) => {
-  	      let answer = result.data.setFlash;
-  				results = results.concat(answer);
-  				error += result.data.error;
-  				timeout = setTimeout(()=>{
-  					counter--;
-  					if(counter == 0) {
-  						clearTimeout(timeout);
-  						res.json({
-  			        data    : results,
-  			        error   : error,
-  			        message : ""
-  			      });
-  					}
-  				},10);
+					handleRequestError(result, res, (result, res) => {
+						let answer = result.data.setFlash;
+						results = results.concat(answer);
+						error += result.data.error;
+						timeout = setTimeout(()=>{
+							counter--;
+							if(counter == 0) {
+								clearTimeout(timeout);
+								res.json({
+									data    : results,
+									error   : error,
+									message : ""
+								});
+							}
+						},10);
+					});
   			});
   		});
     } else handleError(res, -1, "Session expired!");
@@ -260,13 +266,15 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       api.sellItemFromCompany(cid, +data.itemId, +data.amount, +data.price, "vdollars", sessCookies, (result) => {
-        let answer = result.data.setFlash;
-        //console.log("company %s exchange success:", cid, answer);
-        res.json({
-          data    : answer,
-          error   : +result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = result.data.setFlash;
+					//console.log("company %s exchange success:", cid, answer);
+					res.json({
+						data    : answer,
+						error   : +result.data.error,
+						message : ""
+					});
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -279,13 +287,15 @@ exports.init = function(xpress) {
       let api = require('./corps');
       //console.log("app.post", sessCookies);
       api.sellItemFromCorporation(cid, +data.itemId, +data.amount, +data.price, "vdollars", sessCookies, (result) => {
-        let answer = result.data.setFlash;
-        //console.log("corporation %s exchange success:", cid, answer);
-        res.json({
-          data    : answer,
-          error   : +result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = result.data.setFlash;
+	        //console.log("corporation %s exchange success:", cid, answer);
+	        res.json({
+	          data    : answer,
+	          error   : +result.data.error,
+	          message : ""
+	        });
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -296,21 +306,23 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       api.getCompanyWorkers(id, sessCookies, (result) => {
-        let answer = {
-  				employees : +result.data.employees,
-     			employees_possible : +result.data.employees_possible,
-     			foreign_employees : +result.data.foreign_employees,
-     			foreign_employees_possible : +result.data.foreign_employees_possible,
-     			manager : result.data.manager,
-  				employment : result.data.employment,
-  				expansion : result.data.expansion
-  			};
-  			if(!!answer.manager && !!answer.manager.avatar) parseAvatar(answer.manager.avatar);
-        res.json({
-          data    : answer,
-          error   : result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = {
+						employees : +result.data.employees,
+						employees_possible : +result.data.employees_possible,
+						foreign_employees : +result.data.foreign_employees,
+						foreign_employees_possible : +result.data.foreign_employees_possible,
+						manager : result.data.manager,
+						employment : result.data.employment,
+						expansion : result.data.expansion
+					};
+					if(!!answer.manager && !!answer.manager.avatar) parseAvatar(answer.manager.avatar);
+					res.json({
+						data    : answer,
+						error   : result.data.error,
+						message : ""
+					});
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -321,19 +333,21 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       api.getProductionList(id, sessCookies, (result) => {
-        let answer = result.data.company_productions;
-  			// parse production items and components images
-  			for(let item of answer) {
-  				if(!!item.item_type.image) getFile(item.item_type.image);
-  				if(!!item.item_type.ItemTypeResource) for(let resource of item.item_type.ItemTypeResource) {
-  					if(!!resource.ItemTypeMain) getFile(resource.ItemTypeMain.image);
-  				}
-  			}
-        res.json({
-          data    : answer,
-          error   : result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = result.data.company_productions;
+					// parse production items and components images
+					for(let item of answer) {
+						if(!!item.item_type.image) getFile(item.item_type.image);
+						if(!!item.item_type.ItemTypeResource) for(let resource of item.item_type.ItemTypeResource) {
+							if(!!resource.ItemTypeMain) getFile(resource.ItemTypeMain.image);
+						}
+					}
+					res.json({
+						data    : answer,
+						error   : result.data.error,
+						message : ""
+					});
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
@@ -345,19 +359,28 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       api.setProduction(cid, +data.itemId, sessCookies, (result) => {
-        let answer = result.data.setFlash;
-        //console.log("corporation %s production change result:", cid, answer);
-        res.json({
-          data    : answer,
-          error   : +result.data.error,
-          message : ""
-        });
+				handleRequestError(result, res, (result, res) => {
+					let answer = result.data.setFlash;
+					//console.log("corporation %s production change result:", cid, answer);
+					res.json({
+						data    : answer,
+						error   : +result.data.error,
+						message : ""
+					});
+				});
       });
     } else handleError(res, -1, "Session expired!");
   });
 
 }
-
+function handleRequestError(result, response, callback) {
+	if(result.statusCode == 200) callback(result, response);
+	else response.json({
+		error:result.statusCode,
+		message:result.data,
+		data:JSON.stringify(result)
+	});
+}
 var handleError = function(res, errCode, errMessage) {
 	console.error("Error:", errCode, errMessage);
 	res.json({
