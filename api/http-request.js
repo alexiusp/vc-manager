@@ -85,7 +85,7 @@ var requestHandler = function() {
 		}
 	} else {
 		setTimeout(function() {
-      console.log("http-request.requestHandler timeout. is in progress:", _inProgress);
+      //console.log("http-request.requestHandler timeout. is in progress:", _inProgress);
       requestHandler();
     }, _requestDelay);
 	}

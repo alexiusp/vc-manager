@@ -18,13 +18,13 @@ exports.init = function(xpress) {
     res.json({data:"battlecruiser operational"});
   });
   app.post('/api/login', function (req, res) {
-    console.log("request ip:", req.connection.remoteAddress);
-    console.log('login request', req.headers);
-    console.log('sess', req.session);
+    //console.log("request ip:", req.connection.remoteAddress);
+    //console.log('login request', req.headers);
+    //console.log('sess', req.session);
     var user = req.body;
     var api = require('./login');
     api.login(user, (result) => {
-			console.log("login result:", result);
+			//console.log("login result:", result);
       var cookiesArr = result.headers['set-cookie'];
       req.session.remoteCookies = cookiesArr;
 			handleRequestError(result, res, (result, res) => {
