@@ -4,9 +4,24 @@ var querystring = require('qs');
 var config = require('./config.js');
 var http_request = require('./http-request');
 
+function corpListRequestPage(page, cookiesArr, result, callback) {
+	http_request.get(`/corporations/corporation_list/page:${page}.json?os=unknown&v=${config.version}`, cookiesArr, (res) => {
+		if(res.statusCode != 200) corpListRequestPage(page, cookiesArr, result, callback);
+		else {
+			let previous = (!!result && !!result.data.corporations)? result.data.corporations : [];
+			let current = res.data.corporations;
+			let newResult = res;
+			newResult.data.corporations = previous.concat(current);
+			if(res.data.paging.Corporation.pageCount > page) {
+				corpListRequestPage(page+1, cookiesArr, newResult, callback);
+			} else callback(newResult);
+		}
+	});
+}
 exports.getCorpsList = function(cookiesArr, callback) {
   //console.log("getCorpsList started");
-  http_request.get(`/corporations/corporation_list.json?os=unknown&v=${config.version}`, cookiesArr, callback);
+	let page = 1;
+	corpListRequestPage(page, cookiesArr, null, callback);
 }
 exports.getCorpDetail = function(corpId, cookiesArr, callback) {
   http_request.get(`/corporations/corporation_office/${corpId}.json?os=unknown&v=${config.version}`, cookiesArr, callback);
@@ -46,7 +61,7 @@ exports.addFundsToCompany = function(compId, amount, cookiesArr, callback) {
         }
       }
     });
-    http_request.post(`/corporation_companies/take_funds_vd.json?os=unknown&v=${config.version}`, postBody, cookiesArr, callback);        
+    http_request.post(`/corporation_companies/take_funds_vd.json?os=unknown&v=${config.version}`, postBody, cookiesArr, callback);
   }
 }
 exports.addFundsToCorporation = function(corpId, amount, cookiesArr, callback) {
