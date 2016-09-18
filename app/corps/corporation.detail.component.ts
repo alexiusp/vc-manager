@@ -58,6 +58,12 @@ export class CorporationDetailComponent implements OnInit {
 			} else {
 				this.companyFilter = "all";
 			}
+			let c = this._storageService.loadData("c_city");
+			if(!!c) {
+				this.cityFilter = f;
+			} else {
+				this.cityFilter = "all";
+			}
       this.loadCorpInfo();
       //this.loadCorpStorage();
     }
@@ -148,9 +154,13 @@ export class CorporationDetailComponent implements OnInit {
 						if(!this.details[c.id]) this.loadCompanyInfo(c);
 						else {
 							// check if the filter is set
-							let f = this.companyFilter || "all";
-							//console.log("companies load:", c, f);
-							if(f == "all" || c.type == f) this.loadCompanyInfo(c);
+							let tf = this.companyFilter || "all";
+							let cf = this.cityFilter || "all";
+							//console.log("companies load:", cf, tf);
+							let mustLoad = (tf == "all" && cf == "all");
+							mustLoad = mustLoad || (tf != "all" && c.type == tf);
+							mustLoad = mustLoad || (cf != "all" && c.city == cf);
+							if(mustLoad) this.loadCompanyInfo(c);
 						}
 				  }
 				}
@@ -175,9 +185,11 @@ export class CorporationDetailComponent implements OnInit {
   }
 	// companies list filter
 	private companyFilter : string;
-	setFilter(filter : string) {
-		//console.log("setFilter:", filter);
-		this.companyFilter = filter;
+	private cityFilter : string;
+	setFilter(event : {type : boolean, filter : string}) {
+		//console.log("setFilter:", event);
+		if(event.type) this.companyFilter = event.filter;
+		else this.cityFilter = event.filter;
 	}
   refresh(cList? : Company[]) {
     console.log("refresh:", cList);

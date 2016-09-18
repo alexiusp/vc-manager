@@ -72,6 +72,13 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         else {
                             this.companyFilter = "all";
                         }
+                        var c = this._storageService.loadData("c_city");
+                        if (!!c) {
+                            this.cityFilter = f;
+                        }
+                        else {
+                            this.cityFilter = "all";
+                        }
                         this.loadCorpInfo();
                     }
                 };
@@ -175,9 +182,13 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                                         _this.loadCompanyInfo(c);
                                     else {
                                         // check if the filter is set
-                                        var f = _this.companyFilter || "all";
-                                        //console.log("companies load:", c, f);
-                                        if (f == "all" || c.type == f)
+                                        var tf = _this.companyFilter || "all";
+                                        var cf = _this.cityFilter || "all";
+                                        //console.log("companies load:", cf, tf);
+                                        var mustLoad = (tf == "all" && cf == "all");
+                                        mustLoad = mustLoad || (tf != "all" && c.type == tf);
+                                        mustLoad = mustLoad || (cf != "all" && c.city == cf);
+                                        if (mustLoad)
                                             _this.loadCompanyInfo(c);
                                     }
                                 }
@@ -202,9 +213,12 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                         });
                     }
                 };
-                CorporationDetailComponent.prototype.setFilter = function (filter) {
-                    //console.log("setFilter:", filter);
-                    this.companyFilter = filter;
+                CorporationDetailComponent.prototype.setFilter = function (event) {
+                    //console.log("setFilter:", event);
+                    if (event.type)
+                        this.companyFilter = event.filter;
+                    else
+                        this.cityFilter = event.filter;
                 };
                 CorporationDetailComponent.prototype.refresh = function (cList) {
                     console.log("refresh:", cList);

@@ -4,7 +4,7 @@
       <button type="button" class="btn btn-default btn-xs pull-left" (click)="selectAll();" [ngClass]="{'disabled': loading}">
         <i class="glyphicon"  [ngClass]="{'glyphicon-check': !allSelected, 'glyphicon-unchecked': allSelected}"></i>
       </button>&nbsp;
-      Companies&nbsp;({{companies?.length}})&nbsp;<i class="fa fa-spinner fa-pulse" *ngIf="!!loading"></i>
+      Companies&nbsp;({{companies?.length}}/{{_companies?.length}})&nbsp;<i class="fa fa-spinner fa-pulse" *ngIf="!!loading"></i>
       <button type="button" class="btn btn-default btn-xs pull-right" (click)="openList()">
         <i class="fa" [ngClass]="{'fa-minus': isListOpen, 'fa-plus': !isListOpen}"></i>
       </button>
@@ -16,7 +16,7 @@
     </li>
     <li class="list-group-item" *ngIf="is_manager">
       <div class="row">
-        <div class="col-sm-12 col-md-6">
+        <div class="col-sm-12 col-md-4">
           <div class="dropdown" [ngClass]="{'open': !!filterDropdownOpen}">
             <button type="button"
               class="btn btn-default btn-sm btn-block dropdown-toggle"
@@ -24,7 +24,7 @@
               (click)="toggleFilter()">
               {{filterTitle}}&nbsp;
               <span class="caret"></span>
-              <span class="sr-only">Toggle Dropdown</span>
+              <span class="sr-only">Toggle Type Dropdown</span>
             </button>
             <ul class="dropdown-menu">
               <li>
@@ -35,7 +35,26 @@
             </ul>
           </div>
         </div>
-        <div class="col-sm-12 col-md-6">
+				<div class="col-sm-12 col-md-4">
+          <div class="dropdown" [ngClass]="{'open': !!citiesDropdownOpen}">
+            <button type="button"
+              class="btn btn-default btn-sm btn-block dropdown-toggle"
+              [ngClass]="{'disabled': loading}"
+              (click)="toggleCity()">
+              {{cityTitle}}&nbsp;
+              <span class="caret"></span>
+              <span class="sr-only">Toggle City Dropdown</span>
+            </button>
+            <ul class="dropdown-menu">
+              <li>
+                <a href=""
+                  *ngFor="#city of cities"
+                  (click)="$event.preventDefault();filterCity(city)">{{city}}</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-sm-12 col-md-4">
 					<div class="btn-group btn-group-sm btn-group-justified"
             role="group"
             aria-label="Storage operations">

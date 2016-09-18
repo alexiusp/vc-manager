@@ -33,10 +33,18 @@ export class CompaniesListComponent {
     let f = this._storageService.loadData("c_filter");
     if(!!f) {
       this.currentFilter = f;
-      this.filterTitle = (f == "all")? "Filter" : f;
+      this.filterTitle = (f == "all")? "Type" : f;
     } else {
       this.currentFilter = "all";
-      this.filterTitle = "Filter";
+      this.filterTitle = "Type";
+    }
+		let c = this._storageService.loadData("c_city");
+    if(!!c) {
+      this.currentCity = c;
+      this.cityTitle = (c == "all")? "City" : c;
+    } else {
+      this.currentCity = "all";
+      this.cityTitle = "City";
     }
 	}
 
@@ -50,22 +58,50 @@ export class CompaniesListComponent {
   @Input('companies')
 	set companies(cArr : Company[]) {
     let types = [];
+		let cities = [];
     for(let c of cArr) {
+			//console.log(c.city);
       if(types.indexOf(c.type) == -1) types.push(c.type);
+			if(cities.indexOf(c.city) == -1) cities.push(c.city);
     }
 		//console.log("types:", types);
+		console.log("cities:", cities);
     types.unshift("all");
+		cities.unshift("all");
     this.types = types;
+		this.cities = cities;
 		this._companies = cArr;
 	}
 	get companies() {
+		let filterList = [];
+		if(this.currentCity != "all") {
+      for(let c of this._companies)
+        if(c.city == this.currentCity) filterList.push(c);
+    } else filterList = this._companies;
     if(this.currentFilter != "all") {
       let cArr = [];
-      for(let c of this._companies)
+      for(let c of filterList)
         if(c.type == this.currentFilter) cArr.push(c);
       return cArr;
-    } else return this._companies
+    } else return filterList;
   }
+
+	@Output('on-filter') onFilter = new EventEmitter();
+	private cities : string[];
+	private citiesDropdownOpen : boolean;
+  private currentCity : string;
+  private cityTitle : string;
+  toggleCity() {
+    if(!this.loading) this.citiesDropdownOpen = !this.citiesDropdownOpen;
+  }
+	filterCity(city : string) {
+		//console.log("filter:", type);
+		this.currentCity = city;
+		this._storageService.saveData("c_city", city);
+		this.cityTitle = (city == "all")? "City" : city;
+		this.toggleCity();
+		if(!!this.onFilter) this.onFilter.emit({type:false,filter:city});
+	}
 
   private types : string[];
   private filterDropdownOpen : boolean;
@@ -74,14 +110,13 @@ export class CompaniesListComponent {
   toggleFilter() {
     if(!this.loading) this.filterDropdownOpen = !this.filterDropdownOpen;
   }
-	@Output('on-filter') onFilter = new EventEmitter();
   filterList(type : string) {
     //console.log("filter:", type);
     this.currentFilter = type;
     this._storageService.saveData("c_filter", type);
-    this.filterTitle = (type == "all")? "Filter" : type;
+    this.filterTitle = (type == "all")? "Type" : type;
     this.toggleFilter();
-		if(!!this.onFilter) this.onFilter.emit(type);
+		if(!!this.onFilter) this.onFilter.emit({type:true,filter:type});
   }
   checkAllSelected() {
     let isAllSelected = true;

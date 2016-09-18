@@ -56,11 +56,20 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                     var f = this._storageService.loadData("c_filter");
                     if (!!f) {
                         this.currentFilter = f;
-                        this.filterTitle = (f == "all") ? "Filter" : f;
+                        this.filterTitle = (f == "all") ? "Type" : f;
                     }
                     else {
                         this.currentFilter = "all";
-                        this.filterTitle = "Filter";
+                        this.filterTitle = "Type";
+                    }
+                    var c = this._storageService.loadData("c_city");
+                    if (!!c) {
+                        this.currentCity = c;
+                        this.cityTitle = (c == "all") ? "City" : c;
+                    }
+                    else {
+                        this.currentCity = "all";
+                        this.cityTitle = "City";
                     }
                 }
                 CompaniesListComponent.prototype.companyStorageChange = function (cId, list) {
@@ -71,33 +80,63 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                 };
                 Object.defineProperty(CompaniesListComponent.prototype, "companies", {
                     get: function () {
-                        if (this.currentFilter != "all") {
-                            var cArr = [];
+                        var filterList = [];
+                        if (this.currentCity != "all") {
                             for (var _i = 0, _a = this._companies; _i < _a.length; _i++) {
                                 var c = _a[_i];
+                                if (c.city == this.currentCity)
+                                    filterList.push(c);
+                            }
+                        }
+                        else
+                            filterList = this._companies;
+                        if (this.currentFilter != "all") {
+                            var cArr = [];
+                            for (var _b = 0, filterList_1 = filterList; _b < filterList_1.length; _b++) {
+                                var c = filterList_1[_b];
                                 if (c.type == this.currentFilter)
                                     cArr.push(c);
                             }
                             return cArr;
                         }
                         else
-                            return this._companies;
+                            return filterList;
                     },
                     set: function (cArr) {
                         var types = [];
+                        var cities = [];
                         for (var _i = 0, cArr_1 = cArr; _i < cArr_1.length; _i++) {
                             var c = cArr_1[_i];
+                            //console.log(c.city);
                             if (types.indexOf(c.type) == -1)
                                 types.push(c.type);
+                            if (cities.indexOf(c.city) == -1)
+                                cities.push(c.city);
                         }
                         //console.log("types:", types);
+                        console.log("cities:", cities);
                         types.unshift("all");
+                        cities.unshift("all");
                         this.types = types;
+                        this.cities = cities;
                         this._companies = cArr;
                     },
                     enumerable: true,
                     configurable: true
                 });
+                CompaniesListComponent.prototype.toggleCity = function () {
+                    if (!this.loading)
+                        this.citiesDropdownOpen = !this.citiesDropdownOpen;
+                };
+                CompaniesListComponent.prototype.filterCity = function (city) {
+                    //console.log("filter:", type);
+                    this.currentCity = city;
+                    this._storageService.saveData("c_city", city);
+                    this.cityTitle = (city == "all") ? "City" : city;
+                    this.toggleCity();
+                    if (!!this.onFilter)
+                        this.onFilter.emit({ type: false, filter: city });
+                };
                 CompaniesListComponent.prototype.toggleFilter = function () {
                     if (!this.loading)
                         this.filterDropdownOpen = !this.filterDropdownOpen;
@@ -106,10 +145,10 @@ System.register(['angular2/core', './corporation.service', '../core/dictionary',
                     //console.log("filter:", type);
                     this.currentFilter = type;
                     this._storageService.saveData("c_filter", type);
-                    this.filterTitle = (type == "all") ? "Filter" : type;
+                    this.filterTitle = (type == "all") ? "Type" : type;
                     this.toggleFilter();
                     if (!!this.onFilter)
-                        this.onFilter.emit(type);
+                        this.onFilter.emit({ type: true, filter: type });
                 };
                 CompaniesListComponent.prototype.checkAllSelected = function () {
                     var isAllSelected = true;
