@@ -23,8 +23,23 @@ exports.getCorpsList = function(cookiesArr, callback) {
 	let page = 1;
 	corpListRequestPage(page, cookiesArr, null, callback);
 }
+function corpDetailRequestPage(page, cookiesArr, result, callback) {
+	http_request.get(`/corporations/corporation_office/${corpId}.json?page=${page}.json&os=unknown&v=${config.version}`, cookiesArr, (res) => {
+		if(res.statusCode != 200) corpDetailRequestPage(page, cookiesArr, result, callback);
+		else {
+			let previous = (!!result && !!result.data.companies)? result.data.companies : [];
+			let current = res.data.companies;
+			let newResult = res;
+			newResult.data.companies = previous.concat(current);
+			if(res.data.paging.Company.pageCount > page) {
+				corpDetailRequestPage(page+1, cookiesArr, newResult, callback);
+			} else callback(newResult);
+		}
+	});
+}
 exports.getCorpDetail = function(corpId, cookiesArr, callback) {
-  http_request.get(`/corporations/corporation_office/${corpId}.json?os=unknown&v=${config.version}`, cookiesArr, callback);
+	let page = 1;
+	corpDetailRequestPage(page, cookiesArr, null, callback);
 }
 exports.getCorpStorage = function(corpId, cookiesArr, callback) {
   http_request.get(`/corporation_items/storage/${corpId}.json?os=unknown&v=${config.version}`, cookiesArr, callback);
