@@ -153,21 +153,6 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                     this.loadCorpDetail(function () {
                         _this.loadCorpStorage();
                         if (!!_this.corpInfo.is_manager) {
-                            _this._detailsCopied = false;
-                            _this._coreService.observeLoading(function (isLoading) {
-                                //console.log("observing loading:", isLoading);
-                                if (!isLoading && !_this._detailsCopied && !!_this.details) {
-                                    //console.log("copy details");
-                                    var dArr = new dictionary_1.map();
-                                    for (var _i = 0, _a = _this.corpInfo.companies; _i < _a.length; _i++) {
-                                        var c = _a[_i];
-                                        var d = _this.details[c.id];
-                                        dArr[c.id] = d;
-                                    }
-                                    _this.details = dArr;
-                                    _this._detailsCopied = true;
-                                }
-                            });
                             if (!!cList) {
                                 for (var _i = 0, cList_1 = cList; _i < cList_1.length; _i++) {
                                     var c = cList_1[_i];
@@ -193,6 +178,22 @@ System.register(['angular2/core', 'angular2/router', './storage/models', './stor
                                     }
                                 }
                             }
+                            _this._detailsCopied = false;
+                            _this._coreService.observeLoading(function (isLoading) {
+                                //console.log("observing loading:", isLoading);
+                                if (!isLoading && !_this._detailsCopied && !!_this.details) {
+                                    //console.log("copy details");
+                                    var dArr = new dictionary_1.map();
+                                    for (var _i = 0, _a = _this.corpInfo.companies; _i < _a.length; _i++) {
+                                        var c = _a[_i];
+                                        var d = _this.details[c.id];
+                                        d.isSelected = false;
+                                        dArr[c.id] = d;
+                                    }
+                                    _this.details = dArr;
+                                    _this._detailsCopied = true;
+                                }
+                            });
                         }
                     });
                 };

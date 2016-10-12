@@ -130,24 +130,15 @@ export class CorporationDetailComponent implements OnInit {
 		this.loadCorpDetail(() => {
 			this.loadCorpStorage();
 			if(!!this.corpInfo.is_manager) {
-        this._detailsCopied = false;
-        this._coreService.observeLoading((isLoading) => {
-          //console.log("observing loading:", isLoading);
-          if(!isLoading && !this._detailsCopied && !!this.details) {
-            //console.log("copy details");
-            let dArr = new map<CompanyDetailItem>();
-            for(let c of this.corpInfo.companies) {
-              let d = this.details[c.id];
-              dArr[c.id] = d;
-            }
-            this.details = dArr;
-            this._detailsCopied = true;
-          }
-        });
 				if(!!cList) {
 					for(let c of cList) {
 						this.loadCompanyInfo(c);
 					}
+					/*
+					for(let c of this.corpInfo.companies) {
+						if(!this.details[c.id]) this.loadCompanyInfo(c);
+						else this.details[c.id].isSelected = false;
+					}*/
 				} else {
 					for(let c of this.corpInfo.companies) {
 						// load company info always for the first time
@@ -164,6 +155,21 @@ export class CorporationDetailComponent implements OnInit {
 						}
 				  }
 				}
+        this._detailsCopied = false;
+        this._coreService.observeLoading((isLoading) => {
+          //console.log("observing loading:", isLoading);
+          if(!isLoading && !this._detailsCopied && !!this.details) {
+            //console.log("copy details");
+            let dArr = new map<CompanyDetailItem>();
+            for(let c of this.corpInfo.companies) {
+              let d = this.details[c.id];
+							d.isSelected = false;
+              dArr[c.id] = d;
+            }
+            this.details = dArr;
+            this._detailsCopied = true;
+          }
+        });
       }
 		});
   }
