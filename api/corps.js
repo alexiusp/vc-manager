@@ -31,6 +31,7 @@ function corpDetailRequestPage(corpId, page, cookiesArr, result, callback) {
 			let current = res.data.companies;
 			let newResult = res;
 			newResult.data.companies = previous.concat(current);
+			console.log("company list paging?:", res.data.paging.Company.pageCount, page);
 			if(res.data.paging.Company.pageCount > page) {
 				corpDetailRequestPage(corpId, page+1, cookiesArr, newResult, callback);
 			} else callback(newResult);
