@@ -24,7 +24,7 @@ exports.getCorpsList = function(cookiesArr, callback) {
 	corpListRequestPage(page, cookiesArr, null, callback);
 }
 function corpDetailRequestPage(corpId, page, cookiesArr, result, callback) {
-	http_request.get(`/corporations/corporation_office/${corpId}.json?page=${page}.json&os=unknown&v=${config.version}`, cookiesArr, (res) => {
+	http_request.get(`/corporations/corporation_office/${corpId}.json?page=${page}&limit=50&os=unknown&v=${config.version}`, cookiesArr, (res) => {
 		if(res.statusCode != 200) corpDetailRequestPage(corpId, page, cookiesArr, result, callback);
 		else {
 			let previous = (!!result && !!result.data.companies)? result.data.companies : [];
