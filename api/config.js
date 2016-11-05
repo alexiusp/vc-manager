@@ -1,5 +1,5 @@
 'use strict';
-exports.version = "3.51";
+exports.version = "3.70";
 exports.url = "http://localhost:3000";
 
 let defaultHeaders = {
