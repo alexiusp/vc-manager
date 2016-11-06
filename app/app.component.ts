@@ -16,6 +16,7 @@ import { CorporationDetailComponent } from './corps/corporation.detail.component
 import { CompanyComponent } from './corps/company.component';
 import { AlertListComponent } from './messages/alert.list.component';
 import { MessagesService } from './messages/messages.service';
+import { MarketComponent } from './market/market.component';
 
 @Component({
   selector: 'my-app',
@@ -59,6 +60,11 @@ import { MessagesService } from './messages/messages.service';
     path: '/company/:id',
     name: 'Company',
     component: CompanyComponent
+  },
+  {
+    path: '/market',
+    name: 'Market',
+    component: MarketComponent
   }
 ])
 export class AppComponent implements OnInit {

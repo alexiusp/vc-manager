@@ -1,9 +1,13 @@
 'use strict';
+var mongoose = require('mongoose');
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = express();
 var session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
 var _port = (process.env.PORT || 5000);
+var _dbURI = process.env.MONGODB_URI || 'mongodb://localhost/test';
+mongoose.connect(_dbURI);
 
 app.set('port', _port);
 app.use('/app', express.static(__dirname + '/app'));
@@ -17,7 +21,8 @@ app.use(session({
   name:'vc-manager',
   secret: '1234567890QWERTY',
   resave: true,
-  saveUninitialized: true
+  saveUninitialized: true,
+	store: new MongoStore({ mongooseConnection: mongoose.connection })
 }));
 /*
 // request logging function

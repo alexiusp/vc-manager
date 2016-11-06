@@ -1,5 +1,7 @@
 'use strict';
 var http = require('http');
+var config = require('./config');
+const zlib = require('zlib');
 var _requestDelay = 200;//ms
 var _inProgress = false;
 
@@ -10,17 +12,12 @@ const requestType = {
 
 var _request = function(conf) {//conf : type, path, body, cookies, callback
   console.log("making request", conf.path);
-  let headers = {
-    'Content-Type': 'application/x-www-form-urlencoded',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Encoding': 'deflate',
-    'Accept-Language': 'ru,en-US;q=0.8,en;q=0.4',
-    'Referer': 'http://api.vircities.com/app/index.html',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0'
-  };
-  if(!!conf.body && conf.body.length > 0) headers['Content-Length'] = conf.body.length;
-  //console.log("_request cookies:", JSON.stringify(conf.cookies));
-  if(!!conf.cookies && conf.cookies.length > 0) headers['Cookie'] = conf.cookies.join('; ');
+	let headers = conf.session.headers;
+  if(!!conf.body && conf.body.length > 0) headers['Content-Length'] = Buffer.byteLength(conf.body);
+	else delete headers['Content-Length'];
+  //console.log("_request cookies:", JSON.stringify(conf.session.remoteCookies));
+  if(!!conf.session.remoteCookies && !!conf.session.remoteCookies.length) headers['Cookie'] = conf.session.remoteCookies.join('; ');
+	//console.log("headers:", JSON.stringify(headers));
   let options = {
     hostname: 'api.vircities.com',
     port: 80,
@@ -28,49 +25,75 @@ var _request = function(conf) {//conf : type, path, body, cookies, callback
     method: conf.type,
     headers: headers
   };
+	let callback = (resObj) => {
+		_inProgress = false;
+		conf.callback(resObj);
+	}
+	let errorCallback = (errorMessage) => {
+		let r = {
+			statusCode: 400,
+      data: {
+	      error   : 1,
+	      message : errorMessage
+	    }
+		}
+		callback(r);
+	}
   let req = http.request(options, (res) => {
     let result = {
       statusCode: res.statusCode,
       headers: res.headers,
-      data: ""
+      data: []
     };
-    res.setEncoding('utf8');
     res.on('data', (chunk) => {
-      result.data += chunk;
+      result.data.push(chunk);
     });
     res.on('end', () => {
-      let dataString = result.data;
+			var encoding = res.headers['content-encoding'];
+			var buffer = Buffer.concat(result.data);
+      let dataString = "";
       try {
-        result.data = JSON.parse(dataString);
+				if (encoding == 'gzip') {
+	        zlib.gunzip(buffer, function(err, decoded) {
+						if(!err) {
+							dataString = decoded && decoded.toString('utf8');
+							result.data = JSON.parse(dataString);
+							callback(result);
+						} else errorCallback(decoded && decoded.toString('utf8'));
+	        });
+	      } else if (encoding == 'deflate') {
+	        zlib.inflate(buffer, function(err, decoded) {
+						if(!err) {
+							dataString = decoded && decoded.toString('utf8');
+							result.data = JSON.parse(dataString);
+							callback(result);
+						} else errorCallback(decoded && decoded.toString('utf8'));
+	        })
+	      } else {
+					dataString = buffer.toString('utf8');
+					result.data = JSON.parse(dataString);
+					callback(result);
+	      }
       } catch (e) {
-        result.data = `problem with request: ${e.message}`;
-        result.debug = dataString;
-        result.statusCode = 8;
+				errorCallback(`problem with request: ${e.message}`);
       }
-			_inProgress = false;
-      conf.callback(result);
     })
   });
   req.on('error', (e) => {
     console.log(`problem with request: ${e.message}`);
-    result.data = {
-      error   : 100,
-      message : e.message
-    };
-    result.statusCode = 400;
-		_inProgress = false;
+		errorCallback(`problem with request: ${e.message}`);
   });
   if(conf.body !== undefined) {
     req.write(conf.body);
   }
   req.end();
 }
-var getConfig = function(type, path, body, cookies, callback) {
+var getConfig = function(type, path, body, session, callback) {
 	return {
 		"type" : type,
 		"path" : path,
 		"body" : body,
-		"cookies" : cookies,
+		"session" : session,
 		"callback" : callback
 	};
 }
@@ -95,11 +118,11 @@ var putRequestToQueue = function(conf) {
 	requestQueue.push(conf);
 	requestHandler();
 }
-exports.get = function(path, cookiesArr, callback) {
-	let c = getConfig(requestType.GET, path, undefined, cookiesArr, callback);
+exports.get = function(path, session, callback) {
+	let c = getConfig(requestType.GET, path, undefined, session, callback);
   putRequestToQueue(c);
 }
-exports.post = function(path, postBody, cookiesArr, callback) {
-	let c = getConfig(requestType.POST, path, postBody, cookiesArr, callback);
+exports.post = function(path, postBody, session, callback) {
+	let c = getConfig(requestType.POST, path, postBody, session, callback);
 	putRequestToQueue(c);
 }

@@ -6,7 +6,7 @@ var config = require('./config.js');
 
 exports.init = function(xpress) {
   let app = xpress;
-  //app.set('trust proxy', 1);
+  app.set('trust proxy', true);
   app.get('/', function(req, res) {
   	res.redirect('/app');
   })
@@ -17,18 +17,26 @@ exports.init = function(xpress) {
     //console.log('api root request');
     res.json({data:"battlecruiser operational"});
   });
+	app.all('/api/*', function (req, res, next) {
+    let sess = req.session;
+		config.getHeaders(sess, req);
+		//console.log(sess.headers);
+    next();
+  });
   app.post('/api/login', function (req, res) {
     //console.log("request ip:", req.connection.remoteAddress);
     //console.log('login request', req.headers);
     //console.log('sess', req.session);
     var user = req.body;
     var api = require('./login');
-    api.login(user, (result) => {
-			//console.log("login result:", result);
-      var cookiesArr = result.headers['set-cookie'];
-      req.session.remoteCookies = cookiesArr;
+		let session = req.session;
+		session.remoteCookies = undefined;
+		//delete session.remoteCookies;
+    api.login(user, session, (result) => {
+			console.log("login result:", result);
+      session.remoteCookies = result.headers['set-cookie'];
 			handleRequestError(result, res, (result, res) => {
-				api.getUserInfo(cookiesArr, (result) => {
+				api.getUserInfo(session, (result) => {
 					handleRequestError(result, res, (result, res) => {
 						let a = result.data;
 	          let b = a.user.User;
@@ -66,13 +74,14 @@ exports.init = function(xpress) {
     });
   });
   app.get('/api/corps', function (req, res) {
-    let sessCookies = req.session.remoteCookies;
+		let session = req.session;
+    let sessCookies = session.remoteCookies;
     //console.log('corps list request', sessCookies);
     if(!!sessCookies) {
       //console.log("loading api...");
       var api = require('./corps');
       //console.log("calling getCorpsList");
-      api.getCorpsList(sessCookies, (result) => {
+      api.getCorpsList(session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = result.data.corporations;
 	        //console.log("getCorpsList finished", answer);
@@ -91,7 +100,7 @@ exports.init = function(xpress) {
     let sessCookies = req.session.remoteCookies;
     if(!!sessCookies) {
       let api = require('./corps');
-      api.getCorpDetail(id, sessCookies, (result) => {
+      api.getCorpDetail(id, req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = {
 	          is_manager:result.data.is_manager,
@@ -113,7 +122,7 @@ exports.init = function(xpress) {
     let sessCookies = req.session.remoteCookies;
     if(!!sessCookies) {
       let api = require('./corps');
-      api.getCorpStorage(id, sessCookies, (result) => {
+      api.getCorpStorage(id, req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = result.data.storage;
 	        if(!!answer) parseStorageImg(answer);
@@ -132,7 +141,7 @@ exports.init = function(xpress) {
     let sessCookies = req.session.remoteCookies;
     if(!!sessCookies) {
       let api = require('./corps');
-      api.getCompanyStorage(id, sessCookies, (result) => {
+      api.getCompanyStorage(id, req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = result.data.storage;
 	        if(!!answer) parseStorageImg(answer);
@@ -151,7 +160,7 @@ exports.init = function(xpress) {
     let sessCookies = req.session.remoteCookies;
     if(!!sessCookies) {
       let api = require('./corps');
-      api.getCompanyDetail(id, sessCookies, (result) => {
+      api.getCompanyDetail(id, req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = result.data.company;
 					if(!!answer.img) getFile(answer.img);
@@ -171,7 +180,7 @@ exports.init = function(xpress) {
     let sessCookies = req.session.remoteCookies;
     if(!!sessCookies) {
       let api = require('./corps');
-      api.moveItemToCorporation(cid, data.item, data.amount, sessCookies, (result) => {
+      api.moveItemToCorporation(cid, data.item, data.amount, req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = result.data.setFlash;
 					//console.log("storage move for company %s success:", cid, answer);
@@ -191,7 +200,7 @@ exports.init = function(xpress) {
     let sessCookies = req.session.remoteCookies;
     if(!!sessCookies) {
       let api = require('./corps');
-      api.addFundsToCompany(cid, data.amount, sessCookies, (result) => {
+      api.addFundsToCompany(cid, data.amount, req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = result.data.setFlash;
 					//console.log("add funds for company %s success:", cid, answer);
@@ -211,7 +220,7 @@ exports.init = function(xpress) {
     let sessCookies = req.session.remoteCookies;
     if(!!sessCookies) {
       let api = require('./corps');
-      api.addFundsToCorporation(cid, data.amount, sessCookies, (result) => {
+      api.addFundsToCorporation(cid, data.amount, req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = result.data.setFlash;
 					//console.log("add funds for corporation %s success:", cid, answer);
@@ -237,7 +246,7 @@ exports.init = function(xpress) {
   		let timeout = 0;
   		if(!!data && !!data.items) data.items.forEach(elem => {
   			counter++;
-  			api.moveItemToCompany(cid, elem.id, elem.amount, sessCookies, (result) => {
+  			api.moveItemToCompany(cid, elem.id, elem.amount, req.session, (result) => {
 					handleRequestError(result, res, (result, res) => {
 						let answer = result.data.setFlash;
 						results = results.concat(answer);
@@ -265,7 +274,7 @@ exports.init = function(xpress) {
     let sessCookies = req.session.remoteCookies;
     if(!!sessCookies) {
       let api = require('./corps');
-      api.sellItemFromCompany(cid, +data.itemId, +data.amount, +data.price, "vdollars", sessCookies, (result) => {
+      api.sellItemFromCompany(cid, +data.itemId, +data.amount, +data.price, "vdollars", req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = result.data.setFlash;
 					//console.log("company %s exchange success:", cid, answer);
@@ -286,7 +295,7 @@ exports.init = function(xpress) {
     if(!!sessCookies) {
       let api = require('./corps');
       //console.log("app.post", sessCookies);
-      api.sellItemFromCorporation(cid, +data.itemId, +data.amount, +data.price, "vdollars", sessCookies, (result) => {
+      api.sellItemFromCorporation(cid, +data.itemId, +data.amount, +data.price, "vdollars", req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = result.data.setFlash;
 	        //console.log("corporation %s exchange success:", cid, answer);
@@ -305,7 +314,7 @@ exports.init = function(xpress) {
     let sessCookies = req.session.remoteCookies;
     if(!!sessCookies) {
       let api = require('./corps');
-      api.getCompanyWorkers(id, sessCookies, (result) => {
+      api.getCompanyWorkers(id, req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = {
 						employees : +result.data.employees,
@@ -332,7 +341,7 @@ exports.init = function(xpress) {
     let sessCookies = req.session.remoteCookies;
     if(!!sessCookies) {
       let api = require('./corps');
-      api.getProductionList(id, sessCookies, (result) => {
+      api.getProductionList(id, req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = result.data.company_productions;
 					// parse production items and components images
@@ -358,7 +367,7 @@ exports.init = function(xpress) {
     //console.log("corporation %s production change request", cid, req.params, data, sessCookies);
     if(!!sessCookies) {
       let api = require('./corps');
-      api.setProduction(cid, +data.itemId, sessCookies, (result) => {
+      api.setProduction(cid, +data.itemId, req.session, (result) => {
 				handleRequestError(result, res, (result, res) => {
 					let answer = result.data.setFlash;
 					//console.log("corporation %s production change result:", cid, answer);
