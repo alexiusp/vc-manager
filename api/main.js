@@ -9,7 +9,7 @@ exports.init = function(xpress) {
   app.set('trust proxy', true);
   app.get('/', function(req, res) {
   	res.redirect('/app');
-  })
+  });
   app.all('/app/*', function (req, res) {
   	res.redirect('/app');
   });
